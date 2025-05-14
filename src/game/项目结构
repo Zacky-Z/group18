@@ -1,0 +1,58 @@
+ForbiddenIsland/
+├─ .github/                  # 版本控制配置（如GitHub工作流）
+├─ src/                      # 源代码
+│  ├─ main/
+│  │  ├─ java/
+│  │  │  ├─ com/
+│  │  │  │  ├─ forbiddenisland/
+│  │  │  │  │  ├─ core/              # 核心游戏逻辑
+│  │  │  │  │  │  ├─ model/           # 基础模型类
+│  │  │  │  │  │  │  ├─ IslandTile.java       # 岛屿瓷砖（含状态：正常/洪水/沉没）
+│  │  │  │  │  │  │  ├─ Treasure.java         # 宝物模型
+│  │  │  │  │  │  │  ├─ Player.java           # 玩家基础类
+│  │  │  │  │  │  │  ├─ Adventurer.java       # 冒险者角色（含特殊能力）
+│  │  │  │  │  │  │  ├─ Card.java             # 卡牌基类
+│  │  │  │  │  │  │  ├─ FloodCard.java        # 洪水卡牌
+│  │  │  │  │  │  │  ├─ TreasureCard.java     # 宝物卡牌
+│  │  │  │  │  │  │  ├─ SpecialActionCard.java# 特殊行动卡（直升机/沙袋）
+│  │  │  │  │  │  ├─ system/          # 游戏系统模块
+│  │  │  │  │  │  │  ├─ GameController.java   # 游戏总控制器（协调各模块）
+│  │  │  │  │  │  │  ├─ TurnManager.java      # 回合管理器（行动顺序、阶段处理）
+│  │  │  │  │  │  │  ├─ CardDeckManager.java  # 卡牌堆管理器（宝物/洪水/冒险者卡牌）
+│  │  │  │  │  │  │  ├─ WaterMeter.java       # 水位系统（含难度设置）
+│  │  │  │  │  │  │  ├─ IslandGenerator.java  # 岛屿生成器（瓷砖布局、宝物位置）
+│  │  │  │  │  │  ├─ action/            # 玩家行动模块
+│  │  │  │  │  │  │  ├─ MoveAction.java       # 移动行动
+│  │  │  │  │  │  │  ├─ ShoreUpAction.java    # 加固行动
+│  │  │  │  │  │  │  ├─ GiveCardAction.java   # 赠卡行动
+│  │  │  │  │  │  │  ├─ CaptureTreasureAction.java # 宝物获取行动
+│  │  │  │  │  ├─ ui/                # GUI模块（JavaFX/Swing）
+│  │  │  │  │  │  ├─ view/            # 视图层
+│  │  │  │  │  │  │  ├─ MapView.java        # 岛屿地图视图
+│  │  │  │  │  │  │  ├─ PlayerInfoView.java # 玩家信息面板
+│  │  │  │  │  │  │  ├─ CardView.java       # 卡牌展示区
+│  │  │  │  │  │  │  ├─ GameMenu.java       # 游戏菜单（新建/重启/设置）
+│  │  │  │  │  │  ├─ controller/        # 控制层
+│  │  │  │  │  │  │  ├─ GameControllerFX.java # JavaFX主控制器
+│  │  │  │  │  │  │  ├─ ActionController.java # 行动交互控制器
+│  │  │  │  │  │  ├─ util/              # 工具类
+│  │  │  │  │  │  │  ├─ AssetLoader.java    # 资源加载（图片/音效）
+│  │  │  │  │  │  │  ├─ PositionUtils.java  # 坐标计算工具（瓷砖位置处理）
+│  │  │  │  │  ├─ exceptions/          # 自定义异常（如瓷砖沉没错误）
+│  │  │  │  │  ├─ enums/               # 枚举类（角色类型、卡牌类型、瓷砖状态等）
+│  │  │  │  │  ├─ constants/           # 常量定义（如地图尺寸、卡牌数量）
+│  │  │  │  ├─ test/                  # 测试代码
+│  │  │  │  │  ├─ core/              # 核心逻辑单元测试
+│  │  │  │  │  ├─ ui/                # GUI功能测试
+│  │  ├─ resources/              # 资源文件
+│  │  │  ├─ images/            # 图片资源（瓷砖图标、角色图标、宝物模型）
+│  │  │  ├─ sounds/            # 音效文件（洪水声、胜利音效）
+│  │  │  ├─ config/            # 配置文件（难度设置、初始参数）
+│  ├─ test/                     # 测试资源（如测试用例数据）
+├─ doc/                        # 文档目录
+│  ├─ design/                # 设计文档
+│  │  ├─ UML/             # UML图（用例图、类图、序列图）
+│  ├─ rules/                 # 规则书副本及分工说明
+├─ build.gradle                # 构建文件（Gradle/Maven配置）
+├─ README.md                   # 项目说明文档（含运行指南、分工映射）
+├─ LICENSE                     # 开源协议（如MIT）
