@@ -1,8 +1,8 @@
 package com.forbiddenisland.core.system;
 
-import com.forbiddenisland.core.model.Adventurer;
-import com.forbiddenisland.core.model.IslandTile;
+import com.forbiddenisland.core.model.*;
 import com.forbiddenisland.enums.DifficultyLevel;
+import com.forbiddenisland.enums.SpecialCardType;
 
 import java.util.List;
 
@@ -40,7 +40,36 @@ public class GameController {
     }
 
     public void drawTreasureCards() {
-        // 抽取宝物卡牌
+        // Draw 2 treasure cards for the current player
+        if (cardDeckManager == null || turnManager == null) {
+            throw new IllegalStateException("CardDeckManager and TurnManager must be initialized");
+        }
+        Adventurer currentPlayer = turnManager.getCurrentPlayer();
+        for (int i = 0; i < 2; i++) {
+            TreasureCard drawnCard = cardDeckManager.drawTreasureCard();
+            if (drawnCard == null) {
+                // No more cards to draw
+                continue;
+            }
+            if (drawnCard instanceof TreasureCard) {
+                // Add treasure card to player's hand
+                currentPlayer.addTreasureCard(drawnCard);
+            } else if (drawnCard instanceof SpecialActionCard) {
+                SpecialActionCard specialCard = (SpecialActionCard) drawnCard;
+                // If the card is WATERS_RISE, handle its effect immediately
+                if (specialCard.getCardType() == SpecialCardType.WATERS_RISE) {
+                    // Raise water level and reshuffle flood discard pile into flood deck
+                    if (waterMeter != null) {
+                        waterMeter.raiseWaterLevel();
+                    }
+                    cardDeckManager.discardTreasureCard(specialCard);
+                    // TODO: Implement flood discard pile reshuffle
+                } else {
+                    // Add special action card to player's hand
+                    currentPlayer.addSpecialCard(specialCard);
+                }
+            }
+        }
     }
 
     public void drawFloodCards() {

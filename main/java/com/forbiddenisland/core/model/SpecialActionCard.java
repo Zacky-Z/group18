@@ -2,11 +2,11 @@ package com.forbiddenisland.core.model;
 
 import com.forbiddenisland.enums.SpecialCardType;
 
-public class SpecialActionCard extends Card {
+public class SpecialActionCard extends TreasureCard {
     private final SpecialCardType cardType;
 
     public SpecialActionCard(SpecialCardType cardType) {
-        super(cardType.getDisplayName());
+        super(null); // SpecialActionCard does not have a TreasureType
         this.cardType = cardType;
     }
 
