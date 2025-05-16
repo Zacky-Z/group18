@@ -24,8 +24,19 @@ public class GiveCardAction {
     }
 
     private boolean isValidCardTransfer(Adventurer giver, Adventurer receiver, TreasureCard card) {
-        // 基础赠卡逻辑（玩家在同一瓷砖上且卡牌类型匹配）
-        // 特殊角色（如信差）的赠卡逻辑将在子类或策略中实现
-        return false;
+        // Both players must be on the same tile and the giver must have the card
+        if (giver == null || receiver == null || card == null) {
+            return false;
+        }
+        if (giver.getCurrentTile() == null || receiver.getCurrentTile() == null) {
+            return false;
+        }
+        if (!giver.getCurrentTile().equals(receiver.getCurrentTile())) {
+            return false;
+        }
+        if (!giver.getTreasureCards().contains(card)) {
+            return false;
+        }
+        return true;
     }
 }    
