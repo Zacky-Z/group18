@@ -92,4 +92,38 @@ public class GameControllerFX {
     public void handleEndTurn() {
         // 处理结束回合
     }
+
+    /**
+     * Use a special action card (Helicopter Lift or Sandbags).
+     * @param player The player using the card
+     * @param card The special action card to use
+     * @param targetTiles The target tiles (for Helicopter Lift: destination, for Sandbags: tile to shore up)
+     * @param affectedPlayers The players to move (for Helicopter Lift), can be null for Sandbags
+     */
+    public void handleUseSpecialActionCard(Adventurer player, SpecialActionCard card, List<IslandTile> targetTiles, List<Adventurer> affectedPlayers) {
+        if (card == null || player == null) return;
+        switch (card.getCardType()) {
+            case HELICOPTER_LIFT:
+                // Move affected players to the destination tile
+                if (targetTiles == null || targetTiles.isEmpty() || affectedPlayers == null || affectedPlayers.isEmpty()) return;
+                IslandTile destination = targetTiles.get(0);
+                for (Adventurer adv : affectedPlayers) {
+                    adv.setCurrentTile(destination);
+                }
+                player.removeSpecialCard(card);
+                // Optionally update UI or notify success
+                break;
+            case SANDBAGS:
+                // Shore up the specified tile
+                if (targetTiles == null || targetTiles.isEmpty()) return;
+                IslandTile tileToShoreUp = targetTiles.get(0);
+                tileToShoreUp.shoreUp();
+                player.removeSpecialCard(card);
+                // Optionally update UI or notify success
+                break;
+            default:
+                // Other special cards (e.g., Waters Rise) are not used directly by players
+                break;
+        }
+    }
 }    
