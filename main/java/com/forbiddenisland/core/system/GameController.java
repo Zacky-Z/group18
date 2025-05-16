@@ -27,7 +27,9 @@ public class GameController {
     }
 
     private void initializeGame() {
-        // 初始化岛屿、卡牌、水位等
+        // Initialize card decks
+        this.cardDeckManager = new CardDeckManager();
+        // TODO: Initialize other game components (island, water meter, etc.)
     }
 
     // 游戏控制方法

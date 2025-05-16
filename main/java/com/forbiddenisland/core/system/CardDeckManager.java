@@ -61,7 +61,16 @@ public class CardDeckManager {
         if (treasureDeck.isEmpty()) {
             reshuffleTreasureDiscardPile();
         }
-        return treasureDeck.isEmpty() ? null : treasureDeck.remove(0);
+        if (treasureDeck.isEmpty()) {
+            return null;
+        }
+        Card card = treasureDeck.remove(0);
+        if (card instanceof TreasureCard) {
+            return (TreasureCard) card;
+        } else {
+            // Should not happen, but return null if not a TreasureCard
+            return null;
+        }
     }
 
     public void discardTreasureCard(TreasureCard card) {
