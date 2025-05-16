@@ -73,7 +73,27 @@ public class GameController {
     }
 
     public void drawFloodCards() {
-        // 抽取洪水卡牌
+        // Draw flood cards according to the current flood rate
+        if (cardDeckManager == null || waterMeter == null || islandTiles == null) {
+            throw new IllegalStateException("CardDeckManager, WaterMeter, and islandTiles must be initialized");
+        }
+        int floodCount = waterMeter.getFloodRate();
+        for (int i = 0; i < floodCount; i++) {
+            FloodCard floodCard = cardDeckManager.drawFloodCard();
+            if (floodCard == null) {
+                // No more flood cards to draw
+                continue;
+            }
+            // Find the corresponding IslandTile by tile name
+            for (IslandTile tile : islandTiles) {
+                if (tile.getName() == floodCard.getTileName()) {
+                    tile.flood();
+                    break;
+                }
+            }
+            // Discard the flood card
+            cardDeckManager.discardFloodCard(floodCard);
+        }
     }
 
     // Getters
