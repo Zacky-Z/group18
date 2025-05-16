@@ -1,7 +1,7 @@
 package com.forbiddenisland.ui.controller;
 
-import com.forbiddenisland.core.model.Adventurer;
-import com.forbiddenisland.core.model.IslandTile;
+import com.forbiddenisland.core.action.GiveCardAction;
+import com.forbiddenisland.core.model.*;
 import com.forbiddenisland.core.system.GameController;
 import com.forbiddenisland.ui.util.AssetLoader;
 import com.forbiddenisland.ui.view.*;
@@ -9,6 +9,8 @@ import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
+
+import java.util.List;
 
 public class GameControllerFX {
     private final GameController gameController;
@@ -63,8 +65,24 @@ public class GameControllerFX {
         // 处理加固动作
     }
 
-    public void handleGiveCardAction(Adventurer receiver, com.forbiddenisland.core.model.Card card) {
-        // 处理赠卡动作
+    public void handleGiveCardAction(Adventurer receiver, Card card) {
+        // Only TreasureCard can be given
+        if (!(card instanceof TreasureCard)) {
+            // Optionally show an error message in the UI
+            return;
+        }
+        TreasureCard treasureCard = (TreasureCard) card;
+        // Get the current player (giver)
+        Adventurer giver = gameController.getPlayers().stream()
+                .filter(a -> a.getTreasureCards().contains(treasureCard))
+                .findFirst().orElse(null);
+        if (giver == null) {
+            // Optionally show an error message in the UI
+            return;
+        }
+        // Use GiveCardAction to perform the transfer
+        GiveCardAction giveCardAction = new GiveCardAction(gameController);
+        boolean success = giveCardAction.execute(giver, receiver, treasureCard);
     }
 
     public void handleCaptureTreasureAction() {
