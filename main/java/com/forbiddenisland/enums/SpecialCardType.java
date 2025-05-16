@@ -1,9 +1,9 @@
 package com.forbiddenisland.enums;
 
 public enum SpecialCardType {
-    HELICOPTER_LIFT("Helicopter", "允许从任意位置飞到任意位置"),
-    SANDBAGS("沙袋", "加固任意位置的瓷砖"),
-    WATERS_RISE("水位上升", "增加水位并重新洗牌洪水牌堆");
+    HELICOPTER_LIFT("Helicopter Lift", "Move any number of pawns to any tile."),
+    SANDBAGS("Sandbags", "Shore up any one tile."),
+    WATERS_RISE("Waters Rise", "Increase water level and reshuffle flood discard pile into flood deck.");
 
     private final String displayName;
     private final String description;

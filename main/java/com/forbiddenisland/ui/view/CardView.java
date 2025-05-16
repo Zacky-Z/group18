@@ -23,23 +23,23 @@ public class CardView extends HBox {
         
         playerCardsBox = new VBox(10);
         playerCardsBox.setPrefWidth(600);
-        playerCardsBox.getChildren().add(new Label("玩家手牌"));
+        playerCardsBox.getChildren().add(new Label("Player Cards"));
         
         treasureDeckBox = new VBox(10);
-        treasureDeckBox.getChildren().add(new Label("宝物牌堆"));
+        treasureDeckBox.getChildren().add(new Label("Treasure Deck"));
         
         floodDeckBox = new VBox(10);
-        floodDeckBox.getChildren().add(new Label("洪水牌堆"));
+        floodDeckBox.getChildren().add(new Label("Flood Deck"));
         
         getChildren().addAll(playerCardsBox, treasureDeckBox, floodDeckBox);
     }
 
     public void updatePlayerCards(List<Card> cards) {
         playerCardsBox.getChildren().clear();
-        playerCardsBox.getChildren().add(new Label("玩家手牌"));
+        playerCardsBox.getChildren().add(new Label("Player Cards"));
         
         for (Card card : cards) {
-            ImageView cardImageView = new ImageView(); // 实际项目中应加载卡牌图片
+            ImageView cardImageView = new ImageView(); // Should load card image in a real project
             cardImageView.setFitHeight(120);
             cardImageView.setFitWidth(80);
             cardImageView.setPreserveRatio(true);
@@ -57,18 +57,18 @@ public class CardView extends HBox {
     public void updateTreasureDeck(int deckSize, int discardSize) {
         treasureDeckBox.getChildren().clear();
         treasureDeckBox.getChildren().addAll(
-            new Label("宝物牌堆"),
-            new Label("剩余: " + deckSize),
-            new Label("弃牌堆: " + discardSize)
+            new Label("Treasure Deck"),
+            new Label("Remaining: " + deckSize),
+            new Label("Discard Pile: " + discardSize)
         );
     }
 
     public void updateFloodDeck(int deckSize, int discardSize) {
         floodDeckBox.getChildren().clear();
         floodDeckBox.getChildren().addAll(
-            new Label("洪水牌堆"),
-            new Label("剩余: " + deckSize),
-            new Label("弃牌堆: " + discardSize)
+            new Label("Flood Deck"),
+            new Label("Remaining: " + deckSize),
+            new Label("Discard Pile: " + discardSize)
         );
     }
 }    

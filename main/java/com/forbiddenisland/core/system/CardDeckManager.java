@@ -88,13 +88,13 @@ public class CardDeckManager {
         floodDiscardPile.add(card);
     }
 
-    private void reshuffleTreasureDiscardPile() {
+    public void reshuffleTreasureDiscardPile() {
         treasureDeck.addAll(treasureDiscardPile);
         treasureDiscardPile.clear();
         Collections.shuffle(treasureDeck);
     }
 
-    private void reshuffleFloodDiscardPile() {
+    public void reshuffleFloodDiscardPile() {
         floodDeck.addAll(floodDiscardPile);
         floodDiscardPile.clear();
         Collections.shuffle(floodDeck);

@@ -65,7 +65,7 @@ public class GameController {
                         waterMeter.raiseWaterLevel();
                     }
                     cardDeckManager.discardTreasureCard(specialCard);
-                    // TODO: Implement flood discard pile reshuffle
+                    cardDeckManager.reshuffleFloodDiscardPile(); // Reshuffle flood discard pile into flood deck
                 } else {
                     // Add special action card to player's hand
                     currentPlayer.addSpecialCard(specialCard);
