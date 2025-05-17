@@ -93,7 +93,52 @@ public class GameControllerFX {
     }
 
     public void handleShoreUpAction(IslandTile targetTile) {
-        // 处理加固动作
+        // should not happen but let's check it
+        if (targetTile == null) {
+            showErrorDialog("Shore Up Error", "No tile selected for shoring up");
+            return;
+        }
+        
+        Adventurer currPlayer = gameController.getCurrentPlayer();
+        
+        // check if the player is null (shouldn't happen)
+        if (currPlayer == null) {
+            System.err.println("Error: Current player is null!");
+            return; //abort operation
+        }
+        
+        // make sure the tile is actually flooded - can't shore up normal or sunk tiles
+        if (!targetTile.isFlooded()) {
+            showErrorDialog("Shore Up Error", "This tile cannot be shored up - it's not flooded!");
+            return;
+        }
+        
+        // create shore up action instance
+        com.forbiddenisland.core.action.ShoreUpAction shoreUpAction = 
+                new com.forbiddenisland.core.action.ShoreUpAction(gameController);
+        
+        // try to shore up!
+        boolean shoreUpSuccessful = shoreUpAction.execute(currPlayer, targetTile);
+        
+        if (shoreUpSuccessful) {
+            // succeeded - update ui
+            mapView.updateAllTiles();
+            
+            // subtract one of player's actions
+            gameController.useAction();
+            
+            // print something to console
+            System.out.println(currPlayer.getName() + " shored up " + targetTile.getName());
+            
+            // check if engineer has a second shore up
+            if (shoreUpAction.canShoreUpAgain(currPlayer)) {
+                // TODO: prompt user for second shore up location
+                System.out.println("Engineer can shore up a second tile!");
+            }
+        } else {
+            // Couldn't shore up for some reason
+            showErrorDialog("Shore Up Failed", "You cannot shore up this location. Make sure it's adjacent or you have special abilities.");
+        }
     }
 
     public void handleGiveCardAction(Adventurer receiver, Card card) {
