@@ -58,7 +58,38 @@ public class GameControllerFX {
 
     // 处理各种用户操作的方法
     public void handleMoveAction(IslandTile targetTile) {
-        // 处理移动动作
+        if (targetTile == null || targetTile.isSunk()) {
+            showErrorDialog("Movement Error", "Cannot move to this location!");
+            return;
+        }
+        
+        // get current player from gameController
+        Adventurer currentPlayer = gameController.getCurrentPlayer();
+        if (currentPlayer == null) {
+            // this is so weird, should nvr happen
+            return;
+        }
+        
+        // creat a new move action obj and try to move
+        com.forbiddenisland.core.action.MoveAction moveAction = 
+                new com.forbiddenisland.core.action.MoveAction(gameController);
+        
+        boolean moveSuccess = moveAction.execute(currentPlayer, targetTile);
+        
+        if (moveSuccess) {
+            // update the UI after successful move
+            mapView.updateAllTiles();  // redraw all tiles
+            playerInfoView.updatePlayerInfo(gameController.getPlayers());
+            
+            // decrease player's remaining actions
+            gameController.useAction();
+            
+            // show a success msg maybe?
+            System.out.println("Player moved to " + targetTile.getName());
+        } else {
+            // move failed, show error
+            showErrorDialog("Invalid Move", "You cannot move to that location!");
+        }
     }
 
     public void handleShoreUpAction(IslandTile targetTile) {
@@ -125,5 +156,14 @@ public class GameControllerFX {
                 // Other special cards (e.g., Waters Rise) are not used directly by players
                 break;
         }
+    }
+    
+    // helper method to show error dialogs
+    private void showErrorDialog(String title, String message) {
+        javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setHeaderText(null);  // no header
+        alert.setContentText(message);
+        alert.showAndWait();  // wait for user to click OK
     }
 }    
