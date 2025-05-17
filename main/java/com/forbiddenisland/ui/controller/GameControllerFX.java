@@ -144,25 +144,128 @@ public class GameControllerFX {
     public void handleGiveCardAction(Adventurer receiver, Card card) {
         // Only TreasureCard can be given
         if (!(card instanceof TreasureCard)) {
-            // Optionally show an error message in the UI
+            showErrorDialog("Invalid Card Type", "Only treasure cards can be given to other players.");
             return;
         }
+        
         TreasureCard treasureCard = (TreasureCard) card;
-        // Get the current player (giver)
-        Adventurer giver = gameController.getPlayers().stream()
-                .filter(a -> a.getTreasureCards().contains(treasureCard))
-                .findFirst().orElse(null);
-        if (giver == null) {
-            // Optionally show an error message in the UI
+        
+        // Get the current player as giver
+        Adventurer giver = gameController.getCurrentPlayer();
+        
+        // Double-check that giver has the card
+        if (!giver.getTreasureCards().contains(treasureCard)) {
+            // unusual case - may occur if UI is out of sync with game state
+            showErrorDialog("Card Error", "You don't have this card to give!");
             return;
         }
+        
+        // Check if receiving player is null
+        if (receiver == null) {
+            showErrorDialog("Invalid Receiver", "No player selected to receive the card.");
+            return;
+        }
+        
+        // Disallow giving card to yourself 
+        if (giver.equals(receiver)) {
+            showErrorDialog("Invalid Receiver", "You cannot give a card to yourself!");
+            return; 
+        }
+        
         // Use GiveCardAction to perform the transfer
         GiveCardAction giveCardAction = new GiveCardAction(gameController);
         boolean success = giveCardAction.execute(giver, receiver, treasureCard);
+        
+        if (success) {
+            // Update UI components
+            cardView.updatePlayerCards(gameController.getPlayers());
+            
+            // Use up an action
+            gameController.useAction();
+            
+            // Show success message
+            String cardName = treasureCard.getName();
+            String receiverName = receiver.getName();
+            
+            // This prints to console for debugging
+            System.out.println("Card transfer successful: " + cardName + " given to " + receiverName);
+            
+            showSuccessDialog("Card Given", "Successfully gave " + cardName + " to " + receiverName + ".");
+        } else {
+            // Show failure message with hint about possible reasons
+            if (giver.getCurrentTile() != receiver.getCurrentTile() && 
+                giver.getType() != com.forbiddenisland.enums.AdventurerType.MESSENGER) {
+                
+                showErrorDialog("Transfer Failed", 
+                               "Players must be on the same tile to exchange cards (unless you're the Messenger).");
+            } else {
+                // Generic error - should rarely happen
+                showErrorDialog("Transfer Failed", 
+                               "Could not give the card. Check player positions and card ownership.");
+            }
+        }
     }
 
     public void handleCaptureTreasureAction() {
-        // 处理获取宝物动作
+        // Get the current player
+        Adventurer currentPlayer = gameController.getCurrentPlayer();
+        if (currentPlayer == null) {
+            showErrorDialog("Error", "No active player found");
+            return;
+        }
+        
+        // Check if player is on a treasure tile
+        IslandTile currentTile = currentPlayer.getCurrentTile();
+        if (currentTile == null) {
+            showErrorDialog("Capture Treasure Error", "You are not on any tile!");
+            return;
+        }
+        
+        // See if the current tile has a treasure
+        if (currentTile.getTreasure() == null) {
+            showErrorDialog("Capture Treasure Error", 
+                           "This tile doesn't contain a treasure site!");
+            return;
+        }
+        
+        // Create action and try to execute
+        com.forbiddenisland.core.action.CaptureTreasureAction treasureAction = 
+                new com.forbiddenisland.core.action.CaptureTreasureAction(gameController);
+        
+        try {
+            boolean captureSuccess = treasureAction.execute(currentPlayer);
+            
+            if (captureSuccess) {
+                // Update UI
+                mapView.updateAllTiles();
+                playerInfoView.updatePlayerInfo(gameController.getPlayers());
+                cardView.updatePlayerCards(gameController.getPlayers());
+                
+                // Use an action
+                gameController.useAction();
+                
+                // Show success message with captured treasure info
+                String treasureName = currentTile.getTreasure().getDisplayName();
+                showSuccessDialog("Treasure Captured!", 
+                                 "You successfully captured the " + treasureName + "!");
+                
+                // Check if all treasures have been captured - game win condition
+                if (gameController.areAllTreasuresCaptured()) {
+                    // Maybe show special message or highlight escape route
+                    System.out.println("All treasures captured! Head to Fools' Landing to escape!");
+                }
+            } else {
+                // Show informative message about why it failed
+                showErrorDialog("Capture Failed", 
+                               "You need 4 matching treasure cards of " + 
+                               currentTile.getTreasure().getDisplayName() + 
+                               " to capture this treasure!");
+            }
+        } catch (Exception e) {
+            // Something really went wrong
+            System.err.println("Error capturing treasure: " + e.getMessage());
+            showErrorDialog("System Error", "An unexpected error occurred: " + e.getMessage());
+        }
     }
 
     public void handleEndTurn() {

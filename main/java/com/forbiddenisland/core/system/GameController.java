@@ -119,4 +119,41 @@ public class GameController {
             turnManager.useAction();
         }
     }
+    
+    /**
+     * Check if all treasures have been captured by the players
+     * @return true if all treasures have been captured
+     */
+    public boolean areAllTreasuresCaptured() {
+        // tODO: replace this with actual game state tracking
+        // this is a stub for now - in real implementation 
+        // would need to track which treasures are captured
+        
+        // step1: get all treasuretypes
+        com.forbiddenisland.enums.TreasureType[] allTreasures = com.forbiddenisland.enums.TreasureType.values();
+        
+        // step2: check if all players have captured all treasures
+        for (com.forbiddenisland.enums.TreasureType treasureType : allTreasures) {
+            boolean treasureCaptured = false;
+            
+            // check if any player has this treasure
+            for (Adventurer player : players) {
+                for (Treasure t : player.getCapturedFigurines()) {
+                    if (t.getType() == treasureType) {
+                        treasureCaptured = true;
+                        break;
+                    }
+                }
+                if (treasureCaptured) break;
+            }
+            
+            // if no one has captured this treasure, return false
+            if (!treasureCaptured) {
+                return false;
+            }
+        }
+        
+        // if we get here, all treasures are captured
+        return true;
+    }
 }    
