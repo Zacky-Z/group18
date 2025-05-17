@@ -54,6 +54,60 @@ public class CardView extends HBox {
         }
     }
 
+    public void updatePlayerCards(List<com.forbiddenisland.core.model.Adventurer> players) {
+        playerCardsBox.getChildren().clear();
+        playerCardsBox.getChildren().add(new Label("Player Cards"));
+        
+        if (players == null || players.isEmpty()) {
+            playerCardsBox.getChildren().add(new Label("No players found"));
+            return;
+        }
+        
+        for (com.forbiddenisland.core.model.Adventurer player : players) {
+            VBox playerSection = new VBox(5);
+            playerSection.getChildren().add(new Label(player.getName() + "'s Cards:"));
+            
+            HBox cardsRow = new HBox(10);
+            
+            List<com.forbiddenisland.core.model.TreasureCard> treasureCards = player.getTreasureCards();
+            if (treasureCards != null) {
+                for (com.forbiddenisland.core.model.TreasureCard card : treasureCards) {
+                    ImageView cardImage = new ImageView();
+                    cardImage.setFitHeight(100);
+                    cardImage.setFitWidth(70);
+                    
+                    VBox cardBox = new VBox(3);
+                    cardBox.getChildren().addAll(
+                        cardImage,
+                        new Label(card.getName())
+                    );
+                    
+                    cardsRow.getChildren().add(cardBox);
+                }
+            }
+            
+            List<com.forbiddenisland.core.model.SpecialActionCard> specialCards = player.getSpecialCards();
+            if (specialCards != null) {
+                for (com.forbiddenisland.core.model.SpecialActionCard card : specialCards) {
+                    ImageView cardImage = new ImageView();
+                    cardImage.setFitHeight(100);
+                    cardImage.setFitWidth(70);
+                    
+                    VBox cardBox = new VBox(3);
+                    cardBox.getChildren().addAll(
+                        cardImage,
+                        new Label(card.getName())
+                    );
+                    
+                    cardsRow.getChildren().add(cardBox);
+                }
+            }
+            
+            playerSection.getChildren().add(cardsRow);
+            playerCardsBox.getChildren().add(playerSection);
+        }
+    }
+
     public void updateTreasureDeck(int deckSize, int discardSize) {
         treasureDeckBox.getChildren().clear();
         treasureDeckBox.getChildren().addAll(

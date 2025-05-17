@@ -10,11 +10,23 @@ import java.util.List;
 public class Adventurer extends Player {
     private final AdventurerType type;
     private List<Treasure> capturedFigurines; // collection of treasures this adventurer has captured
+    private boolean currentPlayer; // indicates if this is the active player (for UI)
 
     public Adventurer(String name, AdventurerType type) {
         super(name);
         this.type = type;
         this.capturedFigurines = new ArrayList<>();
+        this.currentPlayer = false;
+    }
+
+    // Method to check if this is the current active player
+    public boolean isCurrentPlayer() {
+        return currentPlayer;
+    }
+    
+    // Method for the game to set the current player
+    public void setCurrentPlayer(boolean isCurrentPlayer) {
+        this.currentPlayer = isCurrentPlayer;
     }
 
     public AdventurerType getType() {

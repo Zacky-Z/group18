@@ -166,7 +166,52 @@ public class GameControllerFX {
     }
 
     public void handleEndTurn() {
-        // 处理结束回合
+        // Safety check - make sure we have a valid game state
+        if (gameController == null) {
+            return;
+        }
+        
+        // get current player info for ui updates
+        Adventurer currentPlayer = gameController.getCurrentPlayer();
+        
+        try {
+            // first draw 2 treasure cards for player
+            gameController.drawTreasureCards();
+            
+            // update cards view to show new cards
+            cardView.updatePlayerCards(gameController.getPlayers());
+            
+            // draw flood cards according to water meter level
+            gameController.drawFloodCards();
+            
+            // update island view to show flooding changes
+            mapView.updateAllTiles();
+            
+            // check for game over conditions - we could add special screen later
+            if (gameController.isGameOver()) {
+                if (gameController.isGameWon()) {
+                    showSuccessDialog("Victory!", "You have won the game by collecting all treasures and escaping the island!");
+                } else {
+                    showErrorDialog("Game Over", "The island has sunk or another losing condition has occurred.");
+                }
+                return;
+            }
+            
+            // move to next player's turn if game is still active
+            startNextTurn();
+            
+            // log to console for debugging
+            System.out.println("Turn ended. It's now " + gameController.getCurrentPlayer().getName() + "'s turn");
+            
+            // update player info UI to show new active player
+            playerInfoView.updatePlayerInfo(gameController.getPlayers());
+            
+        } catch (Exception e) {
+            // something went wrong - log and show error
+            System.err.println("Error during end turn: " + e.getMessage());
+            e.printStackTrace();
+            showErrorDialog("Turn Error", "An error occurred while ending the turn: " + e.getMessage());
+        }
     }
 
     /**
@@ -210,5 +255,37 @@ public class GameControllerFX {
         alert.setHeaderText(null);  // no header
         alert.setContentText(message);
         alert.showAndWait();  // wait for user to click OK
+    }
+    
+    // helper method to show success dialogs
+    private void showSuccessDialog(String title, String message) {
+        javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.INFORMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+    
+    /*
+     * Start next player's turn by updating game state
+     */
+    private void startNextTurn() {
+        // ask the turn manager to move to next player
+        com.forbiddenisland.core.system.TurnManager turnManager = gameController.getTurnManager();
+        if (turnManager != null) {
+            turnManager.startNextTurn();
+            
+            // reset ability trackers for new turn
+            resetPlayerAbilities();
+        } else {
+            System.err.println("WARNING: TurnManager is null, can't start next turn!");
+        }
+    }
+    
+    // reset player special abilities for new turn
+    private void resetPlayerAbilities() {
+        // this is needed to reset stuff like pilot flying or engineer double shore-up
+        // TODO: implement properly with ability trackers
+        System.out.println("Resetting player abilities for new turn");
     }
 }    

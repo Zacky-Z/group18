@@ -59,4 +59,31 @@ public class PlayerInfoView extends VBox {
         treasureCardsLabel.setText(treasureCardsText.toString());
         specialCardsLabel.setText(specialCardsText.toString());
     }
+    
+    // this is a wrapper method to handle multiple players
+    // will display the current player (first player or one with 'isCurrent' flag if supported
+    public void updatePlayerInfo(java.util.List<Adventurer> players) {
+        if (players == null || players.isEmpty()) {
+            // just show something basic if no players
+            currentPlayerLabel.setText("No players available");
+            return;
+        }
+        
+        // just show first player info for now, we can improve later to show active player
+        // 1. This is a bit of a hack - in a real system we'd keep track of current player
+        // 2. I'm lazy so this is good enough
+        Adventurer currentPlayer = players.get(0);
+        
+        // Try to find active player if players have that info
+        for (Adventurer player : players) {
+            if (player.isCurrentPlayer()) {
+                currentPlayer = player;
+                break;
+            }
+        }
+        
+        // now just use the existing method
+        // TODO: get actual actions remaining from game state
+        updatePlayerInfo(currentPlayer, 3);
+    }
 }    

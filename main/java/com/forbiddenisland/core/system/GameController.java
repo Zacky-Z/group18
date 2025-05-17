@@ -103,4 +103,20 @@ public class GameController {
     public List<IslandTile> getIslandTiles() { return islandTiles; }
     public boolean isGameOver() { return gameOver; }
     public boolean isGameWon() { return gameWon; }
+    
+    // Additional getters and helpers
+    public TurnManager getTurnManager() { return turnManager; }
+    
+    public Adventurer getCurrentPlayer() {
+        if (turnManager != null) {
+            return turnManager.getCurrentPlayer();
+        }
+        return null;
+    }
+    
+    public void useAction() {
+        if (turnManager != null) {
+            turnManager.useAction();
+        }
+    }
 }    
