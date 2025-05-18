@@ -59,24 +59,49 @@ public class GameControllerFX {
     // 处理各种用户操作的方法
     public void handleMoveAction(IslandTile targetTile) {
         if (targetTile == null || targetTile.isSunk()) {
-            showErrorDialog("Movement Error", "Cannot move to this location!");
+            logEvent("MOVE", "Attempted move to null or sunken tile");
+            showErrorDialog("Movement Error", "Cannot move to this location! The tile is unavailable.");
             return;
         }
         
         // get current player from gameController
         Adventurer currentPlayer = gameController.getCurrentPlayer();
         if (currentPlayer == null) {
-            // this is so weird, should nvr happen
+            logEvent("ERROR", "Current player is null during move action");
+            showErrorDialog("Player Error", "No active player found. Game state may be corrupted.");
             return;
         }
         
-        // creat a new move action obj and try to move
+        // Create move action and check if movement is possible
         com.forbiddenisland.core.action.MoveAction moveAction = 
                 new com.forbiddenisland.core.action.MoveAction(gameController);
         
+        // Special confirmation for pilot flying (non-adjacent moves)
+        IslandTile currentTile = currentPlayer.getCurrentTile();
+        if (currentPlayer.getType() == com.forbiddenisland.enums.AdventurerType.PILOT &&
+                !isAdjacentTile(currentTile, targetTile)) {
+            
+            boolean confirmFly = showConfirmDialog("Pilot Special Ability", 
+                "Do you want to use your Pilot ability to fly directly to " + 
+                targetTile.getName() + "? You can only use this ability once per turn.");
+                
+            if (!confirmFly) {
+                logEvent("MOVE", "Pilot cancelled special flight");
+                return;
+            }
+            
+            logEvent("MOVE", "Pilot using special flight ability");
+        }
+        
+        // Try to move
         boolean moveSuccess = moveAction.execute(currentPlayer, targetTile);
         
         if (moveSuccess) {
+            // Log the successful move
+            logEvent("MOVE", currentPlayer.getName() + " moved from " + 
+                    (currentTile != null ? currentTile.getName() : "unknown") + 
+                    " to " + targetTile.getName());
+                    
             // update the UI after successful move
             mapView.updateAllTiles();  // redraw all tiles
             playerInfoView.updatePlayerInfo(gameController.getPlayers());
@@ -84,12 +109,46 @@ public class GameControllerFX {
             // decrease player's remaining actions
             gameController.useAction();
             
-            // show a success msg maybe?
-            System.out.println("Player moved to " + targetTile.getName());
+            // Show feedback on remaining actions
+            int actionsLeft = gameController.getTurnManager().getActionsRemaining();
+            showSuccessDialog("Move Complete", 
+                "Successfully moved to " + targetTile.getName() + ".\n" +
+                "Actions remaining: " + actionsLeft);
         } else {
-            // move failed, show error
-            showErrorDialog("Invalid Move", "You cannot move to that location!");
+            // move failed, show detailed error
+            logEvent("MOVE", "Failed move attempt to " + targetTile.getName());
+            
+            // Give more specific error feedback
+            String errorReason = "";
+            if (!isReachable(currentTile, targetTile)) {
+                errorReason = "This location is not adjacent or reachable with your abilities.";
+            } else if (targetTile.isSunk()) {
+                errorReason = "This tile has sunk and cannot be moved to.";
+            } else {
+                errorReason = "You cannot move to that location due to game constraints.";
+            }
+            
+            showErrorDialog("Invalid Move", errorReason);
         }
+    }
+    
+    // Helper to determine if tiles are adjacent (simplified)
+    private boolean isAdjacentTile(IslandTile a, IslandTile b) {
+        if (a == null || b == null) return false;
+        
+        // Get coordinates (assuming tiles have getX() and getY() methods)
+        int dx = Math.abs(a.getX() - b.getX());
+        int dy = Math.abs(a.getY() - b.getY());
+        
+        // Adjacent means they differ by at most 1 in either x or y but not both
+        return (dx == 1 && dy == 0) || (dx == 0 && dy == 1);
+    }
+    
+    // Helper to determine if a tile is reachable by the current player
+    private boolean isReachable(IslandTile from, IslandTile to) {
+        // This is a simplified implementation
+        // In a real game, this would check adjacency, special abilities, etc.
+        return isAdjacentTile(from, to);
     }
 
     public void handleShoreUpAction(IslandTile targetTile) {
@@ -271,31 +330,60 @@ public class GameControllerFX {
     public void handleEndTurn() {
         // Safety check - make sure we have a valid game state
         if (gameController == null) {
+            logEvent("ERROR", "GameController is null when ending turn");
+            showErrorDialog("System Error", "Game controller not initialized. Please restart the game.");
             return;
         }
         
         // get current player info for ui updates
         Adventurer currentPlayer = gameController.getCurrentPlayer();
+        if (currentPlayer == null) {
+            logEvent("ERROR", "Current player is null when ending turn");
+            showErrorDialog("Player Error", "No active player found. Game state may be corrupted.");
+            return;
+        }
+        
+        // Confirm the player wants to end their turn
+        boolean confirmEnd = showConfirmDialog("End Turn", 
+            "Are you sure you want to end " + currentPlayer.getName() + "'s turn? " +
+            "You won't be able to take any more actions this turn.");
+            
+        if (!confirmEnd) {
+            logEvent("INFO", "Player cancelled ending turn");
+            return; // Player chose not to end their turn
+        }
         
         try {
+            logEvent("TURN", currentPlayer.getName() + " is ending their turn");
+            
             // first draw 2 treasure cards for player
             gameController.drawTreasureCards();
+            logEvent("CARDS", "Drew treasure cards for " + currentPlayer.getName());
             
             // update cards view to show new cards
             cardView.updatePlayerCards(gameController.getPlayers());
             
             // draw flood cards according to water meter level
+            logEvent("FLOOD", "Drawing flood cards at level " + 
+                    gameController.getWaterMeter().getCurrentLevel());
             gameController.drawFloodCards();
             
             // update island view to show flooding changes
             mapView.updateAllTiles();
             
-            // check for game over conditions - we could add special screen later
+            // check for game over conditions with detailed feedback
             if (gameController.isGameOver()) {
                 if (gameController.isGameWon()) {
-                    showSuccessDialog("Victory!", "You have won the game by collecting all treasures and escaping the island!");
+                    logEvent("GAME", "Players have won the game!");
+                    showSuccessDialog("Victory!", 
+                        "Congratulations! You have won the game by collecting all treasures " +
+                        "and escaping the island before it sank!");
                 } else {
-                    showErrorDialog("Game Over", "The island has sunk or another losing condition has occurred.");
+                    String lossReason = determineLossReason();
+                    logEvent("GAME", "Game over. Reason: " + lossReason);
+                    showErrorDialog("Game Over", 
+                        "The expedition has failed. " + lossReason +
+                        "\n\nBetter luck next time!");
                 }
                 return;
             }
@@ -303,18 +391,70 @@ public class GameControllerFX {
             // move to next player's turn if game is still active
             startNextTurn();
             
-            // log to console for debugging
-            System.out.println("Turn ended. It's now " + gameController.getCurrentPlayer().getName() + "'s turn");
+            // Get new current player after advancing turn
+            Adventurer nextPlayer = gameController.getCurrentPlayer();
+            logEvent("TURN", "Turn ended. It's now " + nextPlayer.getName() + "'s turn");
             
             // update player info UI to show new active player
             playerInfoView.updatePlayerInfo(gameController.getPlayers());
             
+            // Show helpful message for next player
+            showSuccessDialog("Next Turn", 
+                "It's now " + nextPlayer.getName() + "'s turn!\n" +
+                "You have 3 actions available.");
+            
         } catch (Exception e) {
             // something went wrong - log and show error
-            System.err.println("Error during end turn: " + e.getMessage());
+            logEvent("ERROR", "Error during end turn: " + e.getMessage());
             e.printStackTrace();
-            showErrorDialog("Turn Error", "An error occurred while ending the turn: " + e.getMessage());
+            showErrorDialog("Turn Error", 
+                "An error occurred while ending the turn: " + e.getMessage() + 
+                "\n\nPlease check the console for details.");
         }
+    }
+    
+    // Helper method to determine why the game was lost
+    private String determineLossReason() {
+        // This method would check various loss conditions
+        // For now we'll just return a generic message
+        // TODO: Implement actual checks based on game state
+        
+        // Check if Fools' Landing sank
+        if (isFoolsLandingSunk()) {
+            return "Fools' Landing has sunk! There's no way to escape the island.";
+        }
+        
+        // Check if a treasure can no longer be collected
+        if (isAnyTreasureUnobtainable()) {
+            return "Some treasure locations have sunk, making it impossible to collect all treasures.";
+        }
+        
+        // Check if a player drowned
+        if (didAnyPlayerDrown()) {
+            return "A player has drowned as their tile sank with no adjacent tiles to escape to.";
+        }
+        
+        // Default case if we can't determine the specific reason
+        return "The island has sunk too much to complete your mission.";
+    }
+    
+    // Placeholder methods for loss condition checks - would be implemented properly
+    private boolean isFoolsLandingSunk() {
+        // Check if the Fools' Landing tile is sunk
+        // This is a stub implementation
+        return false;
+    }
+    
+    private boolean isAnyTreasureUnobtainable() {
+        // Check if any treasure has both its tiles sunk
+        // This is a stub implementation
+        return false;
+    }
+    
+    private boolean didAnyPlayerDrown() {
+        // Check if any player is on a sunk tile with nowhere to go
+        // This is a stub implementation
+        return false;
     }
 
     // Use a special action card (Helicopter Lift or Sandbags)
@@ -475,6 +615,40 @@ public class GameControllerFX {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+    
+    // helper method to show confirmation dialogs
+    private boolean showConfirmDialog(String title, String message) {
+        javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
+            javafx.scene.control.Alert.AlertType.CONFIRMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        
+        // add Yes and No buttons (default are OK and Cancel)
+        javafx.scene.control.ButtonType yesButton = new javafx.scene.control.ButtonType("Yes");
+        javafx.scene.control.ButtonType noButton = new javafx.scene.control.ButtonType("No");
+        alert.getButtonTypes().setAll(yesButton, noButton);
+        
+        java.util.Optional<javafx.scene.control.ButtonType> result = alert.showAndWait();
+        
+        // return true if user clicked Yes, false otherwise
+        return result.isPresent() && result.get() == yesButton;
+    }
+    
+    // logs game events to console (could be extended to write to file)
+    private void logEvent(String eventType, String message) {
+        // get current timestamp for the log
+        String timestamp = java.time.LocalDateTime.now().format(
+            java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        
+        // construct log msg with timestamps
+        String logMsg = "[" + timestamp + "] " + eventType + ": " + message;
+        
+        // currently just output to console, but could be extended
+        System.out.println(logMsg);
+        
+        // TODO: in a real game, we might want to add file logging
     }
     
     /*

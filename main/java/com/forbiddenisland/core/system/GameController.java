@@ -120,6 +120,11 @@ public class GameController {
         }
     }
     
+    // Get the water meter to check water level
+    public WaterMeter getWaterMeter() {
+        return waterMeter;
+    }
+    
     /**
      * Check if all treasures have been captured by the players
      * @return true if all treasures have been captured
