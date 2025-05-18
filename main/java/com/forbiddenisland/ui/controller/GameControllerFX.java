@@ -333,8 +333,8 @@ public class GameControllerFX {
             logEvent("ERROR", "GameController is null when ending turn");
             showErrorDialog("System Error", "Game controller not initialized. Please restart the game.");
             return;
-        }
-        
+    }
+
         // get current player info for ui updates
         Adventurer currentPlayer = gameController.getCurrentPlayer();
         if (currentPlayer == null) {
@@ -375,9 +375,8 @@ public class GameControllerFX {
             if (gameController.isGameOver()) {
                 if (gameController.isGameWon()) {
                     logEvent("GAME", "Players have won the game!");
-                    showSuccessDialog("Victory!", 
-                        "Congratulations! You have won the game by collecting all treasures " +
-                        "and escaping the island before it sank!");
+                    // Show detailed victory stats instead of simple message
+                    displayVictoryInfo();
                 } else {
                     String lossReason = determineLossReason();
                     logEvent("GAME", "Game over. Reason: " + lossReason);
@@ -413,48 +412,182 @@ public class GameControllerFX {
         }
     }
     
-    // Helper method to determine why the game was lost
+    // helper method to determine why the game was lost
     private String determineLossReason() {
-        // This method would check various loss conditions
-        // For now we'll just return a generic message
-        // TODO: Implement actual checks based on game state
+        // Let's check specific loss conditions in order of priority
         
-        // Check if Fools' Landing sank
-        if (isFoolsLandingSunk()) {
+        // Check if water level is at maximum
+        if (gameController.getWaterMeter().isAtMaxLevel()) {
+            return "The water level has reached its maximum! The island is completely submerged.";
+        }
+        
+        // Find Fools' Landing and check if it's sunk
+        IslandTile foolsLanding = null;
+        for (IslandTile tile : gameController.getIslandTiles()) {
+            if ("Fools' Landing".equals(tile.getName())) {
+                foolsLanding = tile;
+                break;
+            }
+        }
+        
+        if (foolsLanding != null && foolsLanding.isSunk()) {
             return "Fools' Landing has sunk! There's no way to escape the island.";
         }
         
-        // Check if a treasure can no longer be collected
-        if (isAnyTreasureUnobtainable()) {
-            return "Some treasure locations have sunk, making it impossible to collect all treasures.";
+        // Check if all tiles for a specific treasure have sunk
+        java.util.Map<com.forbiddenisland.enums.TreasureType, Integer> remainingSites = 
+                countRemainingTreasureSites();
+                
+        for (com.forbiddenisland.enums.TreasureType treasureType : remainingSites.keySet()) {
+            if (remainingSites.get(treasureType) == 0) {
+                return "All sites for the " + treasureType.getDisplayName() + 
+                       " have sunk, making it impossible to collect this treasure.";
+            }
         }
         
-        // Check if a player drowned
-        if (didAnyPlayerDrown()) {
-            return "A player has drowned as their tile sank with no adjacent tiles to escape to.";
+        // Check if any player is on a sunken tile with no adjacent tiles to move to
+        for (Adventurer player : gameController.getPlayers()) {
+            IslandTile playerTile = player.getCurrentTile();
+            if (playerTile != null && playerTile.isSunk()) {
+                // Check if there's any adjacent non-sunken tile
+                boolean canEscape = false;
+                
+                // Special case for Diver who can move through sunken tiles
+                if (player.getType() == com.forbiddenisland.enums.AdventurerType.DIVER) {
+                    canEscape = true; // Diver can almost always escape
+                } else {
+                    // Check adjacent tiles
+                    for (IslandTile tile : gameController.getIslandTiles()) {
+                        if (isAdjacent(playerTile, tile) && !tile.isSunk()) {
+                            canEscape = true;
+                            break;
+                        }
+                    }
+                }
+                
+                if (!canEscape) {
+                    return player.getName() + " has drowned as their tile sank with no adjacent tiles to escape to.";
+                }
+            }
         }
         
         // Default case if we can't determine the specific reason
         return "The island has sunk too much to complete your mission.";
     }
     
-    // Placeholder methods for loss condition checks - would be implemented properly
-    private boolean isFoolsLandingSunk() {
-        // Check if the Fools' Landing tile is sunk
-        // This is a stub implementation
-        return false;
+    // helper method to check if two tiles are adjacent
+    private boolean isAdjacent(IslandTile a, IslandTile b) {
+        if (a == null || b == null) return false;
+        
+        int ax = a.getX();
+        int ay = a.getY();
+        int bx = b.getX();
+        int by = b.getY();
+        
+        // Tiles are adjacent if they differ by 1 in one coordinate and match in the other
+        return (Math.abs(ax - bx) == 1 && ay == by) || (ax == bx && Math.abs(ay - by) == 1);
     }
     
-    private boolean isAnyTreasureUnobtainable() {
-        // Check if any treasure has both its tiles sunk
-        // This is a stub implementation
-        return false;
+    // helper method to count remaining non-sunken sites for each treasure type
+    private java.util.Map<com.forbiddenisland.enums.TreasureType, Integer> countRemainingTreasureSites() {
+        java.util.Map<com.forbiddenisland.enums.TreasureType, Integer> siteCounts = 
+                new java.util.HashMap<>();
+                
+        // Initialize counts to 0
+        for (com.forbiddenisland.enums.TreasureType type : com.forbiddenisland.enums.TreasureType.values()) {
+            siteCounts.put(type, 0);
+        }
+        
+        // Count non-sunken sites for each treasure type
+        for (IslandTile tile : gameController.getIslandTiles()) {
+            if (!tile.isSunk() && tile.getTreasure() != null) {
+                com.forbiddenisland.enums.TreasureType tileType = tile.getTreasure();
+                siteCounts.put(tileType, siteCounts.get(tileType) + 1);
+            }
+        }
+        
+        return siteCounts;
+    }
+
+    // helper method to display victory information with detailed stats
+    private void displayVictoryInfo() {
+        // Calculate some game statistics for the victory screen
+        int turnsPlayed = calculateTurnsPlayed();
+        int tilesRemaining = countRemainingTiles();
+        int waterLevel = gameController.getWaterMeter().getCurrentLevel();
+        java.util.List<String> capturedTreasures = getCapturedTreasureNames();
+        
+        StringBuilder victoryMessage = new StringBuilder();
+        victoryMessage.append("Congratulations! Your team has escaped Forbidden Island!\n\n");
+        victoryMessage.append("===== Mission Statistics =====\n");
+        victoryMessage.append("Turns played: ").append(turnsPlayed).append("\n");
+        victoryMessage.append("Remaining tiles: ").append(tilesRemaining).append(" out of ").append(gameController.getIslandTiles().size()).append("\n");
+        victoryMessage.append("Final water level: ").append(waterLevel).append("\n\n");
+        
+        victoryMessage.append("Treasures captured:\n");
+        for (String treasure : capturedTreasures) {
+            victoryMessage.append("- ").append(treasure).append("\n");
+        }
+        
+        victoryMessage.append("\nThe team successfully escaped before the island sank completely!\n");
+        victoryMessage.append("Would you like to play again?");
+        
+        // Log victory info
+        logEvent("VICTORY", "Players won the game after " + turnsPlayed + " turns with water level " + waterLevel);
+        
+        // Show the message with option to play again
+        boolean playAgain = showConfirmDialog("Victory!", victoryMessage.toString());
+        
+        if (playAgain) {
+            // TODO: implement game restart logic
+            System.out.println("Starting new game...");
+        } else {
+            // Exit game or return to main menu
+            System.out.println("Returning to main menu...");
+        }
     }
     
-    private boolean didAnyPlayerDrown() {
-        // Check if any player is on a sunk tile with nowhere to go
-        // This is a stub implementation
-        return false;
+    // helper methods for victory stats
+    
+    private int calculateTurnsPlayed() {
+        // This would ideally come from the game state
+        // For now, return a placeholder value
+        return 12; // Placeholder
+    }
+    
+    private int countRemainingTiles() {
+        int count = 0;
+        for (IslandTile tile : gameController.getIslandTiles()) {
+            if (!tile.isSunk()) {
+                count++;
+            }
+        }
+        return count;
+    }
+    
+    private java.util.List<String> getCapturedTreasureNames() {
+        java.util.List<String> treasureNames = new java.util.ArrayList<>();
+        
+        for (com.forbiddenisland.enums.TreasureType type : com.forbiddenisland.enums.TreasureType.values()) {
+            // Check if this treasure has been captured
+            boolean captured = false;
+            
+            for (Adventurer player : gameController.getPlayers()) {
+                for (Treasure treasure : player.getCapturedFigurines()) {
+                    if (treasure.getType() == type) {
+                        captured = true;
+                        break;
+                    }
+                }
+                if (captured) break;
+            }
+            
+            if (captured) {
+                treasureNames.add(type.getDisplayName());
+            }
+        }
+        
+        return treasureNames;
     }
 
     // Use a special action card (Helicopter Lift or Sandbags)
@@ -482,8 +615,8 @@ public class GameControllerFX {
         }
         
         try {
-            switch (card.getCardType()) {
-                case HELICOPTER_LIFT:
+        switch (card.getCardType()) {
+            case HELICOPTER_LIFT:
                     if (!handleHelicopterLift(player, card, targetTiles, affectedPlayers)) {
                         return; // Early return if helicopter lift failed
                     }
@@ -518,7 +651,7 @@ public class GameControllerFX {
         }
     }
     
-    // Helper method to handle Helicopter Lift special card
+    // helper method to handle Helicopter Lift special card
     private boolean handleHelicopterLift(Adventurer player, SpecialActionCard card, 
                                        List<IslandTile> targetTiles, List<Adventurer> affectedPlayers) {
         // Validate parameters
@@ -533,7 +666,7 @@ public class GameControllerFX {
         }
         
         // Get the destination tile
-        IslandTile destination = targetTiles.get(0);
+                IslandTile destination = targetTiles.get(0);
         
         // Check if destination is valid (not sunk)
         if (destination.isSunk()) {
@@ -542,12 +675,12 @@ public class GameControllerFX {
         }
         
         // Move all selected players to the destination
-        for (Adventurer adv : affectedPlayers) {
-            adv.setCurrentTile(destination);
-        }
+                for (Adventurer adv : affectedPlayers) {
+                    adv.setCurrentTile(destination);
+                }
         
         // Remove the card from player's hand
-        player.removeSpecialCard(card);
+                player.removeSpecialCard(card);
         
         // Show success message with details
         StringBuilder playerNames = new StringBuilder();
@@ -574,7 +707,7 @@ public class GameControllerFX {
         }
         
         // Get the tile to shore up
-        IslandTile tileToShoreUp = targetTiles.get(0);
+                IslandTile tileToShoreUp = targetTiles.get(0);
         
         // Check if tile is flooded (not normal or already sunk)
         if (!tileToShoreUp.isFlooded()) {
@@ -587,10 +720,10 @@ public class GameControllerFX {
         }
         
         // Shore up the tile
-        tileToShoreUp.shoreUp();
+                tileToShoreUp.shoreUp();
         
         // Remove the card from player's hand
-        player.removeSpecialCard(card);
+                player.removeSpecialCard(card);
         
         // Show success message
         showSuccessDialog("Sandbags Used", 

@@ -98,37 +98,8 @@ public class GameController {
         }
     }
 
-    // Getters
-    public List<Adventurer> getPlayers() { return players; }
-    public List<IslandTile> getIslandTiles() { return islandTiles; }
-    public boolean isGameOver() { return gameOver; }
-    public boolean isGameWon() { return gameWon; }
-    
-    // Additional getters and helpers
-    public TurnManager getTurnManager() { return turnManager; }
-    
-    public Adventurer getCurrentPlayer() {
-        if (turnManager != null) {
-            return turnManager.getCurrentPlayer();
-        }
-        return null;
-    }
-    
-    public void useAction() {
-        if (turnManager != null) {
-            turnManager.useAction();
-        }
-    }
-    
-    // Get the water meter to check water level
-    public WaterMeter getWaterMeter() {
-        return waterMeter;
-    }
-    
-    /**
-     * Check if all treasures have been captured by the players
-     * @return true if all treasures have been captured
-     */
+    // Check if all treasures have been captured by the players
+    // Returns true if all treasures have been captured
     public boolean areAllTreasuresCaptured() {
         // tODO: replace this with actual game state tracking
         // this is a stub for now - in real implementation 
@@ -160,5 +131,215 @@ public class GameController {
         
         // if we get here, all treasures are captured
         return true;
+    }
+
+    // Getters
+    public List<Adventurer> getPlayers() { return players; }
+    public List<IslandTile> getIslandTiles() { return islandTiles; }
+    
+    // check if the game is over (either won or lost)
+    public boolean isGameOver() {
+        // First check for win condition
+        if (isGameWon()) {
+            gameOver = true;
+            return true;
+        }
+        
+        // Then check for loss conditions
+        if (isFoolsLandingSunk() ||
+            areAllTreasureSitesSunk() ||
+            isWaterTooHigh() ||
+            isPlayerDrowned()) {
+            
+            gameOver = true;
+            gameWon = false;
+            return true;
+        }
+        
+        return gameOver;
+    }
+    
+    // check if players have won the game
+    public boolean isGameWon() {
+        // Win condition: all treasures captured, all players at Fools' Landing, 
+        // and helicopter lift card played
+        
+        // avoid recalculating if already determined
+        if (gameOver && gameWon) {
+            return true;
+        }
+        
+        // first, all treasures must be captured
+        if (!areAllTreasuresCaptured()) {
+            return false;
+        }
+        
+        // next, all players must be at Fools' Landing
+        IslandTile foolsLanding = findFoolsLanding();
+        if (foolsLanding == null || foolsLanding.isSunk()) {
+            return false; // Fools' Landing sunk, can't win
+        }
+        
+        // check if all players are at Fools' Landing
+        for (Adventurer player : players) {
+            if (!foolsLanding.equals(player.getCurrentTile())) {
+                return false; // not all players at Fools' Landing
+            }
+        }
+        
+        // TODO: check if helicopter lift card was played
+        // For now we'll assume this is true if other conditions are met
+        
+        // all conditions met, set game state to won
+        gameWon = true;
+        gameOver = true;
+        return true;
+    }
+    
+    // Additional getters and helpers
+    public TurnManager getTurnManager() { return turnManager; }
+    
+    public Adventurer getCurrentPlayer() {
+        if (turnManager != null) {
+            return turnManager.getCurrentPlayer();
+        }
+        return null;
+    }
+    
+    public void useAction() {
+        if (turnManager != null) {
+            turnManager.useAction();
+        }
+    }
+    
+    // get the water meter to check water level
+    public WaterMeter getWaterMeter() {
+        return waterMeter;
+    }
+    
+    // helper method to find Fools' Landing tile
+    private IslandTile findFoolsLanding() {
+        if (islandTiles == null) return null;
+        
+        // Find the Fools' Landing tile by name
+        for (IslandTile tile : islandTiles) {
+            if ("Fools' Landing".equals(tile.getName())) {
+                return tile;
+            }
+        }
+        return null;
+    }
+    
+    // check if Fools' Landing has sunk (game over condition)
+    private boolean isFoolsLandingSunk() {
+        IslandTile foolsLanding = findFoolsLanding();
+        return foolsLanding == null || foolsLanding.isSunk();
+    }
+    
+    // check if all treasure sites for at least one treasure have sunk
+    private boolean areAllTreasureSitesSunk() {
+        // map to track treasure types -> list of sites that have sunk
+        java.util.Map<com.forbiddenisland.enums.TreasureType, Integer> treasureSitesRemaining = 
+                new java.util.HashMap<>();
+        
+        // initialize all treasure types with 0 sites
+        for (com.forbiddenisland.enums.TreasureType type : com.forbiddenisland.enums.TreasureType.values()) {
+            treasureSitesRemaining.put(type, 0);
+        }
+        
+        // count non-sunken sites for each treasure
+        for (IslandTile tile : islandTiles) {
+            if (!tile.isSunk() && tile.getTreasure() != null) {
+                com.forbiddenisland.enums.TreasureType tileType = tile.getTreasure();
+                treasureSitesRemaining.put(tileType, treasureSitesRemaining.get(tileType) + 1);
+            }
+        }
+        
+        // check if any treasure has 0 sites remaining
+        for (Integer siteCount : treasureSitesRemaining.values()) {
+            if (siteCount == 0) {
+                return true; // all sites for at least one treasure have sunk
+            }
+        }
+        
+        return false;
+    }
+    
+    // check if water level is at maximum (game over condition)
+    private boolean isWaterTooHigh() {
+        return waterMeter != null && waterMeter.isAtMaxLevel();
+    }
+    
+    // check if any player is on a sunken tile with no escape
+    private boolean isPlayerDrowned() {
+        if (players == null || islandTiles == null) return false;
+        
+        for (Adventurer player : players) {
+            IslandTile currentTile = player.getCurrentTile();
+            
+            // If player's tile is sunk and they can't escape, they've drowned
+            if (currentTile != null && currentTile.isSunk() && !canEscape(player, currentTile)) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    // check if a player can escape from their current (sunken) tile
+    private boolean canEscape(Adventurer player, IslandTile fromTile) {
+        // Special case for diver who can move through sunken tiles
+        if (player.getType() == com.forbiddenisland.enums.AdventurerType.DIVER) {
+            // Diver can always escape unless all tiles are sunk
+            return !areAllTilesSunk();
+        }
+        
+        // For other players, check if there are adjacent non-sunken tiles
+        java.util.List<IslandTile> adjacentTiles = getAdjacentTiles(fromTile);
+        for (IslandTile tile : adjacentTiles) {
+            if (!tile.isSunk()) {
+                return true; // found adjacent non-sunken tile
+            }
+        }
+        
+        return false;
+    }
+    
+    // check if all tiles are sunk (extreme case)
+    private boolean areAllTilesSunk() {
+        if (islandTiles == null) return false;
+        
+        for (IslandTile tile : islandTiles) {
+            if (!tile.isSunk()) {
+                return false; // found at least one non-sunken tile
+            }
+        }
+        
+        return true;
+    }
+    
+    // get adjacent tiles to a given tile
+    private java.util.List<IslandTile> getAdjacentTiles(IslandTile tile) {
+        java.util.List<IslandTile> adjacentTiles = new java.util.ArrayList<>();
+        
+        if (tile == null || islandTiles == null) {
+            return adjacentTiles;
+        }
+        
+        int x = tile.getX();
+        int y = tile.getY();
+        
+        // Check all four directions
+        for (IslandTile candidate : islandTiles) {
+            int cx = candidate.getX();
+            int cy = candidate.getY();
+            
+            // Tiles are adjacent if they differ by 1 in exactly one dimension
+            if ((Math.abs(x - cx) == 1 && y == cy) || (x == cx && Math.abs(y - cy) == 1)) {
+                adjacentTiles.add(candidate);
+            }
+        }
+        
+        return adjacentTiles;
     }
 }    
