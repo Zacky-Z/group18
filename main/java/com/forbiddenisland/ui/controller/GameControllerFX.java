@@ -317,38 +317,146 @@ public class GameControllerFX {
         }
     }
 
-    /**
-     * Use a special action card (Helicopter Lift or Sandbags).
-     * @param player The player using the card
-     * @param card The special action card to use
-     * @param targetTiles The target tiles (for Helicopter Lift: destination, for Sandbags: tile to shore up)
-     * @param affectedPlayers The players to move (for Helicopter Lift), can be null for Sandbags
-     */
+    // Use a special action card (Helicopter Lift or Sandbags)
+    // Can be used at any time, even during another player's turn!
+    // player: The player using the card
+    // card: The special action card to use
+    // targetTiles: Target tiles (for Helicopter Lift: destination, for Sandbags: tile to shore up)
+    // affectedPlayers: Players to move (for Helicopter Lift), can be null for Sandbags
     public void handleUseSpecialActionCard(Adventurer player, SpecialActionCard card, List<IslandTile> targetTiles, List<Adventurer> affectedPlayers) {
-        if (card == null || player == null) return;
-        switch (card.getCardType()) {
-            case HELICOPTER_LIFT:
-                // Move affected players to the destination tile
-                if (targetTiles == null || targetTiles.isEmpty() || affectedPlayers == null || affectedPlayers.isEmpty()) return;
-                IslandTile destination = targetTiles.get(0);
-                for (Adventurer adv : affectedPlayers) {
-                    adv.setCurrentTile(destination);
-                }
-                player.removeSpecialCard(card);
-                // Optionally update UI or notify success
-                break;
-            case SANDBAGS:
-                // Shore up the specified tile
-                if (targetTiles == null || targetTiles.isEmpty()) return;
-                IslandTile tileToShoreUp = targetTiles.get(0);
-                tileToShoreUp.shoreUp();
-                player.removeSpecialCard(card);
-                // Optionally update UI or notify success
-                break;
-            default:
-                // Other special cards (e.g., Waters Rise) are not used directly by players
-                break;
+        // Check for null parameters
+        if (card == null) {
+            showErrorDialog("Card Error", "No special action card selected!");
+            return;
         }
+        
+        if (player == null) {
+            showErrorDialog("Player Error", "No player selected to use the card!");
+            return;
+        }
+
+        // Make sure player actually has this card
+        if (!player.getSpecialCards().contains(card)) {
+            showErrorDialog("Invalid Card", "This player doesn't have this special card!");
+            return;
+        }
+        
+        try {
+            switch (card.getCardType()) {
+                case HELICOPTER_LIFT:
+                    if (!handleHelicopterLift(player, card, targetTiles, affectedPlayers)) {
+                        return; // Early return if helicopter lift failed
+                    }
+                    break;
+                    
+                case SANDBAGS:
+                    if (!handleSandbags(player, card, targetTiles)) {
+                        return; // Early return if sandbags failed
+                    }
+                    break;
+                    
+                case WATERS_RISE:
+                    // Waters Rise cards are handled automatically when drawn
+                    showErrorDialog("Card Error", "Waters Rise cards are played automatically when drawn!");
+                    return;
+                    
+                default:
+                    showErrorDialog("Unknown Card", "This special card type is not recognized!");
+                    return;
+            }
+            
+            // If we get here, card was successfully used
+            // Update UI to reflect changes
+            mapView.updateAllTiles();
+            playerInfoView.updatePlayerInfo(gameController.getPlayers());
+            cardView.updatePlayerCards(gameController.getPlayers());
+            
+        } catch (Exception e) {
+            System.err.println("Error using special card: " + e.getMessage());
+            e.printStackTrace();
+            showErrorDialog("Card Error", "An error occurred while using this card: " + e.getMessage());
+        }
+    }
+    
+    // Helper method to handle Helicopter Lift special card
+    private boolean handleHelicopterLift(Adventurer player, SpecialActionCard card, 
+                                       List<IslandTile> targetTiles, List<Adventurer> affectedPlayers) {
+        // Validate parameters
+        if (targetTiles == null || targetTiles.isEmpty()) {
+            showErrorDialog("Helicopter Error", "No destination selected for helicopter lift!");
+            return false;
+        }
+        
+        if (affectedPlayers == null || affectedPlayers.isEmpty()) {
+            showErrorDialog("Helicopter Error", "No players selected to move with helicopter!");
+            return false;
+        }
+        
+        // Get the destination tile
+        IslandTile destination = targetTiles.get(0);
+        
+        // Check if destination is valid (not sunk)
+        if (destination.isSunk()) {
+            showErrorDialog("Invalid Destination", "Cannot fly to a sunken tile!");
+            return false;
+        }
+        
+        // Move all selected players to the destination
+        for (Adventurer adv : affectedPlayers) {
+            adv.setCurrentTile(destination);
+        }
+        
+        // Remove the card from player's hand
+        player.removeSpecialCard(card);
+        
+        // Show success message with details
+        StringBuilder playerNames = new StringBuilder();
+        for (int i = 0; i < affectedPlayers.size(); i++) {
+            if (i > 0) {
+                playerNames.append(i == affectedPlayers.size() - 1 ? " and " : ", ");
+            }
+            playerNames.append(affectedPlayers.get(i).getName());
+        }
+        
+        showSuccessDialog("Helicopter Lift", 
+                         "Successfully transported " + playerNames.toString() + 
+                         " to " + destination.getName() + "!");
+        
+        return true;
+    }
+    
+    // Helper method to handle Sandbags special card
+    private boolean handleSandbags(Adventurer player, SpecialActionCard card, List<IslandTile> targetTiles) {
+        // Validate parameters
+        if (targetTiles == null || targetTiles.isEmpty()) {
+            showErrorDialog("Sandbags Error", "No tile selected to shore up!");
+            return false;
+        }
+        
+        // Get the tile to shore up
+        IslandTile tileToShoreUp = targetTiles.get(0);
+        
+        // Check if tile is flooded (not normal or already sunk)
+        if (!tileToShoreUp.isFlooded()) {
+            if (tileToShoreUp.isSunk()) {
+                showErrorDialog("Invalid Tile", "Cannot shore up a tile that has already sunk!");
+            } else {
+                showErrorDialog("Invalid Tile", "This tile is not flooded and doesn't need shoring up!");
+            }
+            return false;
+        }
+        
+        // Shore up the tile
+        tileToShoreUp.shoreUp();
+        
+        // Remove the card from player's hand
+        player.removeSpecialCard(card);
+        
+        // Show success message
+        showSuccessDialog("Sandbags Used", 
+                         "Successfully shored up " + tileToShoreUp.getName() + "!");
+        
+        return true;
     }
     
     // helper method to show error dialogs
