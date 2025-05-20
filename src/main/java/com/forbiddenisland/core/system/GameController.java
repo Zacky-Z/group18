@@ -3,8 +3,11 @@ package com.forbiddenisland.core.system;
 import com.forbiddenisland.core.model.*;
 import com.forbiddenisland.enums.DifficultyLevel;
 import com.forbiddenisland.enums.SpecialCardType;
+import com.forbiddenisland.enums.TileName;
+import com.forbiddenisland.enums.TreasureType;
 
 import java.util.List;
+import java.util.ArrayList;
 
 public class GameController {
     private List<Adventurer> players;
@@ -17,19 +20,57 @@ public class GameController {
     private boolean gameWon;
 
     public GameController() {
-        // 初始化游戏组件
+        // 初始化基本组件
+        this.players = new ArrayList<>();
+        this.islandTiles = new ArrayList<>();
+        this.cardDeckManager = new CardDeckManager();
+        this.difficulty = DifficultyLevel.NORMAL; // 默认难度
+        this.waterMeter = new WaterMeter(difficulty);
+        this.gameOver = false;
+        this.gameWon = false;
+        
+        // 初始化岛屿
+        initializeIsland();
+    }
+
+    private void initializeIsland() {
+        // 创建岛屿瓦片
+        islandTiles.add(new IslandTile(TileName.CRYSTAL_CAVE, 0, 0));
+        islandTiles.add(new IslandTile(TileName.CORAL_PALACE, 1, 0));
+        islandTiles.add(new IslandTile(TileName.TEMPLE_OF_THE_SUN, 2, 0));
+        islandTiles.add(new IslandTile(TileName.TEMPLE_OF_THE_MOON, 0, 1));
+        islandTiles.add(new IslandTile(TileName.IRON_ANVIL_ROCK, 1, 1));
+        islandTiles.add(new IslandTile(TileName.CLIFF_OF_AGES, 2, 1));
+        // ... 添加更多瓦片
     }
 
     public void startGame(List<Adventurer> players, DifficultyLevel difficulty) {
+        if (players == null || players.isEmpty()) {
+            throw new IllegalArgumentException("Players list cannot be null or empty");
+        }
         this.players = players;
         this.difficulty = difficulty;
         initializeGame();
     }
 
     private void initializeGame() {
-        // Initialize card decks
+        // 设置初始水位
+        this.waterMeter = new WaterMeter(difficulty);
+        
+        // 初始化玩家位置
+        for (Adventurer player : players) {
+            player.setCurrentTile(findFoolsLanding());
+        }
+        
+        // 初始化回合管理器
+        this.turnManager = new TurnManager(players);
+        
+        // 重新创建卡牌管理器以确保初始化
         this.cardDeckManager = new CardDeckManager();
-        // TODO: Initialize other game components (island, water meter, etc.)
+        
+        // 重置游戏状态
+        gameOver = false;
+        gameWon = false;
     }
 
     // 游戏控制方法
