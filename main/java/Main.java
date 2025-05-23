@@ -4,7 +4,7 @@ import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
-        IslandMap map = new IslandMap();
+        game.IslandMap map = new IslandMap();
         WaterMeter waterMeter = new WaterMeter();
         Scanner scanner = new Scanner(System.in);
 

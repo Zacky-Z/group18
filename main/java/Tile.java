@@ -1,5 +1,7 @@
 package game;
 
+import com.forbiddenisland.enums.TileState;
+
 public class Tile {
     private final String name;
     private TileState state;

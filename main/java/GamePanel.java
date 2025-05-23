@@ -19,7 +19,7 @@ public class GamePanel {
     public GamePanel() {
         PlayerPanel playerPanelUp = new PlayerPanel();
         PlayerPanel playerPanelDown = new PlayerPanel();
-        BoardPanel boardPanel = new BoardPanel();
+        com.esr.gui.game.BoardPanel boardPanel = new BoardPanel();
         TreasurePanel treasurePanel = new TreasurePanel();
         FloodPanel floodPanel = new FloodPanel();
         gamePanel = new JPanel();
