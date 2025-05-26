@@ -5,10 +5,12 @@ import com.forbiddenisland.model.IslandTile;
 import javafx.geometry.Insets;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.Set;
 
 /**
  * 游戏板视图 - 展示岛屿板块的布局和状态
@@ -98,7 +100,6 @@ public class GameBoardView extends GridPane {
     public void clearSelection() {
         if (selectedTileView != null) {
             selectedTileView.setStyle("");
-            selectedTileView = null;
         }
     }
     
@@ -151,5 +152,55 @@ public class GameBoardView extends GridPane {
         
         // 重新初始化
         initializeBoard();
+    }
+
+    /**
+     * Highlights a set of tiles on the board.
+     * @param tilesToHighlight The set of IslandTile objects to highlight.
+     * @param color The color to use for highlighting.
+     */
+    public void highlightTiles(Set<IslandTile> tilesToHighlight, Color color) {
+        clearSelectionHighlights(); // Clear previous highlights first
+        if (tilesToHighlight == null) return;
+
+        String borderColor = colorToHex(color);
+        String highlightStyle = "-fx-border-color: " + borderColor + "; -fx-border-width: 3; -fx-opacity: 0.8;";
+
+        for (int r = 0; r < BOARD_SIZE; r++) {
+            for (int c = 0; c < BOARD_SIZE; c++) {
+                if (tileViews[r][c] != null && tileViews[r][c].getTile() != null) {
+                    if (tilesToHighlight.contains(tileViews[r][c].getTile())) {
+                        tileViews[r][c].setStyle(highlightStyle);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Clears all visual highlights from all tiles.
+     * This is different from clearSelection() which only clears the single-tile red selection border.
+     */
+    public void clearSelectionHighlights() {
+        for (int r = 0; r < BOARD_SIZE; r++) {
+            for (int c = 0; c < BOARD_SIZE; c++) {
+                if (tileViews[r][c] != null) {
+                    tileViews[r][c].setStyle(""); // Reset any custom style
+                }
+            }
+        }
+        // Also ensure the single red selection is cleared if it was active
+        if (selectedTileView != null) {
+            selectedTileView.setStyle("");
+            selectedTileView = null; 
+        }
+    }
+
+    // Helper to convert JavaFX Color to CSS hex string
+    private String colorToHex(Color color) {
+        return String.format("#%02x%02x%02x",
+                (int) (color.getRed() * 255),
+                (int) (color.getGreen() * 255),
+                (int) (color.getBlue() * 255));
     }
 } 

@@ -44,4 +44,12 @@ public class StatusPanel extends HBox {
     public void setStatus(String status) {
         statusLabel.setText(status);
     }
+
+    /**
+     * 获取当前状态信息文本
+     * @return 当前状态文本
+     */
+    public String getStatus() {
+        return statusLabel.getText();
+    }
 } 
