@@ -201,12 +201,8 @@ public class ActionPanel extends VBox {
 
         List<String> drawResults = game.playerDrawsTreasureCards(); 
         application.showTreasureDrawResults(drawResults); // Show results in StatusPanel
-        application.updateGameState(); // Update UI to show newly drawn cards in hand counts etc.
-
-        // Check hand limit after drawing cards. This method in ForbiddenIslandGame will handle UI for discarding if needed.
-        // If hand is over limit, this call will block until discards are made, then proceed.
+        
         application.checkAndHandleHandLimit(currentPlayer, () -> {
-            // This callback is executed after hand limit is resolved.
             application.playerProceedsToDrawFloodCardsPhase(); 
         });
     }
@@ -254,58 +250,77 @@ public class ActionPanel extends VBox {
     }
 
     public void update() {
-        if (game == null) return;
+        if (game == null) {
+            disableAllButtons();
+            actionCountLabel.setText("剩余行动点: -");
+            waterLevelLabel.setText("水位: -");
+            treasureStatusLabel.setText("宝藏: -");
+            return;
+        }
 
         Player currentPlayer = game.getCurrentPlayer();
         updateActionCountDisplay();
 
         // Update water level display
-        waterLevelLabel.setText("当前水位: " + game.getWaterMeter().getCurrentWaterLevel() +
-                                " (抽 " + game.getWaterMeter().getNumberOfFloodCardsToDraw() + " 张洪水牌)");
+        if (game.getWaterMeter() != null) {
+            waterLevelLabel.setText("当前水位: " + game.getWaterMeter().getCurrentWaterLevel() +
+                                    " (抽 " + game.getWaterMeter().getNumberOfFloodCardsToDraw() + " 张洪水牌)");
+        } else {
+            waterLevelLabel.setText("水位: -");
+        }
 
         // Update treasure status display
-        StringBuilder treasureText = new StringBuilder();
-        game.getTreasures().forEach(treasure -> {
-            treasureText.append(treasure.getType().getDisplayName());
-            if (treasure.isCollected()) {
-                treasureText.append(" (已获取)");
-            } else {
-                treasureText.append(" (未获取)");
-            }
-            treasureText.append("\n");
-        });
-        treasureStatusLabel.setText(treasureText.toString());
+        if (game.getTreasures() != null) {
+            StringBuilder treasureText = new StringBuilder();
+            game.getTreasures().forEach(treasure -> {
+                treasureText.append(treasure.getType().getDisplayName());
+                if (treasure.isCollected()) {
+                    treasureText.append(" (已获取)");
+                } else {
+                    treasureText.append(" (未获取)");
+                }
+                treasureText.append("\n");
+            });
+            treasureStatusLabel.setText(treasureText.toString().trim());
+        } else {
+            treasureStatusLabel.setText("宝藏: -");
+        }
 
         if (currentPlayer != null) {
-            // Control button states based on game phase and actions remaining
-            boolean inActionPhase = game.getCurrentPhase() == Game.GamePhase.ACTION_PHASE;
+            Game.GamePhase currentPhase = game.getCurrentPhase();
             boolean hasActions = game.getActionsRemainingInTurn() > 0;
 
-            moveButton.setDisable(!inActionPhase || !hasActions);
-            shoreUpButton.setDisable(true); // Keep disabled until implemented
-            giveCardButton.setDisable(true); // Keep disabled until implemented
-            captureTreasureButton.setDisable(true); // Keep disabled until implemented
-            specialActionButton.setDisable(true); // Keep disabled until implemented
-            
-            endActionsAndDrawTreasureButton.setDisable(!inActionPhase);
-            // drawFloodCardsButton is controlled by ForbiddenIslandGame.playerProceedsToDrawFloodCardsPhase
+            // Determine button states based on phase
+            if (currentPhase == Game.GamePhase.ACTION_PHASE) {
+                moveButton.setDisable(!hasActions);
+                // TODO: Implement actual logic for these buttons beyond just action points
+                shoreUpButton.setDisable(!hasActions); // Placeholder, enable when implemented
+                giveCardButton.setDisable(!hasActions); // Placeholder
+                captureTreasureButton.setDisable(!hasActions); // Placeholder
+                specialActionButton.setDisable(!hasActions); // Placeholder
+                
+                endActionsAndDrawTreasureButton.setDisable(false); // ALWAYS enabled in action phase to proceed
+                drawFloodCardsButton.setDisable(true); // Disabled during action phase
 
-            if (game.getCurrentPhase() == Game.GamePhase.DRAW_TREASURE_CARDS_PHASE) {
-                // If in treasure draw phase, ensure action buttons are disabled
-                disableActionButtons(); 
-                endActionsAndDrawTreasureButton.setDisable(true);
-            } else if (game.getCurrentPhase() == Game.GamePhase.DRAW_FLOOD_CARDS_PHASE) {
-                // If in flood draw phase, also disable action buttons and treasure draw button
+            } else if (currentPhase == Game.GamePhase.DRAW_TREASURE_CARDS_PHASE) {
+                disableActionButtons(); // Move, Shore Up, etc.
+                endActionsAndDrawTreasureButton.setDisable(true); // Can't end action phase again
+                drawFloodCardsButton.setDisable(true); // Not yet time for flood cards
+                 // Note: enableDrawFloodCardsButton(true) is called by ForbiddenIslandGame when it's time
+
+            } else if (currentPhase == Game.GamePhase.DRAW_FLOOD_CARDS_PHASE) {
                 disableActionButtons();
                 endActionsAndDrawTreasureButton.setDisable(true);
-            } else if (inActionPhase && !hasActions) {
-                 // If in action phase but no actions left, action buttons should be disabled
-                disableActionButtons();
-                // endActionsAndDrawTreasureButton should remain enabled to end the action phase.
+                // drawFloodCardsButton is typically enabled by ForbiddenIslandGame.playerProceedsToDrawFloodCardsPhase
+                // and will be disabled by its own handler after click.
+                // Here, we ensure it's explicitly managed if already in this phase upon an update call.
+                // If actionPanel.enableDrawFloodCardsButton() was called, it might be true here.
+
+            } else { // Unknown phase or game ended
+                disableAllButtons();
             }
-
-        } else {
-            disableAllButtons(); // If no current player, disable everything
+        } else { // currentPlayer == null
+            disableAllButtons();
         }
     }
     

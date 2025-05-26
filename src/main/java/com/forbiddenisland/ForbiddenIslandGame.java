@@ -198,8 +198,6 @@ public class ForbiddenIslandGame extends Application {
             actionPanel.disableActions();
             showGameOverDialog(true, "玩家胜利了！");
         }
-
-        updateGameState(); // General UI refresh
     }
 
     /**
@@ -207,15 +205,24 @@ public class ForbiddenIslandGame extends Application {
      * This method will prepare the UI for the flood card drawing phase.
      */
     public void playerProceedsToDrawFloodCardsPhase() {
-        if (game == null || game.getCurrentPlayer() == null) return;
+        System.out.println("[DEBUG] Entering playerProceedsToDrawFloodCardsPhase.");
+        if (game == null || game.getCurrentPlayer() == null) {
+            System.err.println("[DEBUG] Game or current player is null in playerProceedsToDrawFloodCardsPhase. Aborting.");
+            return;
+        }
         Player currentPlayer = game.getCurrentPlayer();
         
-        game.setCurrentPhase(Game.GamePhase.DRAW_FLOOD_CARDS_PHASE); // Set game phase
-
+        game.setCurrentPhase(Game.GamePhase.DRAW_FLOOD_CARDS_PHASE); // Set game phase FIRST
+        
+        // Update status panel for the new phase
         statusPanel.setStatus(currentPlayer.getName() + " 请抽取 " + game.getWaterMeter().getNumberOfFloodCardsToDraw() + " 张洪水牌。");
-        actionPanel.enableDrawFloodCardsButton(true); // Enable the button in ActionPanel
-        // The actual drawing of flood cards and advancing turn will now be triggered by player clicking the drawFloodCardsButton
-        updateGameState(); // Update UI to reflect new phase (e.g. disable end action button)
+        
+        // Enable the specific button required for this phase
+        actionPanel.enableDrawFloodCardsButton(true); 
+        
+        // Call updateGameState() to refresh the entire UI based on the new phase and button states.
+        // updateGameState() will call actionPanel.update() internally.
+        updateGameState(); 
     }
 
     /**
@@ -235,8 +242,14 @@ public class ForbiddenIslandGame extends Application {
                 floodMessages.append(", 目标: ").append(report.getAffectedTileName());
                 floodMessages.append(", 结果: ").append(report.getOutcomeDescription()).append("\n");
             }
-            statusPanel.setStatus(floodMessages.toString().trim());
-            // Potentially add a delay here or make it an alert box if many messages.
+            String messageToShow = floodMessages.toString().trim();
+            statusPanel.setStatus(messageToShow);
+            System.out.println("[DEBUG] StatusPanel updated with flood results: " + messageToShow);
+        } else {
+            System.out.println("[DEBUG] No flood reports to show or StatusPanel/floodReports are null/empty.");
+            if (statusPanel != null && (floodReports == null || floodReports.isEmpty())) {
+                statusPanel.setStatus("未抽取到洪水牌，或无结果报告。");
+            }
         }
 
         updateGameState(); // Refresh UI (GameBoardView will update based on model changes)
@@ -295,10 +308,25 @@ public class ForbiddenIslandGame extends Application {
      * @param onCompletionCallback Callback to run after discard process is complete. (弃牌流程完成后运行的回调)
      */
     public void checkAndHandleHandLimit(Player player, Runnable onCompletionCallback) {
-        if (player.isHandOverLimit()) {
+        System.out.println("[DEBUG] Entering checkAndHandleHandLimit for player: " + player.getName() + " Hand size: " + player.getHand().size() + " Limit: " + Player.MAX_HAND_SIZE);
+        boolean handOverLimit = player.isHandOverLimit();
+        System.out.println("[DEBUG] player.isHandOverLimit() returned: " + handOverLimit);
+
+        if (handOverLimit) {
+            System.out.println("[DEBUG] Hand is over limit. Calling showDiscardDialog.");
+            statusPanel.setStatus(player.getName() + " 手牌超限，请弃牌...");
             showDiscardDialog(player, onCompletionCallback);
         } else {
-            onCompletionCallback.run(); // No discard needed, proceed immediately
+            System.out.println("[DEBUG] Hand is NOT over limit. Preparing to run onCompletionCallback.");
+            statusPanel.setStatus(player.getName() + " 手牌数量正常，准备进入下一阶段...");
+            try {
+                onCompletionCallback.run();
+                System.out.println("[DEBUG] onCompletionCallback.run() executed successfully.");
+            } catch (Exception e) {
+                System.err.println("[DEBUG] Exception during onCompletionCallback.run(): " + e.getMessage());
+                e.printStackTrace();
+                statusPanel.setStatus("错误：无法进入下一阶段！详情请查看控制台日志。");
+            }
         }
     }
 

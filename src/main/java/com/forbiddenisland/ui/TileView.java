@@ -138,12 +138,15 @@ public class TileView extends StackPane {
     private void updatePawns() {
         pawnsPane.getChildren().clear();
         
-        if (game == null || tile == null) return;
+        if (game == null || tile == null || tile.getName() == null) return; // Ensure current tile is valid and has a name
         
         List<Player> players = game.getPlayers();
         for (Player player : players) {
-            if (player.getPawn().getCurrentLocation() == tile) {
-                createPawnCircle(player);
+            if (player.getPawn() != null && player.getPawn().getCurrentLocation() != null) {
+                // Compare by tile name instead of object reference
+                if (tile.getName().equals(player.getPawn().getCurrentLocation().getName())) {
+                    createPawnCircle(player);
+                }
             }
         }
     }
