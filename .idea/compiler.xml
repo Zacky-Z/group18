@@ -6,11 +6,9 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="forbidden-island" />
+        <module name="try-work" />
+        <module name="forbidden-island-game" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="group18" target="1.5" />
-    </bytecodeTargetLevel>
   </component>
 </project>
