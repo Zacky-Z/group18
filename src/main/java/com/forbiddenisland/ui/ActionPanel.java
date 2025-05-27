@@ -1,550 +1,233 @@
 package com.forbiddenisland.ui;
 
-import com.forbiddenisland.model.Card;
-import com.forbiddenisland.model.Game;
-import com.forbiddenisland.model.Player;
-import com.forbiddenisland.model.IslandTile;
-import com.forbiddenisland.model.AdventurerRole; // For Pilot check
+import com.forbiddenisland.ForbiddenIslandGame;
+import com.forbiddenisland.model.*;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
-// import javafx.util.StringConverter; // Not used currently
-import com.forbiddenisland.ForbiddenIslandGame;
-// import java.util.Optional; // Not used currently
-import java.util.Set;
-import java.util.List; // For isAdjacent check
-import java.util.Optional;
-import javafx.util.Pair;
-import java.util.ArrayList;
+import com.forbiddenisland.model.GameMode;
 
-// 每回合3个动作
+/**
+ * 游戏操作面板，显示当前玩家可以执行的操作按钮
+ * 优化布局以确保在各种窗口尺寸下完整显示
+ */
 public class ActionPanel extends VBox {
+
     private Game game;
-    private ForbiddenIslandGame application;
-    private GameBoardView gameBoardView; 
-    private Label actionCountLabel;
-    private Label waterLevelLabel;
-    private Label treasureStatusLabel;
-    // private int remainingActions = 3; // Removed: Now managed by Game.java
-
+    private ForbiddenIslandGame mainApp;
+    private GameBoardView gameBoardView;
+    private Label actionPointsLabel;
     private Button moveButton;
-    private Button shoreUpButton; // Placeholder for future
-    private Button giveCardButton; // Placeholder for future
-    private Button captureTreasureButton; // Placeholder for future
-    private Button specialActionButton; // Placeholder for future
-    private Button endActionsAndDrawTreasureButton; // New button
-    private Button drawFloodCardsButton; // New button for drawing flood cards
+    private Button shoreUpButton;
+    private Button giveCardButton;
+    private Button captureTreasureButton;
+    private Button specialAbilityButton;
+    private Button endTurnButton;
+    private VBox actionButtonsBox;
+    private ScrollPane scrollPane;
 
-    public ActionPanel(Game game, ForbiddenIslandGame application) {
+    public ActionPanel(Game game, ForbiddenIslandGame mainApp) {
         this.game = game;
-        this.application = application;
+        this.mainApp = mainApp;
 
+        // 设置面板样式
         setPadding(new Insets(10));
         setSpacing(10);
         setPrefWidth(250);
+        setStyle("-fx-background-color: #f0f0f0; -fx-border-color: #999; -fx-border-width: 1px;");
 
-        setBorder(new Border(new BorderStroke(
-                Color.GRAY,
-                BorderStrokeStyle.SOLID,
-                new CornerRadii(5),
-                BorderWidths.DEFAULT
-        )));
-
-        Label titleLabel = new Label("行动 与 阶段"); // Title updated for clarity
-        titleLabel.setFont(Font.font("Arial", FontWeight.BOLD, 14));
+        // 创建标题
+        Label titleLabel = new Label("行动面板");
+        titleLabel.setFont(Font.font("Arial", FontWeight.BOLD, 16)); // 修改为使用 FontWeight.BOLD
         getChildren().add(titleLabel);
 
-        // 添加剩余动作点数显示
-        actionCountLabel = new Label();
-        actionCountLabel.setFont(Font.font("Arial", 12));
-        getChildren().add(actionCountLabel);
+// 修改显示当前行动点数的部分
+        actionPointsLabel = new Label("行动点数: " + game.getCurrentPlayer().getActionPoints());
+        actionPointsLabel.setFont(Font.font("Arial", 14));
+        getChildren().add(actionPointsLabel);
 
-        // 添加水位显示
-        waterLevelLabel = new Label();
-        waterLevelLabel.setFont(Font.font("Arial", 12));
-        getChildren().add(waterLevelLabel);
+        // 创建可滚动的按钮面板
+        actionButtonsBox = new VBox(8);
+        actionButtonsBox.setPadding(new Insets(5));
 
-        // 添加宝藏状态显示
-        Label treasureLabel = new Label("宝藏状态:");
-        treasureLabel.setFont(Font.font("Arial", FontWeight.BOLD, 12));
-        getChildren().add(treasureLabel);
+        scrollPane = new ScrollPane(actionButtonsBox);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setPrefHeight(200); // 设置初始高度，但允许滚动
+        scrollPane.setStyle("-fx-background-color: transparent;");
 
-        // 宝藏列表显示
-        treasureStatusLabel = new Label();
-        treasureStatusLabel.setWrapText(true);
-        treasureStatusLabel.setFont(Font.font("Arial", 12));
-        getChildren().add(treasureStatusLabel);
+        getChildren().add(scrollPane);
 
-        initializeButtons();
-        update(); // Initial UI state based on game model
+        // 创建行动按钮
+        createActionButtons();
+
+        // 添加弃牌区域
+        createDiscardArea();
     }
 
-    private void initializeButtons() {
-        moveButton = new Button("移动 (Move)");
+    private void createActionButtons() {
+        // 移动按钮
+        moveButton = new Button("移动");
+        moveButton.setPrefWidth(200);
         moveButton.setOnAction(e -> handleMoveAction());
-        moveButton.setMaxWidth(Double.MAX_VALUE);
 
-        shoreUpButton = new Button("治水 (Shore Up)");
-        // shoreUpButton.setOnAction(e -> handleShoreUpAction());
-        shoreUpButton.setDisable(true); // TODO: Implement
-        shoreUpButton.setMaxWidth(Double.MAX_VALUE);
+        // 加固按钮
+        shoreUpButton = new Button("加固");
+        shoreUpButton.setPrefWidth(200);
+        shoreUpButton.setOnAction(e -> handleShoreUpAction());
 
-        giveCardButton = new Button("送卡 (Give Card)");
+        // 给卡按钮
+        giveCardButton = new Button("给予卡牌");
+        giveCardButton.setPrefWidth(200);
         giveCardButton.setOnAction(e -> handleGiveCardAction());
-        giveCardButton.setDisable(true);
-        giveCardButton.setMaxWidth(Double.MAX_VALUE);
 
-        captureTreasureButton = new Button("取宝 (Capture Treasure)");
-        // captureTreasureButton.setOnAction(e -> handleCaptureTreasureAction());
-        captureTreasureButton.setDisable(true); // TODO: Implement
-        captureTreasureButton.setMaxWidth(Double.MAX_VALUE);
+        // 收集宝藏按钮
+        captureTreasureButton = new Button("收集宝藏");
+        captureTreasureButton.setPrefWidth(200);
+        captureTreasureButton.setOnAction(e -> handleCaptureTreasureAction());
 
-        specialActionButton = new Button("特殊能力 (Special Ability)");
-        // specialActionButton.setOnAction(e -> handleSpecialAction());
-        specialActionButton.setDisable(true); // TODO: Implement
-        specialActionButton.setMaxWidth(Double.MAX_VALUE);
-        
-        endActionsAndDrawTreasureButton = new Button("结束行动 / 抽宝藏牌");
-        endActionsAndDrawTreasureButton.setOnAction(e -> handleEndActionsAndDrawTreasure());
-        endActionsAndDrawTreasureButton.setMaxWidth(Double.MAX_VALUE);
-        endActionsAndDrawTreasureButton.setStyle("-fx-font-weight: bold;"); // Make it stand out
-        
-        drawFloodCardsButton = new Button("抽取洪水牌");
-        drawFloodCardsButton.setOnAction(e -> handleDrawFloodCards());
-        drawFloodCardsButton.setMaxWidth(Double.MAX_VALUE);
-        drawFloodCardsButton.setStyle("-fx-font-weight: bold;");
-        drawFloodCardsButton.setDisable(true); // Initially disabled
-        
-        VBox buttonContainer = new VBox(8); 
-        buttonContainer.getChildren().addAll(
-            moveButton, 
-            shoreUpButton, 
-            giveCardButton, 
-            captureTreasureButton, 
-            specialActionButton,
-            new Separator(), // Visually separate action buttons from phase progression buttons
-            endActionsAndDrawTreasureButton,
-            drawFloodCardsButton // Add new button here
+        // 特殊能力按钮
+        specialAbilityButton = new Button("特殊能力");
+        specialAbilityButton.setPrefWidth(200);
+        specialAbilityButton.setOnAction(e -> handleSpecialAbilityAction());
+
+        // 结束回合按钮
+        endTurnButton = new Button("结束回合");
+        endTurnButton.setPrefWidth(200);
+        endTurnButton.setOnAction(e -> handleEndTurnAction());
+
+        // 添加所有按钮到面板
+        actionButtonsBox.getChildren().addAll(
+                moveButton, shoreUpButton, giveCardButton,
+                captureTreasureButton, specialAbilityButton, endTurnButton
         );
-        
-        // Add view hand button separately if desired, or integrate into action list
-        Button viewHandButton = new Button("查看手牌 (View Hand)");
-        viewHandButton.setOnAction(e -> showPlayerHand());
-        viewHandButton.setMaxWidth(Double.MAX_VALUE);
-
-        getChildren().addAll(buttonContainer, viewHandButton);
     }
-    
+
+    private void createDiscardArea() {
+        Label discardLabel = new Label("手牌");
+        discardLabel.setFont(Font.font("Arial", FontWeight.BOLD, 14)); // 修改为使用 FontWeight.BOLD
+        getChildren().add(discardLabel);
+
+        // 这里简化处理，实际应显示玩家手牌
+        TextArea handCardsArea = new TextArea();
+        handCardsArea.setEditable(false);
+        handCardsArea.setPrefRowCount(6);
+        handCardsArea.setPrefColumnCount(15);
+        handCardsArea.setWrapText(true);
+        handCardsArea.setStyle("-fx-font-size: 12px;");
+        getChildren().add(handCardsArea);
+
+        // 添加弃牌按钮
+        Button discardButton = new Button("弃牌");
+        discardButton.setPrefWidth(200);
+        discardButton.setOnAction(e -> handleDiscardAction());
+        getChildren().add(discardButton);
+    }
+
+    // 处理各种行动的方法
     private void handleMoveAction() {
-        if (!canPerformAction()) return;
-
         Player currentPlayer = game.getCurrentPlayer();
-        Set<IslandTile> validMoves = currentPlayer.getValidMoves(game);
-
-        if (validMoves.isEmpty()) {
-            application.getStatusPanel().setStatus(currentPlayer.getName() + " 没有有效的移动目标！");
-            return;
+        if (currentPlayer.getActionPoints() > 0) {
+            gameBoardView.setGameMode(GameMode.MOVE);
+            actionPointsLabel.setText("行动点数: " + currentPlayer.getActionPoints());
+        } else {
+            showMessage("没有足够的行动点数！");
         }
+    }
 
-        application.getStatusPanel().setStatus(currentPlayer.getName() + " 选择移动目标...");
-        gameBoardView.highlightTiles(validMoves, Color.BLUE); 
-
-        gameBoardView.setTileSelectionCallback(selectedTile -> {
-            gameBoardView.clearSelectionHighlights();
-            gameBoardView.setTileSelectionCallback(null); // Consume the callback
-
-            if (validMoves.contains(selectedTile)) {
-                if (game.spendAction()) {
-                    boolean wasPilotFlight = false;
-                    if (currentPlayer.getRole() == AdventurerRole.PILOT && 
-                        !currentPlayer.isPilotAbilityUsedThisTurn()) {
-                        // Check if the move was a flight: if selectedTile is not adjacent (ortho/diag)
-                        int[] currentCoords = game.getTileCoordinates(currentPlayer.getCurrentLocation());
-                        if (currentCoords != null) {
-                            List<IslandTile> adjacentTiles = game.getValidAdjacentTiles(currentCoords[0], currentCoords[1], true);
-                            if (!adjacentTiles.contains(selectedTile)) {
-                                wasPilotFlight = true;
-                            }
-                        }
-                    }
-
-                    currentPlayer.moveTo(selectedTile);
-
-                    if (wasPilotFlight) {
-                        currentPlayer.setPilotAbilityUsedThisTurn(true);
-                        application.getStatusPanel().setStatus(currentPlayer.getName() + " 飞行到了 " + selectedTile.getName());
-                    } else {
-                        application.getStatusPanel().setStatus(currentPlayer.getName() + " 移动到了 " + selectedTile.getName());
-                    }
-                    
-                    application.updateGameState(); 
-                } else {
-                    application.getStatusPanel().setStatus("尝试移动失败：没有行动点。 "); // Should be caught by canPerformAction generally
-                }
-            } else {
-                application.getStatusPanel().setStatus("无效的移动选择。请从高亮板块中选择。 ");
-            }
-        });
+    private void handleShoreUpAction() {
+        Player currentPlayer = game.getCurrentPlayer();
+        if (currentPlayer.getActionPoints() > 0) {
+            gameBoardView.setGameMode(GameMode.SHORE_UP);
+            actionPointsLabel.setText("行动点数: " + currentPlayer.getActionPoints());
+        } else {
+            showMessage("没有足够的行动点数！");
+        }
     }
 
     private void handleGiveCardAction() {
-        if (!canPerformAction()) return;
-
         Player currentPlayer = game.getCurrentPlayer();
-        List<Card> hand = currentPlayer.getHand();
-
-        if (hand.isEmpty()) {
-            application.getStatusPanel().setStatus(currentPlayer.getName() + " has no cards to give!");
-            return;
-        }
-
-        // Get players on the same tile
-        List<Player> playersOnSameTile = new ArrayList<>();
-        IslandTile currentLocation = currentPlayer.getCurrentLocation();
-        for (Player p : game.getPlayers()) {
-            if (p != currentPlayer && p.getCurrentLocation() == currentLocation) {
-                playersOnSameTile.add(p);
-            }
-        }
-
-        if (playersOnSameTile.isEmpty()) {
-            application.getStatusPanel().setStatus("No players on the same tile to give cards to!");
-            return;
-        }
-
-        // Create and show dialog for giving cards
-        Dialog<Pair<Player, Card>> dialog = new Dialog<>();
-        dialog.setTitle("Give Card");
-        dialog.setHeaderText("Select a player and card to give");
-
-        // Set up the dialog pane
-        DialogPane dialogPane = dialog.getDialogPane();
-        dialogPane.getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
-
-        // Create layout for dialog
-        GridPane grid = new GridPane();
-        grid.setHgap(10);
-        grid.setVgap(10);
-        grid.setPadding(new Insets(20, 150, 10, 10));
-
-        // Create player selection combo box
-        ComboBox<Player> playerCombo = new ComboBox<>();
-        playerCombo.getItems().addAll(playersOnSameTile);
-        playerCombo.setPromptText("Select player");
-        // Set custom cell factory for player display
-        playerCombo.setCellFactory(param -> new ListCell<Player>() {
-            @Override
-            protected void updateItem(Player player, boolean empty) {
-                super.updateItem(player, empty);
-                if (empty || player == null) {
-                    setText(null);
-                } else {
-                    setText(player.getName());
-                }
-            }
-        });
-        // Set custom string converter for selected value display
-        playerCombo.setButtonCell(new ListCell<Player>() {
-            @Override
-            protected void updateItem(Player player, boolean empty) {
-                super.updateItem(player, empty);
-                if (empty || player == null) {
-                    setText(null);
-                } else {
-                    setText(player.getName());
-                }
-            }
-        });
-
-        // Create card selection combo box
-        ComboBox<Card> cardCombo = new ComboBox<>();
-        cardCombo.getItems().addAll(hand);
-        cardCombo.setPromptText("Select card");
-        // Set custom cell factory for card display
-        cardCombo.setCellFactory(param -> new ListCell<Card>() {
-            @Override
-            protected void updateItem(Card card, boolean empty) {
-                super.updateItem(card, empty);
-                if (empty || card == null) {
-                    setText(null);
-                } else {
-                    setText(card.getName());
-                }
-            }
-        });
-        // Set custom string converter for selected value display
-        cardCombo.setButtonCell(new ListCell<Card>() {
-            @Override
-            protected void updateItem(Card card, boolean empty) {
-                super.updateItem(card, empty);
-                if (empty || card == null) {
-                    setText(null);
-                } else {
-                    setText(card.getName());
-                }
-            }
-        });
-
-        grid.add(new Label("Player:"), 0, 0);
-        grid.add(playerCombo, 1, 0);
-        grid.add(new Label("Card:"), 0, 1);
-        grid.add(cardCombo, 1, 1);
-
-        dialogPane.setContent(grid);
-
-        // Convert the result to pair when dialog is closed
-        dialog.setResultConverter(dialogButton -> {
-            if (dialogButton == ButtonType.OK) {
-                return new Pair<>(playerCombo.getValue(), cardCombo.getValue());
-            }
-            return null;
-        });
-
-        Optional<Pair<Player, Card>> result = dialog.showAndWait();
-        
-        result.ifPresent(pair -> {
-            Player targetPlayer = pair.getKey();
-            Card selectedCard = pair.getValue();
-            
-            if (targetPlayer != null && selectedCard != null) {
-                if (game.spendAction()) {
-                    // Transfer the card
-                    currentPlayer.removeCardFromHand(selectedCard);
-                    targetPlayer.addCardToHand(selectedCard);
-                    
-                    application.getStatusPanel().setStatus(
-                        String.format("%s gave %s to %s", 
-                            currentPlayer.getName(),
-                            selectedCard.getName(),
-                            targetPlayer.getName())
-                    );
-                    
-                    application.updateGameState();
-                } else {
-                    application.getStatusPanel().setStatus("Failed to give card: No actions remaining.");
-                }
-            }
-        });
-    }
-
-    private void handleEndActionsAndDrawTreasure() {
-        if (game == null || application == null || game.getCurrentPlayer() == null) {
-            System.err.println("ActionPanel: Cannot end actions, required components missing.");
-            return;
-        }
-        Player currentPlayer = game.getCurrentPlayer();
-        application.getStatusPanel().setStatus(currentPlayer.getName() + " 结束行动，开始抽取宝藏牌...");
-
-        game.setCurrentPhase(Game.GamePhase.DRAW_TREASURE_CARDS_PHASE); 
-        disableActionButtons();
-        endActionsAndDrawTreasureButton.setDisable(true); 
-
-        List<String> drawResults = game.playerDrawsTreasureCards(); 
-        application.showTreasureDrawResults(drawResults); // Show results in StatusPanel
-        
-        application.checkAndHandleHandLimit(currentPlayer, () -> {
-            application.playerProceedsToDrawFloodCardsPhase(); 
-        });
-    }
-
-    private void handleDrawFloodCards() {
-        if (game == null || application == null || game.getCurrentPlayer() == null) {
-            System.err.println("ActionPanel: Cannot draw flood cards, required components missing.");
-            return;
-        }
-        Player currentPlayer = game.getCurrentPlayer();
-        application.getStatusPanel().setStatus(currentPlayer.getName() + " 正在抽取洪水牌...");
-        drawFloodCardsButton.setDisable(true); // Disable after click
-
-        // This will call game.playerDrawsFloodCards_REVISED(), update game state,
-        // and then advance to the next turn if game is not over.
-        application.processFloodCardDrawAndAdvance(); 
-    }
-
-    private boolean canPerformAction() {
-        if (game == null || application == null || gameBoardView == null || game.getCurrentPlayer() == null) {
-            System.err.println("ActionPanel: Cannot perform action, required components missing.");
-            return false;
-        }
-        if (game.getActionsRemainingInTurn() <= 0) {
-             application.getStatusPanel().setStatus("没有剩余行动点！");
-             return false;
-        }
-        if(endActionsAndDrawTreasureButton.isDisabled()){ // If this button is disabled, means we are past action phase
-            application.getStatusPanel().setStatus("已进入抽牌阶段，无法执行行动。");
-            return false;
-        }
-        return true;
-    }
-    
-    public void updateActionCountDisplay() {
-        if (game != null) {
-            actionCountLabel.setText("剩余行动点: " + game.getActionsRemainingInTurn());
+        if (currentPlayer.getActionPoints() > 0) {
+            gameBoardView.setGameMode(GameMode.GIVE_CARD);
+            actionPointsLabel.setText("行动点数: " + currentPlayer.getActionPoints());
         } else {
-            actionCountLabel.setText("剩余行动点: -");
+            showMessage("没有足够的行动点数！");
         }
     }
-    
+
+    private void handleCaptureTreasureAction() {
+        Player currentPlayer = game.getCurrentPlayer();
+        if (currentPlayer.getActionPoints() > 0) {
+            gameBoardView.setGameMode(GameMode.CAPTURE_TREASURE);
+            actionPointsLabel.setText("行动点数: " + currentPlayer.getActionPoints());
+        } else {
+            showMessage("没有足够的行动点数！");
+        }
+    }
+
+    private void handleSpecialAbilityAction() {
+        Player currentPlayer = game.getCurrentPlayer();
+        if (currentPlayer.getActionPoints() > 0) {
+            // 特殊能力逻辑
+            showMessage("使用特殊能力: " + currentPlayer.getRole().getDescription());
+            gameBoardView.setGameMode(GameMode.SPECIAL_ABILITY);
+            actionPointsLabel.setText("行动点数: " + currentPlayer.getActionPoints());
+        } else {
+            showMessage("没有足够的行动点数！");
+        }
+    }
+
+    private void handleEndTurnAction() {
+        game.endTurn();
+        mainApp.updateGameState();
+    }
+
+    private void handleDiscardAction() {
+        showMessage("弃牌功能将在后续版本中实现");
+    }
+
+    private void showMessage(String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("游戏信息");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
     public void setGameBoardView(GameBoardView gameBoardView) {
         this.gameBoardView = gameBoardView;
     }
 
-    public void update() {
-        if (game == null) {
-            disableAllButtons();
-            actionCountLabel.setText("剩余行动点: -");
-            waterLevelLabel.setText("水位: -");
-            treasureStatusLabel.setText("宝藏: -");
-            return;
-        }
-
-        Player currentPlayer = game.getCurrentPlayer();
-        updateActionCountDisplay();
-
-        // Update water level display
-        if (game.getWaterMeter() != null) {
-            waterLevelLabel.setText("当前水位: " + game.getWaterMeter().getCurrentWaterLevel() +
-                                    " (抽 " + game.getWaterMeter().getNumberOfFloodCardsToDraw() + " 张洪水牌)");
-        } else {
-            waterLevelLabel.setText("水位: -");
-        }
-
-        // Update treasure status display
-        if (game.getTreasures() != null) {
-            StringBuilder treasureText = new StringBuilder();
-            game.getTreasures().forEach(treasure -> {
-                treasureText.append(treasure.getType().getDisplayName());
-                if (treasure.isCollected()) {
-                    treasureText.append(" (已获取)");
-                } else {
-                    treasureText.append(" (未获取)");
-                }
-                treasureText.append("\n");
-            });
-            treasureStatusLabel.setText(treasureText.toString().trim());
-        } else {
-            treasureStatusLabel.setText("宝藏: -");
-        }
-
-        if (currentPlayer != null) {
-            Game.GamePhase currentPhase = game.getCurrentPhase();
-            boolean hasActions = game.getActionsRemainingInTurn() > 0;
-
-            // Determine button states based on phase
-            if (currentPhase == Game.GamePhase.ACTION_PHASE) {
-                moveButton.setDisable(!hasActions);
-                // TODO: Implement actual logic for these buttons beyond just action points
-                shoreUpButton.setDisable(!hasActions); // Placeholder, enable when implemented
-                giveCardButton.setDisable(!hasActions); // Placeholder
-                captureTreasureButton.setDisable(!hasActions); // Placeholder
-                specialActionButton.setDisable(!hasActions); // Placeholder
-                
-                endActionsAndDrawTreasureButton.setDisable(false); // ALWAYS enabled in action phase to proceed
-                drawFloodCardsButton.setDisable(true); // Disabled during action phase
-
-            } else if (currentPhase == Game.GamePhase.DRAW_TREASURE_CARDS_PHASE) {
-                disableActionButtons(); // Move, Shore Up, etc.
-                endActionsAndDrawTreasureButton.setDisable(true); // Can't end action phase again
-                drawFloodCardsButton.setDisable(true); // Not yet time for flood cards
-                 // Note: enableDrawFloodCardsButton(true) is called by ForbiddenIslandGame when it's time
-
-            } else if (currentPhase == Game.GamePhase.DRAW_FLOOD_CARDS_PHASE) {
-                disableActionButtons();
-                endActionsAndDrawTreasureButton.setDisable(true);
-                // drawFloodCardsButton is typically enabled by ForbiddenIslandGame.playerProceedsToDrawFloodCardsPhase
-                // and will be disabled by its own handler after click.
-                // Here, we ensure it's explicitly managed if already in this phase upon an update call.
-                // If actionPanel.enableDrawFloodCardsButton() was called, it might be true here.
-
-            } else { // Unknown phase or game ended
-                disableAllButtons();
-            }
-        } else { // currentPlayer == null
-            disableAllButtons();
-        }
+    public void setGame(Game game) {
+        this.game = game;
     }
-    
+
     /**
-     * Called when the game state indicates a new turn or action points have been reset.
-     * Ensures the UI reflects the current number of actions available from the Game model.
+     * 更新面板显示
      */
-    public void refreshActionState() { 
-        if (game != null && game.getCurrentPlayer() != null) {
-            enableActionButtons(); // Enable standard action buttons
-            endActionsAndDrawTreasureButton.setDisable(false); // Ensure this is enabled at start of action phase
-            drawFloodCardsButton.setDisable(true); // Ensure flood card button is disabled at start of a new action phase
-        }
-        update(); 
+    public void update() {
+        Player currentPlayer = game.getCurrentPlayer();
+        actionPointsLabel.setText("行动点数: " + currentPlayer.getActionPoints());
+
+        // 根据当前游戏状态启用/禁用按钮
+        boolean canAct = currentPlayer.getActionPoints() > 0;
+        moveButton.setDisable(!canAct);
+        shoreUpButton.setDisable(!canAct);
+        giveCardButton.setDisable(!canAct);
+        captureTreasureButton.setDisable(!canAct);
+        specialAbilityButton.setDisable(!canAct);
     }
 
-    private void disableActionButtons(){
+    /**
+     * 禁用所有行动按钮
+     */
+    public void disableActions() {
         moveButton.setDisable(true);
         shoreUpButton.setDisable(true);
         giveCardButton.setDisable(true);
         captureTreasureButton.setDisable(true);
-        specialActionButton.setDisable(true);
-    }
-    
-    private void enableActionButtons(){
-        // Actual enablement will depend on game state (e.g., valid moves for moveButton)
-        // This method just removes the 'forced disable' state.
-        // The update() method will then set the correct disable state based on actions remaining etc.
-        moveButton.setDisable(false);
-        shoreUpButton.setDisable(false); // Placeholder, will be true until implemented
-        giveCardButton.setDisable(false); // Placeholder
-        captureTreasureButton.setDisable(false); // Placeholder
-        specialActionButton.setDisable(false); // Placeholder
-    }
-
-    private void disableAllButtons(){
-        disableActionButtons();
-        endActionsAndDrawTreasureButton.setDisable(true);
-        drawFloodCardsButton.setDisable(true);
-    }
-
-    public void disableActions() {
-        disableAllButtons();
-        actionCountLabel.setText("剩余行动点: 0"); // Reflect disabled state
-        System.out.println("ActionPanel actions disabled.");
-    }
-
-    // Existing showPlayerHand method - slightly modified to fit better
-    private void showPlayerHand() {
-        if (game == null || game.getCurrentPlayer() == null) return;
-        Player currentPlayer = game.getCurrentPlayer();
-        List<Card> hand = currentPlayer.getHand();
-
-        Dialog<Card> dialog = new Dialog<>();
-        dialog.setTitle(currentPlayer.getName() + " 的手牌 (" + hand.size() + "/" + Player.MAX_HAND_SIZE + ")");
-        dialog.setHeaderText(null);
-
-        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CLOSE);
-
-        ListView<Card> handListView = new ListView<>();
-        handListView.getItems().addAll(hand);
-        handListView.setCellFactory(param -> new ListCell<Card>() {
-            @Override
-            protected void updateItem(Card card, boolean empty) {
-                super.updateItem(card, empty);
-                if (empty || card == null) {
-                    setText(null);
-                    setGraphic(null);
-                } else {
-                    setText(card.getName() + " ( " + card.getDescription() + " ) ");
-                }
-            }
-        });
-        handListView.setPrefHeight(200);
-
-        dialog.getDialogPane().setContent(handListView);
-        dialog.getDialogPane().setPrefWidth(400);
-        dialog.showAndWait();
-    }
-
-    public void enableDrawFloodCardsButton(boolean enable) {
-        drawFloodCardsButton.setDisable(!enable);
+        specialAbilityButton.setDisable(true);
+        endTurnButton.setDisable(true);
     }
 }
