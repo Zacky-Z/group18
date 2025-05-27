@@ -7,9 +7,10 @@ package com.forbiddenisland.model;
 public class IslandTile {
 
     private String name; // Name of the island tile (板块名称)
-    private boolean isFlooded; // Whether the tile is flooded (板块是否被淹没)
+    private boolean flooded; // Whether the tile is flooded (板块是否被淹没)
     private TreasureType associatedTreasure; // Treasure associated with this tile, if any (与此板块关联的宝藏，如果有)
     private boolean isStartingTileForPlayer; // Whether this tile is a starting position for a player (此板块是否为玩家的起始位置)
+    private boolean sunk; // Whether the tile is sunk (completely removed from the game)
 
     /**
      * Constructor for IslandTile.
@@ -18,9 +19,10 @@ public class IslandTile {
      */
     public IslandTile(String name) {
         this.name = name;
-        this.isFlooded = false; // Tiles start unflooded (板块初始未被淹没)
+        this.flooded = false; // Tiles start unflooded (板块初始未被淹没)
         this.associatedTreasure = null; // No treasure by default (默认没有宝藏)
         this.isStartingTileForPlayer = false; // Not a starting tile by default (默认不是起始板块)
+        this.sunk = false; // Tiles are not sunk by default
     }
 
     /**
@@ -33,12 +35,30 @@ public class IslandTile {
     }
 
     /**
-     * Checks if the tile is flooded.
-     * 检查板块是否被淹没。
-     * @return true if flooded, false otherwise. (如果被淹没则为 true，否则为 false)
+     * Gets the current flood state of the tile.
+     * 获取板块当前的淹没状态。
+     * @return true if the tile is flooded, false otherwise. (如果板块已淹没则为 true，否则为 false)
      */
     public boolean isFlooded() {
-        return isFlooded;
+        return flooded;
+    }
+
+    /**
+     * Checks if the tile is sunk (completely removed from the game).
+     * 检查板块是否已沉没（从游戏中完全移除）。
+     * @return true if the tile is sunk, false otherwise.
+     */
+    public boolean isSunk() {
+        return sunk;
+    }
+
+    /**
+     * Sets whether the tile is sunk.
+     * 设置板块是否已沉没。
+     * @param sunk true if the tile should be marked as sunk, false otherwise.
+     */
+    public void setSunk(boolean sunk) {
+        this.sunk = sunk;
     }
 
     /**
@@ -47,7 +67,7 @@ public class IslandTile {
      * @param flooded The new flooded state. (新的淹没状态)
      */
     public void setFlooded(boolean flooded) {
-        this.isFlooded = flooded;
+        this.flooded = flooded;
     }
 
     /**
@@ -55,15 +75,22 @@ public class IslandTile {
      * 将板块翻到其淹没的一面。
      */
     public void flood() {
-        this.isFlooded = true;
+        this.flooded = true;
     }
 
     /**
-     * Flips the tile to its unflooded side (shores it up).
-     * 将板块翻到其未淹没的一面（填补）。
+     * Shores up this tile, changing it from flooded to normal state.
+     * 治水这个板块，将其从淹没状态恢复到正常状态。
+     * @return true if the tile was successfully shored up, false if it was not flooded.
      */
-    public void shoreUp() {
-        this.isFlooded = false;
+    public boolean shoreUp() {
+        if (flooded) {
+            flooded = false;
+            System.out.println("Tile " + name + " has been shored up. (板块 " + name + " 已被治水。)");
+            return true;
+        }
+        System.out.println("Tile " + name + " was not flooded, cannot shore up. (板块 " + name + " 未被淹没，无法治水。)");
+        return false;
     }
 
     /**

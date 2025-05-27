@@ -83,6 +83,40 @@ public class Game {
     }
 
     /**
+     * Constructor for Game with pre-selected adventurer roles.
+     * @param playerNames List of names for the players.
+     * @param startingWaterLevel The initial water level for the game.
+     * @param selectedRoles List of pre-selected roles for the players.
+     */
+    public Game(List<String> playerNames, int startingWaterLevel, List<AdventurerRole> selectedRoles) {
+        this.randomGenerator = new Random();
+        this.players = new ArrayList<>();
+        for (String name : playerNames) {
+            this.players.add(new Player(name));
+        }
+        // Determine starting player by rule (e.g., most recent island visitor) - for now, first player
+        this.currentPlayerIndex = 0; 
+
+        initializeAllIslandTiles(); // Creates and shuffles the 24 tiles
+        setupIslandLayout();      // Arranges tiles onto the gameBoard
+        
+        initializeTreasures();
+        placeTreasuresOnTiles(); // Marks tiles in islandTileMap based on treasure locations
+
+        initializeFloodDeck();    // Uses allIslandTilesList to create flood cards
+        initializeTreasureDeck();
+
+        setupWaterMeter(startingWaterLevel);
+        
+        assignAdventurersAndStartingPositionsWithSelectedRoles(selectedRoles); // Use pre-selected roles
+        dealInitialTreasureCards();
+        performInitialIslandFlooding(); // Floods tiles on gameBoard via islandTileMap
+
+        this.actionsRemainingInTurn = MAX_ACTIONS_PER_TURN; // Initialize actions for the first player
+        this.currentPhase = GamePhase.ACTION_PHASE; // Start with the action phase
+    }
+
+    /**
      * Initializes all 24 island tiles with their names and shuffles them.
      * 用名称初始化所有24个岛屿板块并将它们洗混。
      */
@@ -261,12 +295,17 @@ public class Game {
             AdventurerRole.MESSENGER, "Silver Gate",      // White/Grey
             AdventurerRole.DIVER, "Iron Gate",            // Black
             AdventurerRole.EXPLORER, "Copper Gate",       // Green
-            AdventurerRole.ENGINEER, "Bronze Gate"        // Red
+            AdventurerRole.ENGINEER, "Bronze Gate",       // Red
+            AdventurerRole.ARCHAEOLOGIST, "Misty Marsh"   // Purple
         );
         Map<AdventurerRole, String> roleToPawnColor = Map.of(
-            AdventurerRole.PILOT, "Blue", AdventurerRole.NAVIGATOR, "Yellow",
-            AdventurerRole.MESSENGER, "White", AdventurerRole.DIVER, "Black",
-            AdventurerRole.EXPLORER, "Green", AdventurerRole.ENGINEER, "Red"
+            AdventurerRole.PILOT, "Blue", 
+            AdventurerRole.NAVIGATOR, "Yellow",
+            AdventurerRole.MESSENGER, "White", 
+            AdventurerRole.DIVER, "Black",
+            AdventurerRole.EXPLORER, "Green", 
+            AdventurerRole.ENGINEER, "Red",
+            AdventurerRole.ARCHAEOLOGIST, "Purple"
         );
 
         for (int i = 0; i < players.size(); i++) {
@@ -478,7 +517,7 @@ public class Game {
      */
     public void nextTurn() {
         currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
-        actionsRemainingInTurn = MAX_ACTIONS_PER_TURN; // Reset actions for the new turn
+        resetActions(); // Reset actions for the new turn
         getCurrentPlayer().resetTurnBasedAbilities(); // Reset abilities like Pilot's flight
         currentPhase = GamePhase.ACTION_PHASE; // Reset to action phase for the new player
         System.out.println("Next turn for player: " + getCurrentPlayer().getName() + " (下一回合玩家： " + getCurrentPlayer().getName() + ")");
@@ -595,6 +634,23 @@ public class Game {
     }
 
     /**
+     * Sets the number of actions remaining for the current player in their turn.
+     * 设置当前玩家在本回合剩余的行动点数。
+     * @param actions Number of actions to set. (要设置的行动点数)
+     */
+    public void setActionsRemainingInTurn(int actions) {
+        this.actionsRemainingInTurn = Math.max(0, actions); // Ensure non-negative
+    }
+
+    /**
+     * Resets the number of actions for the current player to the maximum allowed.
+     * 将当前玩家的行动点数重置为最大允许值。
+     */
+    public void resetActions() {
+        this.actionsRemainingInTurn = MAX_ACTIONS_PER_TURN;
+    }
+
+    /**
      * Attempts to spend an action point. Decrements remaining actions if available.
      * 尝试消耗一个行动点。如果可用，则减少剩余行动点数。
      * @return true if an action point was spent, false if no actions were remaining. (如果消耗了一个行动点则返回 true，如果没有剩余行动点则返回 false)
@@ -607,6 +663,18 @@ public class Game {
         }
         System.out.println("No actions remaining to spend.");
         return false;
+    }
+
+    /**
+     * Adds actions to the current player's remaining action points.
+     * 向当前玩家的剩余行动点添加行动点。
+     * @param actionsToAdd Number of actions to add. (要添加的行动点数)
+     */
+    public void addActions(int actionsToAdd) {
+        if (actionsToAdd > 0) {
+            actionsRemainingInTurn += actionsToAdd;
+            System.out.println("Added " + actionsToAdd + " action(s). New total: " + actionsRemainingInTurn);
+        }
     }
 
     /**
@@ -668,7 +736,7 @@ public class Game {
             if (checkGameOverConditions()) {
                  reports.add(new FloodActionReport("N/A", "N/A", "游戏因本次抽牌结束"));
                  break; // Stop if game ended due to this card
-            }
+        }
         }
         return reports;
     }
@@ -872,6 +940,70 @@ public class Game {
 
     public void setCurrentPhase(GamePhase currentPhase) {
         this.currentPhase = currentPhase;
+    }
+
+    /**
+     * Assigns pre-selected adventurer roles to players and places them on their starting positions.
+     * 为玩家分配预选的冒险家角色，并将他们放置在起始位置。
+     * @param selectedRoles List of pre-selected roles for the players.
+     */
+    private void assignAdventurersAndStartingPositionsWithSelectedRoles(List<AdventurerRole> selectedRoles) {
+        // Standard starting tiles for each role
+        // 每个角色的标准起始板块
+        Map<AdventurerRole, String> roleToStartingTileName = Map.of(
+            AdventurerRole.PILOT, "Fools' Landing",       // Blue
+            AdventurerRole.NAVIGATOR, "Gold Gate",        // Yellow
+            AdventurerRole.MESSENGER, "Silver Gate",      // White/Grey
+            AdventurerRole.DIVER, "Iron Gate",            // Black
+            AdventurerRole.EXPLORER, "Copper Gate",       // Green
+            AdventurerRole.ENGINEER, "Bronze Gate",       // Red
+            AdventurerRole.ARCHAEOLOGIST, "Misty Marsh"   // Purple
+        );
+        Map<AdventurerRole, String> roleToPawnColor = Map.of(
+            AdventurerRole.PILOT, "Blue", 
+            AdventurerRole.NAVIGATOR, "Yellow",
+            AdventurerRole.MESSENGER, "White", 
+            AdventurerRole.DIVER, "Black",
+            AdventurerRole.EXPLORER, "Green", 
+            AdventurerRole.ENGINEER, "Red",
+            AdventurerRole.ARCHAEOLOGIST, "Purple"
+        );
+
+        for (int i = 0; i < players.size() && i < selectedRoles.size(); i++) {
+            Player player = players.get(i);
+            AdventurerRole assignedRole = selectedRoles.get(i);
+            String startingTileName = roleToStartingTileName.get(assignedRole);
+            String pawnColor = roleToPawnColor.get(assignedRole);
+
+            IslandTile startingTile = islandTileMap.get(startingTileName);
+
+            if (startingTile == null) {
+                System.err.println("CRITICAL Error: Starting tile '" + startingTileName + "' for " + assignedRole + " not found on the board! Game setup failed. (严重错误：棋盘上未找到角色 " + assignedRole + " 的起始板块 '" + startingTileName + "'！游戏设置失败。)");
+                for(IslandTile t : allIslandTilesList) {
+                    if(t.getName().equals(startingTileName)) {
+                        startingTile = t;
+                        System.err.println("Found starting tile '" + startingTileName + "' in master list, but it was not on gameBoard. Check layout. (在主列表中找到起始板块 '" + startingTileName + "'，但它不在 gameBoard 上。请检查布局。)");
+                        break;
+                    }
+                }
+                if (startingTile == null) { 
+                     throw new IllegalStateException("Cannot assign starting tile " + startingTileName + ". (无法分配起始板块 " + startingTileName + "。)");
+                }
+            }
+            
+            player.assignRoleAndPawn(assignedRole, startingTile, pawnColor);
+            player.resetTurnBasedAbilities(); // Initialize turn-based abilities state
+            
+            if (gameBoardContains(startingTile)) { 
+                findTileOnBoard(startingTile.getName()).setStartingTileForPlayer(true);
+            }
+
+            System.out.println(player.getName() + " is the " + assignedRole.name() + 
+                               " (" + assignedRole.getDescription() + 
+                               ") starting at " + startingTile.getName() + 
+                               " with a " + pawnColor + " pawn.");
+        }
+        this.actionsRemainingInTurn = MAX_ACTIONS_PER_TURN; // Initialize for the first player
     }
 }
  

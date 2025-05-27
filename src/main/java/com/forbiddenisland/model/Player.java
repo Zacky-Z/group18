@@ -92,7 +92,7 @@ public class Player {
     public void addCardToHand(Card card) {
         // Hand limit check is now managed by the Game logic after drawing cards
         // 手牌上限检查现在由抽牌后的游戏逻辑管理
-        hand.add(card);
+            hand.add(card); 
     }
 
     /**

@@ -101,7 +101,7 @@ public class ForbiddenIslandGame extends Application {
         RadioButton legendButton = new RadioButton("传奇 (难度 4)");
         legendButton.setToggleGroup(difficultyGroup);
 
-        Button startGameButton = new Button("开始游戏");
+        Button startGameButton = new Button("下一步");
         startGameButton.setOnAction(e -> {
             int difficulty = 1;
             if (normalButton.isSelected()) {
@@ -111,7 +111,7 @@ public class ForbiddenIslandGame extends Application {
             } else if (legendButton.isSelected()) {
                 difficulty = 4;
             }
-            initializeGameAndUI(primaryStage, difficulty);
+            createRoleSelectionScreen(primaryStage, difficulty);
         });
 
         difficultyPanel.getChildren().addAll(noviceButton, normalButton, expertButton, legendButton, startGameButton);
@@ -120,6 +120,190 @@ public class ForbiddenIslandGame extends Application {
         Scene scene = new Scene(root, 400, 300);
         primaryStage.setTitle("选择难度 - 禁闭岛游戏 (Forbidden Island Game)");
         primaryStage.setScene(scene);
+    }
+
+    private void createRoleSelectionScreen(Stage primaryStage, int difficulty) {
+        BorderPane root = new BorderPane();
+        root.setPadding(new Insets(10));
+
+        Label titleLabel = new Label("角色选择");
+        titleLabel.setFont(Font.font("Arial", FontWeight.BOLD, 24));
+        root.setTop(titleLabel);
+
+        VBox selectionPanel = new VBox(10);
+        selectionPanel.setPadding(new Insets(10));
+
+        ToggleGroup selectionGroup = new ToggleGroup();
+
+        RadioButton randomButton = new RadioButton("随机分配角色 (官方规则)");
+        randomButton.setToggleGroup(selectionGroup);
+        randomButton.setSelected(true);
+
+        RadioButton chooseButton = new RadioButton("自选角色");
+        chooseButton.setToggleGroup(selectionGroup);
+
+        Button continueButton = new Button("继续");
+        continueButton.setOnAction(e -> {
+            if (randomButton.isSelected()) {
+                // 随机分配角色
+                initializeGameAndUI(primaryStage, difficulty);
+            } else {
+                // 自选角色
+                createPlayerRoleSelectionScreen(primaryStage, difficulty);
+            }
+        });
+
+        selectionPanel.getChildren().addAll(randomButton, chooseButton, continueButton);
+        root.setCenter(selectionPanel);
+
+        Scene scene = new Scene(root, 400, 300);
+        primaryStage.setTitle("角色选择 - 禁闭岛游戏 (Forbidden Island Game)");
+        primaryStage.setScene(scene);
+    }
+
+    private void createPlayerRoleSelectionScreen(Stage primaryStage, int difficulty) {
+        BorderPane root = new BorderPane();
+        root.setPadding(new Insets(10));
+
+        Label titleLabel = new Label("选择角色");
+        titleLabel.setFont(Font.font("Arial", FontWeight.BOLD, 24));
+        root.setTop(titleLabel);
+
+        VBox contentBox = new VBox(20);
+        contentBox.setPadding(new Insets(10));
+
+        // 创建玩家名称列表
+        List<String> playerNames = Arrays.asList("玩家1", "玩家2", "玩家3", "玩家4");
+        
+        // 创建角色选择下拉框
+        List<AdventurerRole> availableRoles = new ArrayList<>(Arrays.asList(AdventurerRole.values()));
+        List<javafx.scene.control.ComboBox<AdventurerRole>> roleSelectors = new ArrayList<>();
+        
+        for (int i = 0; i < playerNames.size(); i++) {
+            HBox playerBox = new HBox(10);
+            playerBox.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+            
+            Label playerLabel = new Label(playerNames.get(i) + ":");
+            playerLabel.setMinWidth(60);
+            
+            javafx.scene.control.ComboBox<AdventurerRole> roleSelector = new javafx.scene.control.ComboBox<>();
+            roleSelector.getItems().addAll(availableRoles);
+            roleSelector.setValue(availableRoles.get(i % availableRoles.size())); // 默认选择
+            roleSelector.setMinWidth(200);
+            
+            // 设置角色描述显示
+            roleSelector.setCellFactory(param -> new javafx.scene.control.ListCell<AdventurerRole>() {
+                @Override
+                protected void updateItem(AdventurerRole item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (empty || item == null) {
+                        setText(null);
+                    } else {
+                        setText(item.name() + " - " + item.getDescription().split("\\(")[0].trim());
+                    }
+                }
+            });
+            
+            roleSelector.setButtonCell(new javafx.scene.control.ListCell<AdventurerRole>() {
+                @Override
+                protected void updateItem(AdventurerRole item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (empty || item == null) {
+                        setText(null);
+                    } else {
+                        setText(item.name() + " - " + item.getDescription().split("\\(")[0].trim());
+                    }
+                }
+            });
+            
+            // 当一个角色被选择后，从其他下拉框中移除该角色（防止重复选择）
+            roleSelector.setOnAction(e -> {
+                AdventurerRole selectedRole = roleSelector.getValue();
+                if (selectedRole != null) {
+                    for (javafx.scene.control.ComboBox<AdventurerRole> otherSelector : roleSelectors) {
+                        if (otherSelector != roleSelector && otherSelector.getValue() == selectedRole) {
+                            // 如果其他选择器选择了相同的角色，找一个可用的角色替换
+                            List<AdventurerRole> availableForOther = new ArrayList<>(availableRoles);
+                            for (javafx.scene.control.ComboBox<AdventurerRole> selector : roleSelectors) {
+                                availableForOther.remove(selector.getValue());
+                            }
+                            if (!availableForOther.isEmpty()) {
+                                otherSelector.setValue(availableForOther.get(0));
+                            }
+                        }
+                    }
+                }
+            });
+            
+            roleSelectors.add(roleSelector);
+            playerBox.getChildren().addAll(playerLabel, roleSelector);
+            contentBox.getChildren().add(playerBox);
+        }
+        
+        Button startGameButton = new Button("开始游戏");
+        startGameButton.setOnAction(e -> {
+            // 收集选择的角色
+            List<AdventurerRole> selectedRoles = new ArrayList<>();
+            for (javafx.scene.control.ComboBox<AdventurerRole> selector : roleSelectors) {
+                selectedRoles.add(selector.getValue());
+            }
+            
+            // 使用选择的角色初始化游戏
+            initializeGameWithSelectedRoles(primaryStage, difficulty, playerNames, selectedRoles);
+        });
+        
+        contentBox.getChildren().add(startGameButton);
+        root.setCenter(contentBox);
+        
+        Scene scene = new Scene(root, 500, 400);
+        primaryStage.setTitle("选择角色 - 禁闭岛游戏 (Forbidden Island Game)");
+        primaryStage.setScene(scene);
+    }
+
+    private void initializeGameWithSelectedRoles(Stage primaryStage, int difficulty, List<String> playerNames, List<AdventurerRole> selectedRoles) {
+        // 创建游戏实例，并传入选择的角色
+        game = new Game(playerNames, difficulty, selectedRoles);
+
+        BorderPane root = new BorderPane();
+        root.setPadding(new Insets(10));
+
+        HBox titleBar = new HBox(15);
+        titleBar.setPadding(new Insets(10));
+        titleBar.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+
+        Label titleLabel = new Label("禁闭岛 (Forbidden Island)");
+        titleLabel.setFont(Font.font("Arial", FontWeight.BOLD, 24));
+
+        Button helpButton = new Button("游戏帮助");
+        helpButton.setOnAction(e -> showGameHelp());
+
+        titleBar.getChildren().addAll(titleLabel, helpButton);
+        root.setTop(titleBar);
+
+        gameBoardView = new GameBoardView(game);
+        root.setCenter(gameBoardView);
+
+        VBox rightPanel = new VBox(10);
+        rightPanel.setPadding(new Insets(10));
+
+        playerInfoPanel = new PlayerInfoPanel(game);
+        actionPanel = new ActionPanel(game, this);
+        actionPanel.setGameBoardView(gameBoardView);
+
+        rightPanel.getChildren().addAll(playerInfoPanel, actionPanel);
+        root.setRight(rightPanel);
+
+        statusPanel = new StatusPanel();
+        root.setBottom(statusPanel);
+
+        Scene scene = new Scene(root, 1024, 768);
+        primaryStage.setTitle("禁闭岛游戏 (Forbidden Island Game)");
+        primaryStage.setScene(scene);
+        primaryStage.show();
+
+        updateGameState(); // Initial display and status update
+        actionPanel.refreshActionState(); // Ensure action panel specifically reflects initial actions for the first player
+        statusPanel.setStatus(game.getCurrentPlayer().getName() + " 的回合开始，有 " + game.getActionsRemainingInTurn() + " 个行动点。");
     }
 
     private void initializeGameAndUI(Stage primaryStage, int difficulty) {
