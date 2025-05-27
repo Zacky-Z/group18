@@ -1,0 +1,217 @@
+[33mcommit 7262d0102d90001ccaa00d60e4805ef307970849[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m
+Author: ykandbl <2682966504@qq.com>
+Date:   Tue May 27 22:43:22 2025 +0800
+
+    improve the skill
+
+[33mcommit d3a4da32f7d8720cfc08a5b5ebff44922ed1854c[m
+Author: ykandbl <2682966504@qq.com>
+Date:   Mon May 26 23:28:28 2025 +0800
+
+    solve the loop problem
+
+[33mcommit 7c8ea96956411ef05f9793599b818160de73ed29[m
+Author: ykandbl <2682966504@qq.com>
+Date:   Mon May 26 22:52:24 2025 +0800
+
+    improve functions
+
+[33mcommit fc76466578876bbee7e70ac6746931d425ad1c2d[m
+Author: Zacky-Z <2233091712@qq.com>
+Date:   Mon May 26 20:38:46 2025 +0800
+
+    加入了查看玩家手牌功能
+
+[33mcommit 342e22ab129b3f0bc35e68a74fb8e628d112d0e7[m
+Author: Zacky-Z <2233091712@qq.com>
+Date:   Mon May 26 20:32:21 2025 +0800
+
+    加入了难度选择和初始游戏页面
+
+[33mcommit c692d8392500d983b10ba48d0d979e7165548f7d[m
+Author: D1onysuss <zhaoweiye13@gmail.com>
+Date:   Sun May 25 15:16:01 2025 +0800
+
+    Add files via upload
+
+[33mcommit 62383a71c176103657895de10f145c897e5c846a[m
+Author: D1onysuss <zhaoweiye13@gmail.com>
+Date:   Sat May 24 18:42:23 2025 +0800
+
+    Add files via upload
+
+[33mcommit 8fadb2b20719229c833daf1b7a2ce5e13326d3b0[m
+Author: D1onysuss <zhaoweiye13@gmail.com>
+Date:   Sat May 24 18:41:40 2025 +0800
+
+    Add files via upload
+
+[33mcommit 62b16df0134b83bdfc904f019e2fc3be8d000032[m
+Author: D1onysuss <zhaoweiye13@gmail.com>
+Date:   Sat May 24 18:40:52 2025 +0800
+
+    Add files via upload
+
+[33mcommit d19cb0fe947d9db419393a7a32885aa350d93d93[m
+Author: MengChengkai <chengkai.meng@ucdconnect.ie>
+Date:   Fri May 23 18:07:26 2025 +0800
+
+    GUI of Card and Card
+    
+    The GUI parts related to Card and Card have been adjusted and modified
+
+[33mcommit b2a08b430f1c0af4667b8dafdc6b8661cfa2f652[m
+Author: YKandBL <2242489610@qq.com>
+Date:   Fri May 23 17:07:42 2025 +0800
+
+    update again,deal the project structure and running issues.previous submission can be ignored
+
+[33mcommit 403dc6585a4e6028afc74ad8e7c8e99ed50a9dc6[m
+Author: YKandBL <2242489610@qq.com>
+Date:   Fri May 23 16:59:59 2025 +0800
+
+    test
+
+[33mcommit bd653a73c420eb549a06ca38f07cfdd34829c622[m
+Author: ykandbl <2682966504@qq.com>
+Date:   Sun May 18 17:58:21 2025 +0800
+
+    the game is over code
+
+[33mcommit 358b4fc93d603b5c6567127c03f1cf52b23cae01[m
+Author: ykandbl <2682966504@qq.com>
+Date:   Sun May 18 14:28:17 2025 +0800
+
+    feedback of error
+
+[33mcommit 0df3dae113c0d2eb62555ee4d5cd81964da29cb3[m
+Author: ykandbl <2682966504@qq.com>
+Date:   Sun May 18 12:47:11 2025 +0800
+
+    the optimization of use of card
+
+[33mcommit 672c38dd57c6572f974fc6b3f165abda2e213e38[m
+Author: ykandbl <2682966504@qq.com>
+Date:   Sun May 18 01:05:11 2025 +0800
+
+    achieve give card function
+
+[33mcommit 0a237751ee44645d5ffbe8e37eff26c91a805354[m
+Author: ykandbl <2682966504@qq.com>
+Date:   Sun May 18 00:23:09 2025 +0800
+
+    round over code
+
+[33mcommit 23d91022dea20672fea1d9dfa93e6f24ba15e0ab[m
+Author: ykandbl <2682966504@qq.com>
+Date:   Sat May 17 22:44:23 2025 +0800
+
+    achive the shore up function
+
+[33mcommit 24dc7e47c26d76825c90c09c030b0c9a61581dc3[m
+Author: ykandbl <2682966504@qq.com>
+Date:   Sat May 17 22:20:23 2025 +0800
+
+    allow players to move in game
+
+[33mcommit dde0b0cc29cbd9db12ad0c23690ad0c49d26b2f6[m
+Author: ykandbl <2682966504@qq.com>
+Date:   Sat May 17 01:33:35 2025 +0800
+
+    尝试开发玩家类及其移动逻辑和角色特殊能力实现
+
+[33mcommit 8c3260c737650d4285906da5c5117d23281f569b[m
+Author: MengChengkai <chengkai.meng@ucdconnect.ie>
+Date:   Fri May 16 15:39:55 2025 +0800
+
+    implement handleUseSpecialActionCard
+
+[33mcommit a47a931f82df0e0735b6e40ffd5a1d287e7ae8ca[m
+Author: MengChengkai <chengkai.meng@ucdconnect.ie>
+Date:   Fri May 16 15:39:25 2025 +0800
+
+    Adjust some comments
+
+[33mcommit 01c42f5cc65210b02da80c0b1bf66d2b5d8f4ea1[m
+Author: MengChengkai <chengkai.meng@ucdconnect.ie>
+Date:   Fri May 16 15:38:42 2025 +0800
+
+    Implement handleGiveCardAction
+
+[33mcommit fef59d82b95ec6561371062fad62c2abd9f12519[m
+Author: MengChengkai <chengkai.meng@ucdconnect.ie>
+Date:   Fri May 16 15:20:08 2025 +0800
+
+    Implement card initialization in initializeGame
+
+[33mcommit 80aecab76348cc2da82a5bd7656eeeb102f94682[m
+Author: MengChengkai <chengkai.meng@ucdconnect.ie>
+Date:   Fri May 16 15:03:35 2025 +0800
+
+    Implement GiveCardAction
+
+[33mcommit 8f7041456726ea041f7cc05330966ee4cf338852[m
+Author: MengChengkai <chengkai.meng@ucdconnect.ie>
+Date:   Fri May 16 15:00:19 2025 +0800
+
+    Implement drawFloodCards function
+
+[33mcommit d5c09916af8db7ca928462a52c19b30ff5cd1613[m
+Author: MengChengkai <chengkai.meng@ucdconnect.ie>
+Date:   Thu May 15 22:04:35 2025 +0800
+
+    Implement drawTreasureCards function
+
+[33mcommit a6ffba68f4bf2232898cde1d88014942a435aa35[m
+Author: MengChengkai <chengkai.meng@ucdconnect.ie>
+Date:   Thu May 15 20:59:10 2025 +0800
+
+    Configure the project properly
+
+[33mcommit 5384d93562b41832b048c8584ae2653bc168d3aa[m
+Author: MengChengkai <chengkai.meng@ucdconnect.ie>
+Date:   Thu May 15 20:34:28 2025 +0800
+
+    Initialize an empty card class
+
+[33mcommit 8d445bc34c9f5cc40261afd093c81d46fa296b2a[m
+Author: Zacky <2233019712l@qq.com>
+Date:   Wed May 14 14:00:49 2025 +0800
+
+    完整项目
+
+[33mcommit 6c87928a39f90bc555cff3a22ad329de08eb4a77[m
+Author: D1onysuss <zhaoweiye13@gmail.com>
+Date:   Wed May 14 14:03:52 2025 +0800
+
+    Delete gui directory
+
+[33mcommit ee23bf6111d3866b33026fcd4faabd96afaf1831[m
+Author: D1onysuss <zhaoweiye13@gmail.com>
+Date:   Wed May 14 14:03:30 2025 +0800
+
+    Add files via upload
+
+[33mcommit be2381c102dd4b42158c125fd9d131e4201ae740[m
+Author: D1onysuss <zhaoweiye13@gmail.com>
+Date:   Wed May 14 13:58:21 2025 +0800
+
+    Add files via upload
+
+[33mcommit c7f1fb15f3423606d3e6c4ef9732c22521ce27d9[m
+Author: Zacky <2233019712l@qq.com>
+Date:   Wed May 14 13:41:41 2025 +0800
+
+    项目结构
+
+[33mcommit 2e005d31037583fb66ade55e8b250f8510b093b9[m
+Author: Zacky <2233019712l@qq.com>
+Date:   Tue May 13 12:45:38 2025 +0800
+
+    first commit
+
+[33mcommit 7311d325be59d770173ed3d4181370d2025ab3ad[m
+Author: D1onysuss <zhaoweiye13@gmail.com>
+Date:   Sun May 11 16:45:27 2025 +0800
+
+    Initial commit
