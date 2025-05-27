@@ -1,20 +1,22 @@
 package com.forbiddenisland.model;
-
+import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.util.Collections;
 
 /**
  * Manages the overall game state and logic for Forbidden Island.
  * 管理禁闭岛游戏的整体游戏状态和逻辑。
  */
-public class Game {
+public class Game implements Serializable {
 
     // Game Constants
-    public static final int MAX_ACTIONS_PER_TURN = 3;
     private static final int INITIAL_FLOOD_CARDS_DRAW = 6;
     private static final int INITIAL_TREASURE_CARDS_PER_PLAYER = 2;
     private static final int BOARD_DIMENSION = 6; // Max dimension for a 6x6 grid to hold the island
@@ -27,7 +29,6 @@ public class Game {
     // Players
     private List<Player> players;
     private int currentPlayerIndex;
-    private int actionsRemainingInTurn; // Added for action point management
 
     // Decks
     private Deck<Card> treasureDeck;
@@ -40,14 +41,6 @@ public class Game {
     private WaterMeter waterMeter;
 
     private Random randomGenerator;
-
-    // Game Phase
-    public enum GamePhase {
-        ACTION_PHASE,
-        DRAW_TREASURE_CARDS_PHASE,
-        DRAW_FLOOD_CARDS_PHASE
-    }
-    private GamePhase currentPhase;
 
     /**
      * Constructor for Game.
@@ -77,9 +70,6 @@ public class Game {
         assignAdventurersAndStartingPositions(); // Pawns placed on tiles on gameBoard
         dealInitialTreasureCards();
         performInitialIslandFlooding(); // Floods tiles on gameBoard via islandTileMap
-
-        this.actionsRemainingInTurn = MAX_ACTIONS_PER_TURN; // Initialize actions for the first player
-        this.currentPhase = GamePhase.ACTION_PHASE; // Start with the action phase
     }
 
     /**
@@ -280,6 +270,8 @@ public class Game {
 
                 if (startingTile == null) {
                     System.err.println("CRITICAL Error: Starting tile '" + startingTileName + "' for " + assignedRole + " not found on the board! Game setup failed. (严重错误：棋盘上未找到角色 " + assignedRole + " 的起始板块 '" + startingTileName + "'！游戏设置失败。)");
+                    // Attempt to find it in the general list if not on board (should not happen if layout is correct)
+                    // 如果棋盘上没有，则尝试在通用列表中查找（如果布局正确则不应发生）
                     for(IslandTile t : allIslandTilesList) {
                         if(t.getName().equals(startingTileName)) {
                             startingTile = t;
@@ -287,15 +279,14 @@ public class Game {
                             break;
                         }
                     }
-                    if (startingTile == null) { 
+                    if (startingTile == null) { // Still not found
                          throw new IllegalStateException("Cannot assign starting tile " + startingTileName + ". (无法分配起始板块 " + startingTileName + "。)");
                     }
                 }
                 
                 player.assignRoleAndPawn(assignedRole, startingTile, pawnColor);
-                player.resetTurnBasedAbilities(); // Initialize turn-based abilities state
                 
-                if (gameBoardContains(startingTile)) { 
+                if (gameBoardContains(startingTile)) { // Make sure the instance is from the board
                     findTileOnBoard(startingTile.getName()).setStartingTileForPlayer(true);
                 }
 
@@ -305,7 +296,6 @@ public class Game {
                                    " with a " + pawnColor + " pawn.");
             }
         }
-        this.actionsRemainingInTurn = MAX_ACTIONS_PER_TURN; // Initialize for the first player
     }
 
     /**
@@ -323,35 +313,29 @@ public class Game {
     /**
      * Helper to draw a treasure card for a player.
      * 帮助玩家抽取宝藏牌的辅助方法。
-     * @return A string describing the card drawn or event. (描述所抽卡牌或事件的字符串)
      */
-    private String drawTreasureCardForPlayer(Player player, boolean isInitialDeal) {
+    private void drawTreasureCardForPlayer(Player player, boolean isInitialDeal) {
         Card drawnCard = treasureDeck.drawCard();
         if (drawnCard == null) {
-            String errorMsg = "宝藏牌堆在为 " + player.getName() + " 抽牌时已空";
-            System.err.println(errorMsg);
-            return player.getName() + " 尝试抽宝藏牌失败，牌堆已空！";
+            System.err.println("Treasure deck empty during draw for " + player.getName() + " (宝藏牌堆在为 " + player.getName() + " 抽牌时已空)");
+            return;
         }
 
         if (drawnCard instanceof WatersRiseCard) {
-            String watersRiseMsg = player.getName() + " 抽到了 洪水上涨！牌。";
-            System.out.println(watersRiseMsg);
+            System.out.println("Waters Rise! card drawn by " + player.getName() + ".");
             if (isInitialDeal) {
-                System.out.println("在初始发牌阶段，将洪水上涨！牌洗回牌堆并重抽。");
+                System.out.println("During initial deal, reshuffling Waters Rise! back and drawing replacement.");
                 List<Card> cardsToReinsert = new ArrayList<>();
                 cardsToReinsert.add(drawnCard); 
                 treasureDeck.addCardsToDrawPileTop(cardsToReinsert);
                 treasureDeck.shuffleDrawPile();                      
-                return drawTreasureCardForPlayer(player, true); // Recursive call returns the message of the new card
+                drawTreasureCardForPlayer(player, true);           
             } else {
                 processWatersRiseCard((WatersRiseCard) drawnCard);
-                return watersRiseMsg + " 水位上升！";
             }
         } else {
             player.addCardToHand(drawnCard);
-            String drawnMsg = player.getName() + " 抽到: " + drawnCard.getName();
-            System.out.println(drawnMsg);
-            return drawnMsg;
+            System.out.println(player.getName() + " draws: " + drawnCard.getName());
         }
     }
 
@@ -478,56 +462,48 @@ public class Game {
      */
     public void nextTurn() {
         currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
-        actionsRemainingInTurn = MAX_ACTIONS_PER_TURN; // Reset actions for the new turn
-        getCurrentPlayer().resetTurnBasedAbilities(); // Reset abilities like Pilot's flight
-        currentPhase = GamePhase.ACTION_PHASE; // Reset to action phase for the new player
-        System.out.println("Next turn for player: " + getCurrentPlayer().getName() + " (下一回合玩家： " + getCurrentPlayer().getName() + ")");
+        System.out.println("--- It is now " + getCurrentPlayer().getName() + "'s turn (" + getCurrentPlayer().getRole().name() + ") ---");
     }
 
     /**
      * Current player draws treasure cards.
      * 当前玩家抽取宝藏牌。
      */
-    public List<String> playerDrawsTreasureCards() {
+    public void playerDrawsTreasureCards() {
         Player currentPlayer = getCurrentPlayer();
-        List<String> drawMessages = new ArrayList<>();
         System.out.println(currentPlayer.getName() + " is drawing 2 treasure cards.");
-        
-        String firstDrawMsg = drawTreasureCardForPlayer(currentPlayer, false); 
-        drawMessages.add(firstDrawMsg);
-        
+        drawTreasureCardForPlayer(currentPlayer, false); // First draw
+        checkHandLimit(currentPlayer);                 // Check limit after first draw
         if (treasureDeck.isDrawPileEmpty() && treasureDeck.getDiscardPileSize() > 0) {
-            String reshuffleMsg = "宝藏抽牌堆已空，正在重洗弃牌堆...";
-            System.out.println(reshuffleMsg);
-            drawMessages.add(reshuffleMsg); // Optionally add this to player feedback
+            System.out.println("Treasure draw pile empty, reshuffling discard pile.");
             treasureDeck.reshuffleDiscardIntoDraw();
         }
-        
-        String secondDrawMsg = drawTreasureCardForPlayer(currentPlayer, false); 
-        drawMessages.add(secondDrawMsg);
-        
-        return drawMessages;
+        drawTreasureCardForPlayer(currentPlayer, false); // Second draw
+        checkHandLimit(currentPlayer);                 // Check limit after second draw
     }
     
     /**
-     * Allows a player to discard a specific card from their hand.
-     * The discarded card is placed onto the treasure discard pile.
-     * 允许玩家从手牌中弃掉一张特定的牌。
-     * 弃掉的牌会放到宝藏弃牌堆。
-     * @param player The player discarding the card. (弃牌的玩家)
-     * @param card The card to discard. (要弃掉的牌)
-     * @return true if the card was successfully discarded, false otherwise. (如果成功弃牌则返回 true，否则返回 false)
+     * Checks if a player has exceeded their hand limit and handles discarding.
+     * 检查玩家是否超过了手牌上限并处理弃牌。
      */
-    public boolean discardCardAndPlaceOnTreasureDiscardPile(Player player, Card card) {
-        if (player != null && card != null && player.getHand().contains(card)) {
-            if (player.removeCardFromHand(card)) {
-                treasureDeck.discardCard(card);
-                System.out.println(player.getName() + " discarded: " + card.getName());
-                return true;
-            }
+    private void checkHandLimit(Player player) {
+        while (player.isHandOverLimit()) {
+            System.out.println(player.getName() + "'s hand is over limit (" + player.getHand().size() + "/" + Player.MAX_HAND_SIZE + "). Must discard or play.");
+            Card cardToDiscard = null;
+            // Simple auto-discard: non-special first, then any. UI would allow choice.
+            // 简单自动弃牌：首先非特殊牌，然后任何牌。UI将允许选择。
+            for (Card c : player.getHand()) { if (!(c instanceof SpecialActionCard)) cardToDiscard = c; }
+            if (cardToDiscard == null && !player.getHand().isEmpty()) cardToDiscard = player.getHand().get(player.getHand().size() - 1);
+
+            if (cardToDiscard != null) {
+                // TODO: Allow playing special action card before discarding
+                // 待办：允许在丢弃前打出特殊行动牌
+                player.removeCardFromHand(cardToDiscard);
+                // No need to cast to TreasureCard, Deck<Card> can take any Card
+                treasureDeck.discardCard(cardToDiscard); 
+                System.out.println(player.getName() + " auto-discarded: " + cardToDiscard.getName());
+            } else break; 
         }
-        System.err.println("Failed to discard card " + (card != null ? card.getName() : "null") + " for player " + (player != null ? player.getName() : "null"));
-        return false;
     }
     
     /**
@@ -584,93 +560,59 @@ public class Game {
      */
     public List<Treasure> getTreasures() { return Collections.unmodifiableList(treasures); }
 
-    // --- Action Point Management ---
-    /**
-     * Gets the number of actions remaining for the current player in their turn.
-     * 获取当前玩家在本回合剩余的行动点数。
-     * @return Number of actions remaining. (剩余的行动点数)
-     */
-    public int getActionsRemainingInTurn() {
-        return actionsRemainingInTurn;
-    }
-
-    /**
-     * Attempts to spend an action point. Decrements remaining actions if available.
-     * 尝试消耗一个行动点。如果可用，则减少剩余行动点数。
-     * @return true if an action point was spent, false if no actions were remaining. (如果消耗了一个行动点则返回 true，如果没有剩余行动点则返回 false)
-     */
-    public boolean spendAction() {
-        if (actionsRemainingInTurn > 0) {
-            actionsRemainingInTurn--;
-            System.out.println("Action spent. Remaining actions: " + actionsRemainingInTurn);
-            return true;
-        }
-        System.out.println("No actions remaining to spend.");
-        return false;
-    }
-
     /**
      * Current player draws flood cards according to the water meter level.
      * 当前玩家根据水位计等级抽取洪水牌。
-     * @return A list of FloodActionReport detailing the outcome of each card drawn. (包含每张所抽卡牌结果详情的 FloodActionReport 列表)
      */
-    public List<FloodActionReport> playerDrawsFloodCards_REVISED() {
+    public void playerDrawsFloodCards_REVISED() {
         Player currentPlayer = getCurrentPlayer();
         int numToDraw = waterMeter.getNumberOfFloodCardsToDraw();
-        List<FloodActionReport> reports = new ArrayList<>();
         System.out.println(currentPlayer.getName() + " is drawing " + numToDraw + " flood cards (Water Level: " + waterMeter.getCurrentWaterLevel() + ").");
 
         for (int i = 0; i < numToDraw; i++) {
-            if (checkGameOverConditions()) {
-                reports.add(new FloodActionReport("N/A", "N/A", "游戏已结束，停止抽洪水牌"));
-                break; // Stop drawing if game over
-            }
+            if (checkGameOverConditions()) return;
 
             if (floodDeck.isDrawPileEmpty() && floodDeck.getDiscardPileSize() > 0) {
                 System.out.println("Flood draw pile empty, reshuffling discard pile.");
-                reports.add(new FloodActionReport("N/A", "N/A", "洪水抽牌堆已空，正在重洗弃牌堆..."));
                 floodDeck.reshuffleDiscardIntoDraw();
             }
             FloodCard floodCard = floodDeck.drawCard();
             if (floodCard == null) {
                 System.err.println("Flood deck empty.");
-                reports.add(new FloodActionReport("N/A", "N/A", "洪水牌堆已空！"));
                 break; 
             }
 
             System.out.println(currentPlayer.getName() + " drew flood card: " + floodCard.getName());
-            IslandTile tileToProcess = islandTileMap.get(floodCard.getIslandTileName()); 
-            String outcome;
+            IslandTile tileToProcess = islandTileMap.get(floodCard.getIslandTileName()); // Get from map
 
-            if (tileToProcess != null) { 
-                int[] coords = getTileCoordinates(tileToProcess); 
+            if (tileToProcess != null) { // Tile exists in the map (i.e. not yet permanently removed due to sinking for treasure)
+                int[] coords = getTileCoordinates(tileToProcess); // Get its current board coordinates
 
-                if (coords == null) { 
-                    outcome = "板块在地图中但不在棋盘上 (错误)";
+                if (coords == null) { // Tile is in map, but somehow not on gameBoard (should not happen if map is synced with board)
                     System.err.println("Tile " + tileToProcess.getName() + " in map but not on board. Card " + floodCard.getName() + " discarded.");
-                    floodDeck.discardCard(floodCard); 
-                } else if (tileToProcess.isFlooded()) {
-                    outcome = "板块已沉没！";
+                    floodDeck.discardCard(floodCard); // Or remove from game if tile really gone
+                    continue;
+                }
+
+                if (tileToProcess.isFlooded()) {
                     System.out.println("Tile " + tileToProcess.getName() + " at (" + coords[0] + "," + coords[1] + ") was already flooded. It sinks!");
                     removeIslandTileFromBoard(tileToProcess); 
+                    // Check for pawns AFTER removal, passing original coords
                     checkPawnsOnSinkingTiles(tileToProcess, coords[0], coords[1]); 
+                    // Flood card for removed tile is NOT discarded, it's out of play.
                 } else {
-                    outcome = "板块已淹没";
                     System.out.println("Tile " + tileToProcess.getName() + " at (" + coords[0] + "," + coords[1] + ") is now flooded.");
                     tileToProcess.flood();
                     floodDeck.discardCard(floodCard);
                 }
             } else {
-                outcome = "板块已从游戏中移除或无效";
+                // Flood card for a tile that has already permanently sunk (e.g. treasure related loss condition)
+                // or an invalid tile name on card.
                 System.out.println("Flood card " + floodCard.getName() + " targets a tile not in the current game map (likely already sunk or invalid). Card removed from play.");
+                // Card is out of play.
             }
-            reports.add(new FloodActionReport(floodCard.getName(), floodCard.getIslandTileName(), outcome));
-            if (checkGameOverConditions()) {
-                 reports.add(new FloodActionReport("N/A", "N/A", "游戏因本次抽牌结束"));
-                 break; // Stop if game ended due to this card
-            }
+            if (checkGameOverConditions()) return;
         }
-        return reports;
     }
     
     /**
@@ -749,7 +691,7 @@ public class Game {
      * Checks if given coordinates are within the board dimensions.
      * 检查给定坐标是否在棋盘维度内。
      */
-    public boolean isValidBoardCoordinate(int r, int c) {
+    private boolean isValidBoardCoordinate(int r, int c) {
         return r >= 0 && r < BOARD_DIMENSION && c >= 0 && c < BOARD_DIMENSION;
     }
 
@@ -831,18 +773,26 @@ public class Game {
      */
     public List<IslandTile> getValidAdjacentTiles(int r, int c, boolean includeDiagonals) {
         List<IslandTile> adjacentTiles = new ArrayList<>();
-        int[] dr = {-1, 1, 0, 0}; // Up, Down, Left, Right
-        int[] dc = {0, 0, -1, 1}; // Up, Down, Left, Right
-        if (includeDiagonals) {
-            dr = new int[]{-1, 1, 0, 0, -1, -1, 1, 1}; // Include diagonals
-            dc = new int[]{0, 0, -1, 1, -1, 1, -1, 1}; // Include diagonals
-        }
+        int[] dr = {-1, 1, 0, 0}; // Changes in row for Up, Down
+        int[] dc = {0, 0, -1, 1}; // Changes in col for Left, Right
 
-        for (int i = 0; i < dr.length; i++) {
+        for (int i = 0; i < 4; i++) { // Orthogonal first
             int nr = r + dr[i];
             int nc = c + dc[i];
             if (isValidBoardCoordinate(nr, nc) && gameBoard[nr][nc] != null) {
                 adjacentTiles.add(gameBoard[nr][nc]);
+            }
+        }
+
+        if (includeDiagonals) {
+            int[] ddr = {-1, -1, 1, 1}; // Diagonal rows
+            int[] ddc = {-1, 1, -1, 1}; // Diagonal columns
+            for (int i = 0; i < 4; i++) {
+                int nr = r + ddr[i];
+                int nc = c + ddc[i];
+                if (isValidBoardCoordinate(nr, nc) && gameBoard[nr][nc] != null) {
+                    adjacentTiles.add(gameBoard[nr][nc]);
+                }
             }
         }
         return adjacentTiles;
@@ -853,25 +803,39 @@ public class Game {
      * 运行一个完整的玩家回合。
      */
     public void runTurn() {
-        // This method can be expanded to manage the flow of a single player's turn.
-        // For now, it's a placeholder.
-        // 此方法可以扩展以管理单个玩家回合的流程。
-        // 目前，它是一个占位符。
-        System.out.println("Player " + getCurrentPlayer().getName() + "'s turn. (玩家 " + getCurrentPlayer().getName() + " 的回合。)");
-        // Player performs actions...
-        // 玩家执行操作...
-        // Then draw treasure cards...
-        // 然后抽取宝藏牌...
-        // Then draw flood cards...
-        // 然后抽取洪水牌...
+        if (checkGameOverConditions() || checkWinConditions()) { // Check win if Helicopter played as action
+            // 检查是否因行动打出直升机升空牌而获胜
+            System.out.println("Game has ended.");
+            return;
+        }
+
+        Player turnPlayer = getCurrentPlayer();
+        System.out.println("Player " + turnPlayer.getName() + " takes up to 3 actions.");
+        // UI would handle action choices. For now, simulate or skip.
+        // UI将处理行动选择。目前，模拟或跳过。
+        // e.g., turnPlayer.takeActions(this);
+
+        System.out.println(turnPlayer.getName() + " draws 2 Treasure Cards.");
+        playerDrawsTreasureCards();
+        if (checkGameOverConditions()) { System.out.println("Game Over after treasure draw."); return; }
+
+        System.out.println(turnPlayer.getName() + " draws Flood Cards.");
+        playerDrawsFloodCards_REVISED(); 
+        if (checkGameOverConditions()) { System.out.println("Game Over after flood draw."); return; }
+
+        nextTurn();
+    }
+    public void saveGame(String filePath) {
+        try (FileOutputStream fileOut = new FileOutputStream(filePath);
+             ObjectOutputStream out = new ObjectOutputStream(fileOut)) {
+            out.writeObject(this);
+        } catch (IOException e) {
+            System.err.println("保存游戏时出错: " + e.getMessage());
+        }
+    }
+    public void endTurn() {
+        // 实现结束回合的逻辑，例如切换到下一个玩家
+        currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
     }
 
-    public GamePhase getCurrentPhase() {
-        return currentPhase;
-    }
-
-    public void setCurrentPhase(GamePhase currentPhase) {
-        this.currentPhase = currentPhase;
-    }
 }
- 
