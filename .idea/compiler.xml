@@ -8,6 +8,7 @@
         <outputRelativeToContentRoot value="true" />
         <module name="try-work" />
         <module name="forbidden-island-game" />
+        <module name="forbidden-island" />
       </profile>
     </annotationProcessing>
   </component>

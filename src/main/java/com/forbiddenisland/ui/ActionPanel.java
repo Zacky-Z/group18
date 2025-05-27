@@ -16,6 +16,9 @@ import com.forbiddenisland.ForbiddenIslandGame;
 // import java.util.Optional; // Not used currently
 import java.util.Set;
 import java.util.List; // For isAdjacent check
+import java.util.Optional;
+import javafx.util.Pair;
+import java.util.ArrayList;
 
 // 每回合3个动作
 public class ActionPanel extends VBox {
@@ -90,8 +93,8 @@ public class ActionPanel extends VBox {
         shoreUpButton.setMaxWidth(Double.MAX_VALUE);
 
         giveCardButton = new Button("送卡 (Give Card)");
-        // giveCardButton.setOnAction(e -> handleGiveCardAction());
-        giveCardButton.setDisable(true); // TODO: Implement
+        giveCardButton.setOnAction(e -> handleGiveCardAction());
+        giveCardButton.setDisable(true);
         giveCardButton.setMaxWidth(Double.MAX_VALUE);
 
         captureTreasureButton = new Button("取宝 (Capture Treasure)");
@@ -183,6 +186,146 @@ public class ActionPanel extends VBox {
                 }
             } else {
                 application.getStatusPanel().setStatus("无效的移动选择。请从高亮板块中选择。 ");
+            }
+        });
+    }
+
+    private void handleGiveCardAction() {
+        if (!canPerformAction()) return;
+
+        Player currentPlayer = game.getCurrentPlayer();
+        List<Card> hand = currentPlayer.getHand();
+
+        if (hand.isEmpty()) {
+            application.getStatusPanel().setStatus(currentPlayer.getName() + " has no cards to give!");
+            return;
+        }
+
+        // Get players on the same tile
+        List<Player> playersOnSameTile = new ArrayList<>();
+        IslandTile currentLocation = currentPlayer.getCurrentLocation();
+        for (Player p : game.getPlayers()) {
+            if (p != currentPlayer && p.getCurrentLocation() == currentLocation) {
+                playersOnSameTile.add(p);
+            }
+        }
+
+        if (playersOnSameTile.isEmpty()) {
+            application.getStatusPanel().setStatus("No players on the same tile to give cards to!");
+            return;
+        }
+
+        // Create and show dialog for giving cards
+        Dialog<Pair<Player, Card>> dialog = new Dialog<>();
+        dialog.setTitle("Give Card");
+        dialog.setHeaderText("Select a player and card to give");
+
+        // Set up the dialog pane
+        DialogPane dialogPane = dialog.getDialogPane();
+        dialogPane.getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+
+        // Create layout for dialog
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20, 150, 10, 10));
+
+        // Create player selection combo box
+        ComboBox<Player> playerCombo = new ComboBox<>();
+        playerCombo.getItems().addAll(playersOnSameTile);
+        playerCombo.setPromptText("Select player");
+        // Set custom cell factory for player display
+        playerCombo.setCellFactory(param -> new ListCell<Player>() {
+            @Override
+            protected void updateItem(Player player, boolean empty) {
+                super.updateItem(player, empty);
+                if (empty || player == null) {
+                    setText(null);
+                } else {
+                    setText(player.getName());
+                }
+            }
+        });
+        // Set custom string converter for selected value display
+        playerCombo.setButtonCell(new ListCell<Player>() {
+            @Override
+            protected void updateItem(Player player, boolean empty) {
+                super.updateItem(player, empty);
+                if (empty || player == null) {
+                    setText(null);
+                } else {
+                    setText(player.getName());
+                }
+            }
+        });
+
+        // Create card selection combo box
+        ComboBox<Card> cardCombo = new ComboBox<>();
+        cardCombo.getItems().addAll(hand);
+        cardCombo.setPromptText("Select card");
+        // Set custom cell factory for card display
+        cardCombo.setCellFactory(param -> new ListCell<Card>() {
+            @Override
+            protected void updateItem(Card card, boolean empty) {
+                super.updateItem(card, empty);
+                if (empty || card == null) {
+                    setText(null);
+                } else {
+                    setText(card.getName());
+                }
+            }
+        });
+        // Set custom string converter for selected value display
+        cardCombo.setButtonCell(new ListCell<Card>() {
+            @Override
+            protected void updateItem(Card card, boolean empty) {
+                super.updateItem(card, empty);
+                if (empty || card == null) {
+                    setText(null);
+                } else {
+                    setText(card.getName());
+                }
+            }
+        });
+
+        grid.add(new Label("Player:"), 0, 0);
+        grid.add(playerCombo, 1, 0);
+        grid.add(new Label("Card:"), 0, 1);
+        grid.add(cardCombo, 1, 1);
+
+        dialogPane.setContent(grid);
+
+        // Convert the result to pair when dialog is closed
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == ButtonType.OK) {
+                return new Pair<>(playerCombo.getValue(), cardCombo.getValue());
+            }
+            return null;
+        });
+
+        Optional<Pair<Player, Card>> result = dialog.showAndWait();
+        
+        result.ifPresent(pair -> {
+            Player targetPlayer = pair.getKey();
+            Card selectedCard = pair.getValue();
+            
+            if (targetPlayer != null && selectedCard != null) {
+                if (game.spendAction()) {
+                    // Transfer the card
+                    currentPlayer.removeCardFromHand(selectedCard);
+                    targetPlayer.addCardToHand(selectedCard);
+                    
+                    application.getStatusPanel().setStatus(
+                        String.format("%s gave %s to %s", 
+                            currentPlayer.getName(),
+                            selectedCard.getName(),
+                            targetPlayer.getName())
+                    );
+                    
+                    application.updateGameState();
+                } else {
+                    application.getStatusPanel().setStatus("Failed to give card: No actions remaining.");
+                }
             }
         });
     }
