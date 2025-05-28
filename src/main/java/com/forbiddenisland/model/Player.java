@@ -333,8 +333,90 @@ public class Player {
     // Actions (to be implemented or called from Game/Controller)
     // 行动 (将在 Game/Controller 中实现或调用)
 
-    // public void move(IslandTile destination) { ... }
-    // public void shoreUp(IslandTile tileToShoreUp) { ... }
-    // public void giveTreasureCard(Player recipient, TreasureCard card) { ... }
-    // public void captureTreasure(TreasureType treasureType) { ... }
+    /**
+     * Shore up (stabilize) a flooded tile.
+     * 稳固（治水）一个被淹没的板块。
+     * @param tileToShoreUp The tile to shore up.
+     * @return true if the shore up action was successful, false otherwise.
+     */
+    public boolean shoreUp(IslandTile tileToShoreUp) {
+        if (tileToShoreUp == null || !tileToShoreUp.isFlooded()) {
+            System.out.println("Cannot shore up: tile is null or not flooded");
+            return false;
+        }
+        
+        tileToShoreUp.shoreUp();
+        System.out.println(this.name + " shored up " + tileToShoreUp.getName());
+        return true;
+    }
+    
+    /**
+     * Give a treasure card to another player.
+     * 将宝藏卡给予另一个玩家。
+     * @param recipient The player to give the card to.
+     * @param card The treasure card to give.
+     * @return true if the card was successfully given, false otherwise.
+     */
+    public boolean giveTreasureCard(Player recipient, TreasureCard card) {
+        if (recipient == null || card == null) {
+            System.out.println("Cannot give card: recipient or card is null");
+            return false;
+        }
+        
+        if (!this.hand.contains(card)) {
+            System.out.println("Cannot give card: " + this.name + " does not have this card");
+            return false;
+        }
+        
+        this.removeCardFromHand(card);
+        recipient.addCardToHand(card);
+        System.out.println(this.name + " gave " + card.getName() + " to " + recipient.getName());
+        return true;
+    }
+    
+    /**
+     * Capture a treasure by discarding the required treasure cards.
+     * 通过弃掉所需的宝藏卡来获取宝藏。
+     * @param treasureType The type of treasure to capture.
+     * @param treasureDeck The treasure deck to discard the cards to.
+     * @return true if the treasure was successfully captured, false otherwise.
+     */
+    public boolean captureTreasure(TreasureType treasureType, Deck<Card> treasureDeck) {
+        if (treasureType == null || treasureDeck == null) {
+            System.out.println("Cannot capture treasure: treasureType or treasureDeck is null");
+            return false;
+        }
+        
+        int requiredCards = this.role.getTreasureCardsNeededForCapture();
+        List<Card> matchingCards = new ArrayList<>();
+        
+        // Find matching treasure cards
+        for (Card card : this.hand) {
+            if (card instanceof TreasureCard) {
+                TreasureCard treasureCard = (TreasureCard) card;
+                if (treasureCard.getTreasureType() == treasureType) {
+                    matchingCards.add(card);
+                }
+            }
+        }
+        
+        // Check if we have enough cards
+        if (matchingCards.size() < requiredCards) {
+            System.out.println(this.name + " needs " + requiredCards + " " + treasureType.getDisplayName() + 
+                               " cards to capture the treasure, but only has " + matchingCards.size());
+            return false;
+        }
+        
+        // Discard the required number of cards
+        for (int i = 0; i < requiredCards; i++) {
+            Card card = matchingCards.get(i);
+            this.removeCardFromHand(card);
+            treasureDeck.discardCard(card);
+        }
+        
+        // Add the treasure to the player's collection
+        this.addCollectedTreasure(treasureType);
+        System.out.println(this.name + " captured the " + treasureType.getDisplayName() + " treasure!");
+        return true;
+    }
 } 

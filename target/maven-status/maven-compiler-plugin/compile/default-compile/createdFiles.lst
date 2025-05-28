@@ -9,6 +9,7 @@ com\forbiddenisland\ui\PlayerInfoPanel.class
 com\forbiddenisland\ui\view\PlayerInfoView.class
 com\forbiddenisland\model\Game$GamePhase.class
 com\forbiddenisland\ui\view\CardView.class
+com\forbiddenisland\ui\ActionPanel$6.class
 com\example\trywork\HelloApplication.class
 com\forbiddenisland\model\HelicopterLiftCard.class
 com\forbiddenisland\core\system\TurnManager.class
@@ -34,6 +35,7 @@ com\forbiddenisland\model\SpecialActionCard.class
 com\forbiddenisland\core\model\Card.class
 com\forbiddenisland\ui\TileView.class
 com\forbiddenisland\Main.class
+com\forbiddenisland\ui\ActionPanel$5.class
 com\forbiddenisland\ui\ActionPanel.class
 com\forbiddenisland\core\model\Adventurer$1.class
 com\forbiddenisland\model\Game$PlaceTileHelper.class
@@ -45,6 +47,7 @@ com\forbiddenisland\model\WatersRiseCard.class
 com\forbiddenisland\GameConsoleApp.class
 com\forbiddenisland\enums\AdventurerType.class
 com\forbiddenisland\ui\view\LoadingOverlay.class
+com\forbiddenisland\ui\ActionPanel$7.class
 com\forbiddenisland\ui\StatusPanel.class
 com\forbiddenisland\core\model\Player.class
 com\forbiddenisland\enums\DifficultyLevel.class
@@ -59,6 +62,7 @@ com\forbiddenisland\core\system\CardDeckManager.class
 com\forbiddenisland\core\model\Adventurer.class
 com\forbiddenisland\core\model\Treasure.class
 com\forbiddenisland\model\AdventurerRole.class
+com\forbiddenisland\ui\ActionPanel$4.class
 com\forbiddenisland\core\action\MoveAction.class
 com\forbiddenisland\core\system\WaterMeter$1.class
 com\forbiddenisland\ForbiddenIslandGame$1.class

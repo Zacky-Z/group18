@@ -4,6 +4,7 @@ import com.forbiddenisland.ForbiddenIslandGame;
 import com.forbiddenisland.model.*;
 import com.forbiddenisland.model.Card;
 import com.forbiddenisland.model.Game;
+import com.forbiddenisland.model.Game.GamePhase;
 import com.forbiddenisland.model.Player;
 import com.forbiddenisland.model.IslandTile;
 import com.forbiddenisland.model.AdventurerRole;
@@ -14,7 +15,11 @@ import com.forbiddenisland.model.SandbagsCard;
 import com.forbiddenisland.model.HelicopterLiftCard;
 import com.forbiddenisland.model.Treasure;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.*;
+import javafx.scene.control.ButtonBar.ButtonData;
+import javafx.scene.control.ListView;
+import javafx.scene.control.SelectionMode;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -44,8 +49,10 @@ public class ActionPanel extends VBox {
     private Button specialActionButton;
     private Button endActionsAndDrawTreasureButton;
     private Button drawFloodCardsButton;
+    private Button viewOtherPlayersButton;
     private VBox actionButtonsBox;
     private ScrollPane scrollPane;
+    private TextArea handCardsArea;
 
     public ActionPanel(Game game, ForbiddenIslandGame mainApp) {
         this.game = game;
@@ -109,6 +116,11 @@ public class ActionPanel extends VBox {
         drawFloodCardsButton.setDisable(true);
         drawFloodCardsButton.setOnAction(e -> handleDrawFloodCards());
         
+        viewOtherPlayersButton = new Button("查看队友手牌");
+        viewOtherPlayersButton.setPrefWidth(120);
+        viewOtherPlayersButton.setMaxWidth(Double.MAX_VALUE);
+        viewOtherPlayersButton.setOnAction(e -> handleViewOtherPlayersAction());
+        
         actionButtonsBox.getChildren().addAll(
             moveButton, 
             shoreUpButton, 
@@ -117,7 +129,8 @@ public class ActionPanel extends VBox {
             specialActionButton,
             new Separator(), 
             endActionsAndDrawTreasureButton,
-            drawFloodCardsButton
+            drawFloodCardsButton,
+            viewOtherPlayersButton
         );
     }
 
@@ -126,7 +139,7 @@ public class ActionPanel extends VBox {
         discardLabel.setFont(Font.font("Arial", FontWeight.BOLD, 14));
         getChildren().add(discardLabel);
 
-        TextArea handCardsArea = new TextArea();
+        handCardsArea = new TextArea();
         handCardsArea.setEditable(false);
         handCardsArea.setPrefRowCount(6);
         handCardsArea.setPrefColumnCount(15);
@@ -134,11 +147,17 @@ public class ActionPanel extends VBox {
         handCardsArea.setStyle("-fx-font-size: 12px;");
         getChildren().add(handCardsArea);
 
+        HBox buttonBox = new HBox(10);
+        buttonBox.setPadding(new Insets(5));
+        
         Button discardButton = new Button("弃牌");
-        discardButton.setPrefWidth(200);
+        discardButton.setPrefWidth(120);
         discardButton.setMaxWidth(Double.MAX_VALUE);
         discardButton.setOnAction(e -> handleDiscardAction());
-        getChildren().add(discardButton);
+        
+        buttonBox.getChildren().addAll(discardButton, viewOtherPlayersButton);
+        buttonBox.setAlignment(Pos.CENTER);
+        getChildren().add(buttonBox);
     }
 
     private void handleMoveAction() {
@@ -148,6 +167,7 @@ public class ActionPanel extends VBox {
 
         if (validMoves.isEmpty()) {
             System.out.println(currentPlayer.getName() + " 没有有效的移动目标！");
+            showMessage(currentPlayer.getName() + " 没有有效的移动目标！");
             return;
         }
 
@@ -172,18 +192,24 @@ public class ActionPanel extends VBox {
                         }
                     }
                     currentPlayer.moveTo(selectedTile);
+                    String message;
                     if (wasPilotFlight) {
                         currentPlayer.setPilotAbilityUsedThisTurn(true);
-                        System.out.println(currentPlayer.getName() + " 飞行到了 " + selectedTile.getName());
+                        message = currentPlayer.getName() + " 飞行到了 " + selectedTile.getName();
                     } else {
-                        System.out.println(currentPlayer.getName() + " 移动到了 " + selectedTile.getName());
+                        message = currentPlayer.getName() + " 移动到了 " + selectedTile.getName();
                     }
+                    System.out.println(message);
                     mainApp.updateGameState(); 
                 } else {
-                    System.out.println(currentPlayer.getName() + " 尝试移动失败：没有行动点。");
+                    String message = currentPlayer.getName() + " 尝试移动失败：没有行动点。";
+                    System.out.println(message);
+                    showMessage(message);
                 }
             } else {
-                System.out.println(currentPlayer.getName() + " 无效的移动选择。请从高亮板块中选择。");
+                String message = currentPlayer.getName() + " 无效的移动选择。请从高亮板块中选择。";
+                System.out.println(message);
+                showMessage(message);
             }
         });
     }
@@ -194,7 +220,9 @@ public class ActionPanel extends VBox {
         Set<IslandTile> validShoreUpTiles = getValidShoreUpTiles(currentPlayer);
 
         if (validShoreUpTiles.isEmpty()) {
-            System.out.println(currentPlayer.getName() + " 附近没有可治水的板块！");
+            String message = currentPlayer.getName() + " 附近没有可治水的板块！";
+            System.out.println(message);
+            showMessage(message);
             return;
         }
 
@@ -209,7 +237,8 @@ public class ActionPanel extends VBox {
                 if (game.spendAction()) {
                     selectedTile.shoreUp();
                     if (currentPlayer.getRole() == AdventurerRole.ENGINEER) {
-                        System.out.println(currentPlayer.getName() + " (工程师) 治水了 " + selectedTile.getName() + "，可以选择再治水一个板块...");
+                        String message = currentPlayer.getName() + " (工程师) 治水了 " + selectedTile.getName() + "，可以选择再治水一个板块...";
+                        System.out.println(message);
                         Set<IslandTile> remainingShoreUpTiles = getValidShoreUpTiles(currentPlayer);
                         remainingShoreUpTiles.remove(selectedTile); 
                         if (!remainingShoreUpTiles.isEmpty()) {
@@ -217,27 +246,38 @@ public class ActionPanel extends VBox {
                             gameBoardView.setTileSelectionCallback(secondTile -> {
                                 gameBoardView.clearSelectionHighlights();
                                 gameBoardView.setTileSelectionCallback(null);
+                                String finalMessage;
                                 if (remainingShoreUpTiles.contains(secondTile)) {
                                     secondTile.shoreUp();
-                                    System.out.println(currentPlayer.getName() + " (工程师) 治水了 " + selectedTile.getName() + " 和 " + secondTile.getName());
+                                    finalMessage = currentPlayer.getName() + " (工程师) 治水了 " + selectedTile.getName() + " 和 " + secondTile.getName();
                                 } else {
-                                    System.out.println(currentPlayer.getName() + " 治水了 " + selectedTile.getName() + "，但放弃了第二次治水机会");
+                                    finalMessage = currentPlayer.getName() + " 治水了 " + selectedTile.getName() + "，但放弃了第二次治水机会";
                                 }
+                                System.out.println(finalMessage);
+                                showMessage(finalMessage);
                                 mainApp.updateGameState();
                             });
                         } else {
-                            System.out.println(currentPlayer.getName() + " 治水了 " + selectedTile.getName() + "，没有更多可治水的板块");
+                            String finalMessage = currentPlayer.getName() + " 治水了 " + selectedTile.getName() + "，没有更多可治水的板块";
+                            System.out.println(finalMessage);
+                            showMessage(finalMessage);
                             mainApp.updateGameState();
                         }
                     } else {
-                        System.out.println(currentPlayer.getName() + " 治水了 " + selectedTile.getName());
+                        String message = currentPlayer.getName() + " 治水了 " + selectedTile.getName();
+                        System.out.println(message);
+                        showMessage(message);
                         mainApp.updateGameState();
                     }
                 } else {
-                    System.out.println(currentPlayer.getName() + " 尝试治水失败：没有行动点。");
+                    String message = currentPlayer.getName() + " 尝试治水失败：没有行动点。";
+                    System.out.println(message);
+                    showMessage(message);
                 }
             } else {
-                System.out.println(currentPlayer.getName() + " 无效的治水选择。请从高亮板块中选择。");
+                String message = currentPlayer.getName() + " 无效的治水选择。请从高亮板块中选择。";
+                System.out.println(message);
+                showMessage(message);
             }
         });
     }
@@ -280,49 +320,56 @@ public class ActionPanel extends VBox {
         IslandTile currentLocation = currentPlayer.getCurrentLocation();
         
         if (currentLocation == null) {
-            System.out.println(currentPlayer.getName() + " 当前位置无效，无法取宝");
+            String message = currentPlayer.getName() + " 当前位置无效，无法取宝";
+            System.out.println(message);
+            showMessage(message);
             return;
         }
         
         TreasureType treasure = currentLocation.getAssociatedTreasure();
         if (treasure == null) {
-            System.out.println(currentPlayer.getName() + " 当前板块没有宝藏！");
+            String message = currentPlayer.getName() + " 当前板块没有宝藏！";
+            System.out.println(message);
+            showMessage(message);
             return;
         }
         
+        int requiredCards = currentPlayer.getRole().getTreasureCardsNeededForCapture();
         int treasureCardCount = 0;
-        List<Card> treasureCardsToDiscard = new ArrayList<>();
+        
         for (Card card : currentPlayer.getHand()) {
             if (card instanceof TreasureCard) {
                 TreasureCard treasureCard = (TreasureCard) card;
                 if (treasureCard.getTreasureType() == treasure) {
                     treasureCardCount++;
-                    treasureCardsToDiscard.add(card);
                 }
             }
         }
         
-        int requiredCards = currentPlayer.getRole().getTreasureCardsNeededForCapture();
         if (treasureCardCount >= requiredCards) {
             if (game.spendAction()) {
-                for (int i = 0; i < requiredCards; i++) {
-                    currentPlayer.removeCardFromHand(treasureCardsToDiscard.get(i));
-                    game.getTreasureDeck().discardCard(treasureCardsToDiscard.get(i)); 
-                }
-                currentPlayer.addCollectedTreasure(treasure);
-                for (Treasure t : game.getTreasures()) {
-                    if (t.getType() == treasure) {
-                        t.setCollected();
-                        break;
+                if (currentPlayer.captureTreasure(treasure, game.getTreasureDeck())) {
+                    // 更新宝藏状态
+                    for (Treasure t : game.getTreasures()) {
+                        if (t.getType() == treasure) {
+                            t.setCollected();
+                            break;
+                        }
                     }
+                    String message = currentPlayer.getName() + " 获得了宝藏：" + treasure.getDisplayName() + "！";
+                    System.out.println(message);
+                    showMessage(message);
+                    mainApp.updateGameState();
                 }
-                System.out.println(currentPlayer.getName() + " 获得了宝藏：" + treasure.getDisplayName() + "！");
-                mainApp.updateGameState();
             } else {
-                System.out.println(currentPlayer.getName() + " 尝试取宝失败：没有行动点。");
+                String message = currentPlayer.getName() + " 尝试取宝失败：没有行动点。";
+                System.out.println(message);
+                showMessage(message);
             }
         } else {
-            System.out.println(currentPlayer.getName() + " 需要" + requiredCards + "张" + treasure.getDisplayName() + "宝藏卡才能取宝！当前只有" + treasureCardCount + "张。");
+            String message = currentPlayer.getName() + " 需要" + requiredCards + "张" + treasure.getDisplayName() + "宝藏卡才能取宝！当前只有" + treasureCardCount + "张。";
+            System.out.println(message);
+            showMessage(message);
         }
     }
 
@@ -498,7 +545,9 @@ public class ActionPanel extends VBox {
             }
         }
         if (treasureCardsInHand.isEmpty()) {
-            System.out.println(currentPlayer.getName() + " 没有宝藏卡可以给予！");
+            String message = currentPlayer.getName() + " 没有宝藏卡可以给予！";
+            System.out.println(message);
+            showMessage(message);
             return;
         }
         List<Player> validRecipientPlayers = new ArrayList<>();
@@ -512,11 +561,14 @@ public class ActionPanel extends VBox {
             }
         }
         if (validRecipientPlayers.isEmpty()) {
+            String message;
             if (isMessenger) {
-                System.out.println(currentPlayer.getName() + " 没有其他玩家可以接收卡牌！");
+                message = currentPlayer.getName() + " 没有其他玩家可以接收卡牌！";
             } else {
-                System.out.println(currentPlayer.getName() + " 同一板块上没有其他玩家！");
+                message = currentPlayer.getName() + " 同一板块上没有其他玩家！";
             }
+            System.out.println(message);
+            showMessage(message);
             return;
         }
         
@@ -576,10 +628,14 @@ public class ActionPanel extends VBox {
                 if (game.spendAction()) {
                     currentPlayer.removeCardFromHand(selectedCardToGive);
                     selectedPlayer.addCardToHand(selectedCardToGive);
-                    System.out.println(currentPlayer.getName() + " 将 " + selectedCardToGive.getTreasureType().getDisplayName() + " 卡给予了 " + selectedPlayer.getName());
+                    String message = currentPlayer.getName() + " 将 " + selectedCardToGive.getTreasureType().getDisplayName() + " 卡给予了 " + selectedPlayer.getName();
+                    System.out.println(message);
+                    showMessage(message);
                     mainApp.updateGameState();
                 } else {
-                    System.out.println(currentPlayer.getName() + " 尝试送卡失败：没有行动点。");
+                    String message = currentPlayer.getName() + " 尝试送卡失败：没有行动点。";
+                    System.out.println(message);
+                    showMessage(message);
                 }
             });
         });
@@ -598,13 +654,16 @@ public class ActionPanel extends VBox {
 
         game.playerDrawsTreasureCards(); 
         
-        System.out.println("INFO: checkAndHandleHandLimit and playerProceedsToDrawFloodCardsPhase calls commented out in ActionPanel.");
-        if (!currentPlayer.isHandOverLimit()) { 
-             System.out.println("INFO: Manually proceeding to flood card phase from ActionPanel (TEMPORARY).");
-             game.setCurrentPhase(Game.GamePhase.DRAW_FLOOD_CARDS_PHASE);
-             update(); 
+        // 检查手牌上限
+        if (currentPlayer.isHandOverLimit()) {
+            System.out.println(currentPlayer.getName() + " 手牌超过上限，需要弃牌");
+            showMessage(currentPlayer.getName() + " 手牌超过上限，请选择要弃掉的卡牌");
+            handleDiscardAction();
         } else {
-            System.out.println(currentPlayer.getName() + " needs to discard cards. Manual discard action needed.");
+            // 如果手牌未超过上限，直接进入抽洪水牌阶段
+            System.out.println(currentPlayer.getName() + " 手牌未超过上限，进入抽洪水牌阶段");
+            game.setCurrentPhase(Game.GamePhase.DRAW_FLOOD_CARDS_PHASE);
+            update();
         }
     }
 
@@ -616,15 +675,20 @@ public class ActionPanel extends VBox {
         Player currentPlayer = game.getCurrentPlayer();
         System.out.println(currentPlayer.getName() + " 正在抽取洪水牌...");
         drawFloodCardsButton.setDisable(true); 
-        System.out.println("INFO: processFloodCardDrawAndAdvance call commented out in ActionPanel.");
+        
+        // 抽取洪水牌
         game.playerDrawsFloodCards_REVISED();
-        if (!game.checkGameOverConditions()) {
-             System.out.println("INFO: Manually advancing to next turn from ActionPanel (TEMPORARY).");
-            game.nextTurn(); 
-            update(); 
+        
+        // 检查游戏结束条件
+        if (game.checkGameOverConditions()) {
+            System.out.println("游戏结束！");
+            disableAllButtons();
+            showMessage("游戏结束！");
         } else {
-            System.out.println("INFO: Game over after flood card draw.");
-            disableAllButtons(); 
+            // 进入下一个玩家的回合
+            game.nextTurn();
+            update();
+            showMessage(game.getCurrentPlayer().getName() + " 的回合开始");
         }
     }
 
@@ -634,11 +698,15 @@ public class ActionPanel extends VBox {
             return false;
         }
         if (game.getActionsRemainingInTurn() <= 0) {
-             System.out.println(game.getCurrentPlayer().getName() + " 没有剩余行动点！");
+             String message = game.getCurrentPlayer().getName() + " 没有剩余行动点！";
+             System.out.println(message);
+             showMessage(message);
              return false;
         }
         if (game.getCurrentPhase() != Game.GamePhase.ACTION_PHASE) { 
-            System.out.println(game.getCurrentPlayer().getName() + " 已不在行动阶段，无法执行行动。");
+            String message = game.getCurrentPlayer().getName() + " 已不在行动阶段，无法执行行动。";
+            System.out.println(message);
+            showMessage(message);
             return false;
         }
         return true;
@@ -651,13 +719,78 @@ public class ActionPanel extends VBox {
     }
 
     private void handleDiscardAction() {
-        showMessage("弃牌功能（手动选择）将在后续版本中实现");
         Player currentPlayer = game.getCurrentPlayer();
-        if (currentPlayer.isHandOverLimit()) {
-            System.out.println(currentPlayer.getName() + " 手牌已满，请弃牌。");
-        } else {
-            System.out.println(currentPlayer.getName() + " 手牌未满，无需弃牌。");
+        if (!currentPlayer.isHandOverLimit()) {
+            showMessage("你的手牌未超过上限，不需要弃牌。");
+            return;
         }
+        
+        List<Card> hand = currentPlayer.getHand();
+        int cardsToDiscard = hand.size() - Player.MAX_HAND_SIZE;
+        
+        Dialog<List<Card>> dialog = new Dialog<>();
+        dialog.setTitle("弃牌");
+        dialog.setHeaderText("请选择 " + cardsToDiscard + " 张卡牌弃掉\n当前手牌: " + hand.size() + "/" + Player.MAX_HAND_SIZE);
+        
+        ButtonType discardButtonType = new ButtonType("弃掉", ButtonBar.ButtonData.OK_DONE);
+        ButtonType cancelButtonType = new ButtonType("取消", ButtonBar.ButtonData.CANCEL_CLOSE);
+        dialog.getDialogPane().getButtonTypes().addAll(discardButtonType, cancelButtonType);
+        
+        ListView<Card> cardListView = new ListView<>();
+        cardListView.getItems().addAll(hand);
+        cardListView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        
+        cardListView.setCellFactory(param -> new ListCell<Card>() {
+            @Override
+            protected void updateItem(Card card, boolean empty) {
+                super.updateItem(card, empty);
+                if (empty || card == null) {
+                    setText(null);
+                } else {
+                    if (card instanceof TreasureCard) {
+                        TreasureCard tc = (TreasureCard) card;
+                        setText(tc.getName() + " - " + tc.getTreasureType().getDisplayName());
+                    } else if (card instanceof SpecialActionCard) {
+                        setText(card.getName() + " - " + card.getDescription());
+                    } else {
+                        setText(card.getName());
+                    }
+                }
+            }
+        });
+        
+        dialog.getDialogPane().setContent(cardListView);
+        
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == discardButtonType) {
+                return new ArrayList<>(cardListView.getSelectionModel().getSelectedItems());
+            }
+            return null;
+        });
+        
+        dialog.showAndWait().ifPresent(selectedCards -> {
+            if (selectedCards.size() != cardsToDiscard) {
+                showMessage("请选择正确数量的卡牌: " + cardsToDiscard);
+                handleDiscardAction(); // 重新打开弃牌对话框
+            } else {
+                for (Card card : selectedCards) {
+                    currentPlayer.removeCardFromHand(card);
+                    game.getTreasureDeck().discardCard(card);
+                    System.out.println(currentPlayer.getName() + " 弃掉了: " + card.getName());
+                }
+                
+                // 检查是否仍然超过手牌上限
+                if (currentPlayer.isHandOverLimit()) {
+                    handleDiscardAction(); // 如果仍然超过，继续弃牌
+                } else {
+                    // 如果在抽宝藏牌阶段弃牌完成，自动进入抽洪水牌阶段
+                    if (game.getCurrentPhase() == Game.GamePhase.DRAW_TREASURE_CARDS_PHASE) {
+                        game.setCurrentPhase(Game.GamePhase.DRAW_FLOOD_CARDS_PHASE);
+                        update();
+                    }
+                }
+            }
+        });
     }
 
     private void showMessage(String message) {
@@ -682,18 +815,51 @@ public class ActionPanel extends VBox {
             disableAllButtons(); 
             return;
         }
+        
         updateActionPointsDisplay();
-        boolean inActionPhase = game.getCurrentPhase() == Game.GamePhase.ACTION_PHASE;
-        boolean canAct = inActionPhase && game.getActionsRemainingInTurn() > 0;
-
-        moveButton.setDisable(!canAct);
-        shoreUpButton.setDisable(!canAct);
-        giveCardButton.setDisable(!canAct);
-        captureTreasureButton.setDisable(!canAct);
-        specialActionButton.setDisable(!canAct);
-
-        endActionsAndDrawTreasureButton.setDisable(!inActionPhase); 
-        drawFloodCardsButton.setDisable(game.getCurrentPhase() != Game.GamePhase.DRAW_FLOOD_CARDS_PHASE);
+        updateHandCardsDisplay();
+        
+        Game.GamePhase currentPhase = game.getCurrentPhase();
+        Player currentPlayer = game.getCurrentPlayer();
+        
+        // 根据游戏阶段更新按钮状态
+        switch (currentPhase) {
+            case ACTION_PHASE:
+                boolean canAct = game.getActionsRemainingInTurn() > 0;
+                moveButton.setDisable(!canAct);
+                shoreUpButton.setDisable(!canAct);
+                giveCardButton.setDisable(!canAct);
+                captureTreasureButton.setDisable(!canAct);
+                specialActionButton.setDisable(!canAct);
+                
+                endActionsAndDrawTreasureButton.setDisable(false);
+                drawFloodCardsButton.setDisable(true);
+                
+                actionPointsLabel.setText("行动点数: " + game.getActionsRemainingInTurn());
+                break;
+                
+            case DRAW_TREASURE_CARDS_PHASE:
+                disableActionButtonsForPhaseChange();
+                endActionsAndDrawTreasureButton.setDisable(true);
+                drawFloodCardsButton.setDisable(true);
+                
+                // 如果玩家手牌超过上限，显示弃牌按钮
+                if (currentPlayer.isHandOverLimit()) {
+                    // 这里我们可以添加一个提示，但实际上handleEndActionsAndDrawTreasure已经会调用handleDiscardAction
+                    System.out.println(currentPlayer.getName() + " 需要弃牌");
+                }
+                
+                actionPointsLabel.setText("抽宝藏牌阶段");
+                break;
+                
+            case DRAW_FLOOD_CARDS_PHASE:
+                disableActionButtonsForPhaseChange();
+                endActionsAndDrawTreasureButton.setDisable(true);
+                drawFloodCardsButton.setDisable(false);
+                
+                actionPointsLabel.setText("抽洪水牌阶段");
+                break;
+        }
     }
     
     public void disableActionButtonsForPhaseChange() {
@@ -712,8 +878,144 @@ public class ActionPanel extends VBox {
         specialActionButton.setDisable(true);
         endActionsAndDrawTreasureButton.setDisable(true);
         drawFloodCardsButton.setDisable(true);
+        viewOtherPlayersButton.setDisable(true);
         if(actionPointsLabel != null){
             actionPointsLabel.setText("行动点数: N/A");
         }
+    }
+
+    /**
+     * 处理查看其他玩家手牌的操作
+     */
+    private void handleViewOtherPlayersAction() {
+        List<Player> otherPlayers = new ArrayList<>();
+        Player currentPlayer = game.getCurrentPlayer();
+        
+        for (Player player : game.getPlayers()) {
+            if (player != currentPlayer) {
+                otherPlayers.add(player);
+            }
+        }
+        
+        if (otherPlayers.isEmpty()) {
+            showMessage("没有其他玩家");
+            return;
+        }
+        
+        Dialog<Player> dialog = new Dialog<>();
+        dialog.setTitle("查看队友手牌");
+        dialog.setHeaderText("选择要查看手牌的玩家");
+        
+        ButtonType viewButtonType = new ButtonType("查看", ButtonBar.ButtonData.OK_DONE);
+        ButtonType cancelButtonType = new ButtonType("取消", ButtonBar.ButtonData.CANCEL_CLOSE);
+        dialog.getDialogPane().getButtonTypes().addAll(viewButtonType, cancelButtonType);
+        
+        ListView<Player> playerListView = new ListView<>();
+        playerListView.getItems().addAll(otherPlayers);
+        playerListView.setCellFactory(param -> new ListCell<Player>() {
+            @Override
+            protected void updateItem(Player player, boolean empty) {
+                super.updateItem(player, empty);
+                if (empty || player == null) {
+                    setText(null);
+                } else {
+                    setText(player.getName() + " (" + player.getRole() + ")");
+                }
+            }
+        });
+        
+        dialog.getDialogPane().setContent(playerListView);
+        
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == viewButtonType) {
+                return playerListView.getSelectionModel().getSelectedItem();
+            }
+            return null;
+        });
+        
+        dialog.showAndWait().ifPresent(selectedPlayer -> {
+            showPlayerCards(selectedPlayer);
+        });
+    }
+    
+    /**
+     * 显示指定玩家的手牌
+     */
+    private void showPlayerCards(Player player) {
+        if (player == null || player.getHand().isEmpty()) {
+            showMessage(player == null ? "玩家不存在" : player.getName() + " 没有手牌");
+            return;
+        }
+        
+        Dialog<Void> cardsDialog = new Dialog<>();
+        cardsDialog.setTitle(player.getName() + " 的手牌");
+        cardsDialog.setHeaderText(player.getName() + " (" + player.getRole() + ") 当前拥有 " + 
+                                  player.getHand().size() + " 张手牌");
+        
+        ButtonType closeButtonType = new ButtonType("关闭", ButtonBar.ButtonData.CANCEL_CLOSE);
+        cardsDialog.getDialogPane().getButtonTypes().add(closeButtonType);
+        
+        ListView<Card> cardListView = new ListView<>();
+        cardListView.getItems().addAll(player.getHand());
+        cardListView.setCellFactory(param -> new ListCell<Card>() {
+            @Override
+            protected void updateItem(Card card, boolean empty) {
+                super.updateItem(card, empty);
+                if (empty || card == null) {
+                    setText(null);
+                } else {
+                    if (card instanceof TreasureCard) {
+                        TreasureCard tc = (TreasureCard) card;
+                        setText(tc.getName() + " - " + tc.getTreasureType().getDisplayName());
+                    } else if (card instanceof SpecialActionCard) {
+                        setText(card.getName() + " - " + card.getDescription());
+                    } else {
+                        setText(card.getName());
+                    }
+                }
+            }
+        });
+        
+        cardsDialog.getDialogPane().setContent(cardListView);
+        cardsDialog.showAndWait();
+    }
+
+    /**
+     * 更新手牌显示区域
+     */
+    private void updateHandCardsDisplay() {
+        if (game == null || handCardsArea == null) return;
+        
+        Player currentPlayer = game.getCurrentPlayer();
+        if (currentPlayer == null) return;
+        
+        StringBuilder sb = new StringBuilder();
+        List<Card> hand = currentPlayer.getHand();
+        
+        sb.append(currentPlayer.getName())
+          .append(" (").append(currentPlayer.getRole()).append(") ")
+          .append("的手牌：").append(hand.size()).append("/").append(Player.MAX_HAND_SIZE).append("\n\n");
+        
+        if (hand.isEmpty()) {
+            sb.append("没有手牌");
+        } else {
+            for (int i = 0; i < hand.size(); i++) {
+                Card card = hand.get(i);
+                sb.append(i + 1).append(". ");
+                
+                if (card instanceof TreasureCard) {
+                    TreasureCard tc = (TreasureCard) card;
+                    sb.append(tc.getName()).append(" - ").append(tc.getTreasureType().getDisplayName());
+                } else if (card instanceof SpecialActionCard) {
+                    sb.append(card.getName()).append(" - ").append(card.getDescription());
+                } else {
+                    sb.append(card.getName());
+                }
+                
+                sb.append("\n");
+            }
+        }
+        
+        handCardsArea.setText(sb.toString());
     }
 }
