@@ -384,6 +384,14 @@ public class ActionPanel extends VBox {
 
     private void handleSpecialAction() {
         Player currentPlayer = game.getCurrentPlayer();
+        
+        // 处理领航员特殊能力
+        if (currentPlayer.getRole() == AdventurerRole.NAVIGATOR) {
+            handleNavigatorSpecialAbility();
+            return;
+        }
+        
+        // 处理特殊卡牌
         List<Card> specialCards = new ArrayList<>();
         for (Card card : currentPlayer.getHand()) {
             if (card instanceof SpecialActionCard) {
@@ -391,7 +399,7 @@ public class ActionPanel extends VBox {
             }
         }
         if (specialCards.isEmpty()) {
-            System.out.println(currentPlayer.getName() + " 没有特殊行动卡！");
+            showMessage(currentPlayer.getName() + " 没有特殊行动卡！");
             return;
         }
 
@@ -427,11 +435,167 @@ public class ActionPanel extends VBox {
             } else if (selectedCard instanceof HelicopterLiftCard) {
                 useHelicopterLiftCard(currentPlayer, (HelicopterLiftCard) selectedCard);
             } else {
-                System.out.println(currentPlayer.getName() + " 未知的特殊行动卡类型");
+                showMessage(currentPlayer.getName() + " 未知的特殊行动卡类型");
             }
         });
     }
     
+    /**
+     * 处理领航员特殊能力 - 可以移动其他玩家最多2个相邻板块
+     */
+    private void handleNavigatorSpecialAbility() {
+        if (!canPerformAction()) return;
+        
+        Player currentPlayer = game.getCurrentPlayer();
+        
+        // 选择要移动的玩家
+        List<Player> otherPlayers = new ArrayList<>();
+        for (Player player : game.getPlayers()) {
+            if (player != currentPlayer) {
+                otherPlayers.add(player);
+            }
+        }
+        
+        if (otherPlayers.isEmpty()) {
+            showMessage("没有其他玩家可以移动！");
+            return;
+        }
+        
+        Dialog<Player> playerDialog = new Dialog<>();
+        playerDialog.setTitle("领航员特殊能力");
+        playerDialog.setHeaderText("选择要移动的玩家");
+        
+        ButtonType selectButtonType = new ButtonType("选择", ButtonBar.ButtonData.OK_DONE);
+        ButtonType cancelButtonType = new ButtonType("取消", ButtonBar.ButtonData.CANCEL_CLOSE);
+        playerDialog.getDialogPane().getButtonTypes().addAll(selectButtonType, cancelButtonType);
+        
+        ListView<Player> playerListView = new ListView<>();
+        playerListView.getItems().addAll(otherPlayers);
+        playerListView.setCellFactory(param -> new ListCell<Player>() {
+            @Override
+            protected void updateItem(Player player, boolean empty) {
+                super.updateItem(player, empty);
+                if (empty || player == null) {
+                    setText(null);
+                } else {
+                    setText(player.getName() + " (" + player.getRole() + ") - 位置: " + 
+                           (player.getCurrentLocation() != null ? player.getCurrentLocation().getName() : "未知"));
+                }
+            }
+        });
+        
+        playerDialog.getDialogPane().setContent(playerListView);
+        
+        playerDialog.setResultConverter(dialogButton -> {
+            if (dialogButton == selectButtonType) {
+                return playerListView.getSelectionModel().getSelectedItem();
+            }
+            return null;
+        });
+        
+        playerDialog.showAndWait().ifPresent(selectedPlayer -> {
+            // 获取选择的玩家当前位置
+            IslandTile currentLocation = selectedPlayer.getCurrentLocation();
+            if (currentLocation == null) {
+                showMessage(selectedPlayer.getName() + " 当前位置无效！");
+                return;
+            }
+            
+            // 获取可移动的位置（最多2步）
+            Set<IslandTile> validMoves = getValidNavigatorMoves(selectedPlayer);
+            
+            if (validMoves.isEmpty()) {
+                showMessage("没有有效的移动目标！");
+                return;
+            }
+            
+            // 高亮显示可移动的板块
+            gameBoardView.highlightTiles(validMoves, Color.PURPLE);
+            
+            // 设置板块选择回调
+            gameBoardView.setTileSelectionCallback(selectedTile -> {
+                gameBoardView.clearSelectionHighlights();
+                gameBoardView.setTileSelectionCallback(null);
+                
+                if (validMoves.contains(selectedTile)) {
+                    if (game.spendAction()) {
+                        selectedPlayer.moveTo(selectedTile);
+                        String message = currentPlayer.getName() + " (领航员) 将 " + 
+                                        selectedPlayer.getName() + " 移动到了 " + selectedTile.getName();
+                        System.out.println(message);
+                        showMessage(message);
+                        mainApp.updateGameState();
+                    } else {
+                        showMessage("没有足够的行动点！");
+                    }
+                } else {
+                    showMessage("无效的移动选择！");
+                }
+            });
+        });
+    }
+
+    /**
+     * 获取领航员可以移动其他玩家的有效位置（最多2步）
+     */
+    private Set<IslandTile> getValidNavigatorMoves(Player targetPlayer) {
+        Set<IslandTile> validMoves = new HashSet<>();
+        IslandTile currentLocation = targetPlayer.getCurrentLocation();
+        
+        if (currentLocation == null || game == null) return validMoves;
+        
+        // 获取当前位置的坐标
+        int[] currentCoords = game.getTileCoordinates(currentLocation);
+        if (currentCoords == null) return validMoves;
+        
+        // 第一步可到达的位置
+        Set<IslandTile> firstStepTiles = new HashSet<>();
+        int r = currentCoords[0];
+        int c = currentCoords[1];
+        
+        // 正交方向
+        int[] dr = {-1, 1, 0, 0};
+        int[] dc = {0, 0, -1, 1};
+        
+        // 检查第一步可到达的位置
+        for (int i = 0; i < 4; i++) {
+            int nr = r + dr[i];
+            int nc = c + dc[i];
+            
+            if (game.isValidBoardCoordinate(nr, nc)) {
+                IslandTile adjacentTile = game.getGameBoard()[nr][nc];
+                if (adjacentTile != null && !adjacentTile.isSunk()) {
+                    firstStepTiles.add(adjacentTile);
+                    validMoves.add(adjacentTile);
+                }
+            }
+        }
+        
+        // 第二步可到达的位置
+        for (IslandTile firstStepTile : firstStepTiles) {
+            int[] firstStepCoords = game.getTileCoordinates(firstStepTile);
+            if (firstStepCoords == null) continue;
+            
+            r = firstStepCoords[0];
+            c = firstStepCoords[1];
+            
+            // 检查第二步可到达的位置
+            for (int i = 0; i < 4; i++) {
+                int nr = r + dr[i];
+                int nc = c + dc[i];
+                
+                if (game.isValidBoardCoordinate(nr, nc)) {
+                    IslandTile adjacentTile = game.getGameBoard()[nr][nc];
+                    if (adjacentTile != null && !adjacentTile.isSunk() && adjacentTile != currentLocation) {
+                        validMoves.add(adjacentTile);
+                    }
+                }
+            }
+        }
+        
+        return validMoves;
+    }
+
     private void useSandbagsCard(Player player, SandbagsCard card) {
         Set<IslandTile> floodedTiles = new HashSet<>();
         IslandTile[][] board = game.getGameBoard();
@@ -506,9 +670,37 @@ public class ActionPanel extends VBox {
         });
         playerDialog.showAndWait().ifPresent(selectedPlayersList -> {
             if (selectedPlayersList.isEmpty()) {
-                System.out.println(player.getName() + " 未选择任何玩家，取消直升机升空。");
+                showMessage(player.getName() + " 未选择任何玩家，取消直升机升空。");
                 return;
             }
+            
+            // 检查是否满足胜利条件
+            boolean allTreasuresCollected = game.getTreasures().stream().allMatch(Treasure::isCollected);
+            IslandTile foolsLanding = game.getIslandTileByName("Fools' Landing");
+            boolean allPlayersAtFoolsLanding = true;
+            
+            for (Player p : allPlayers) {
+                if (p.getCurrentLocation() != foolsLanding) {
+                    allPlayersAtFoolsLanding = false;
+                    break;
+                }
+            }
+            
+            // 如果所有宝藏都已收集且所有玩家都在愚者起飞点，直接宣布胜利
+            if (allTreasuresCollected && allPlayersAtFoolsLanding) {
+                player.removeCardFromHand(card);
+                game.getTreasureDeck().discardCard(card);
+                
+                // 显示胜利消息
+                String victoryMessage = "恭喜！所有宝藏已收集，所有玩家都在愚者起飞点，直升机成功起飞！你们赢了！";
+                showMessage(victoryMessage);
+                
+                // 调用游戏结束对话框
+                mainApp.updateGameState();
+                return;
+            }
+            
+            // 正常使用直升机卡
             Set<IslandTile> validDestinations = new HashSet<>();
             IslandTile[][] board = game.getGameBoard();
             for (int r = 0; r < board.length; r++) {
@@ -535,10 +727,12 @@ public class ActionPanel extends VBox {
                     if (movedPlayersNames.length() > 0) {
                         movedPlayersNames.setLength(movedPlayersNames.length() - 2);
                     }
-                    System.out.println(player.getName() + " 使用直升机升空卡将 " + movedPlayersNames + " 移动到了 " + selectedTile.getName());
+                    String message = player.getName() + " 使用直升机升空卡将 " + movedPlayersNames + " 移动到了 " + selectedTile.getName();
+                    System.out.println(message);
+                    showMessage(message);
                     mainApp.updateGameState();
                 } else {
-                    System.out.println(player.getName() + " 无效的选择。请从高亮板块中选择。");
+                    showMessage(player.getName() + " 无效的选择。请从高亮板块中选择。");
                 }
             });
         });
@@ -596,7 +790,7 @@ public class ActionPanel extends VBox {
                 if (empty || p == null) {
                     setText(null);
                 } else {
-                    setText(p.getName() + " (" + p.getRole() + ")");
+                    setText(p.getName() + " (" + p.getRole().getChineseName() + ")");
                 }
             }
         });
@@ -622,7 +816,7 @@ public class ActionPanel extends VBox {
                     if (empty || tc == null) {
                         setText(null);
                     } else {
-                        setText(tc.getName() + " - " + tc.getTreasureType().getDisplayName());
+                        setText(tc.getTreasureType().getDisplayName() + " 宝藏卡");
                     }
                 }
             });
@@ -758,7 +952,7 @@ public class ActionPanel extends VBox {
                 } else {
                     if (card instanceof TreasureCard) {
                         TreasureCard tc = (TreasureCard) card;
-                        setText(tc.getName() + " - " + tc.getTreasureType().getDisplayName());
+                        setText(tc.getTreasureType().getDisplayName() + " 宝藏卡");
                     } else if (card instanceof SpecialActionCard) {
                         setText(card.getName() + " - " + card.getDescription());
                     } else {
@@ -958,7 +1152,7 @@ public class ActionPanel extends VBox {
         
         Dialog<Void> cardsDialog = new Dialog<>();
         cardsDialog.setTitle(player.getName() + " 的手牌");
-        cardsDialog.setHeaderText(player.getName() + " (" + player.getRole() + ") 当前拥有 " + 
+        cardsDialog.setHeaderText(player.getName() + " (" + player.getRole().getChineseName() + ") 当前拥有 " + 
                                   player.getHand().size() + " 张手牌");
         
         ButtonType closeButtonType = new ButtonType("关闭", ButtonBar.ButtonData.CANCEL_CLOSE);
@@ -975,7 +1169,7 @@ public class ActionPanel extends VBox {
                 } else {
                     if (card instanceof TreasureCard) {
                         TreasureCard tc = (TreasureCard) card;
-                        setText(tc.getName() + " - " + tc.getTreasureType().getDisplayName());
+                        setText(tc.getTreasureType().getDisplayName() + " 宝藏卡");
                     } else if (card instanceof SpecialActionCard) {
                         setText(card.getName() + " - " + card.getDescription());
                     } else {
@@ -1002,7 +1196,7 @@ public class ActionPanel extends VBox {
         List<Card> hand = currentPlayer.getHand();
         
         sb.append(currentPlayer.getName())
-          .append(" (").append(currentPlayer.getRole()).append(") ")
+          .append(" (").append(currentPlayer.getRole().getChineseName()).append(") ")
           .append("的手牌：").append(hand.size()).append("/").append(Player.MAX_HAND_SIZE).append("\n\n");
         
         if (hand.isEmpty()) {
@@ -1014,7 +1208,7 @@ public class ActionPanel extends VBox {
                 
                 if (card instanceof TreasureCard) {
                     TreasureCard tc = (TreasureCard) card;
-                    sb.append(tc.getName()).append(" - ").append(tc.getTreasureType().getDisplayName());
+                    sb.append(tc.getTreasureType().getDisplayName()).append(" 宝藏卡");
                 } else if (card instanceof SpecialActionCard) {
                     sb.append(card.getName()).append(" - ").append(card.getDescription());
                 } else {

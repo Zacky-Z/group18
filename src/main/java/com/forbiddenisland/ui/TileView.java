@@ -303,7 +303,7 @@ public class TileView extends StackPane {
         
         // 添加玩家信息提示
         pawnWithLabel.setOnMouseEntered(e -> {
-            setTooltip(player.getName() + " (" + player.getRole() + ")");
+            setTooltip(player.getName() + " (" + player.getRole().getChineseName() + ")");
             e.consume();
         });
         
