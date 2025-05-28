@@ -29,6 +29,7 @@ com\forbiddenisland\ui\util\PositionUtils.class
 com\forbiddenisland\core\model\FloodCard.class
 com\forbiddenisland\model\Treasure.class
 com\forbiddenisland\ui\ActionPanel$1.class
+com\forbiddenisland\ui\ActionPanel$8.class
 com\forbiddenisland\model\FloodActionReport.class
 com\forbiddenisland\model\SandbagsCard.class
 com\forbiddenisland\model\SpecialActionCard.class

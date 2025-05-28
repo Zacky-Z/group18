@@ -34,6 +34,6 @@ public class TreasureCard extends Card {
      */
     @Override
     public String getDescription() {
-        return "Treasure Card for: " + treasureType.toString(); // 宝藏牌对应：[宝藏名称]
+        return "宝藏卡：" + treasureType.getDisplayName();
     }
 } 

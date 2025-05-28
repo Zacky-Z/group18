@@ -760,7 +760,7 @@ public class Game implements Serializable {
         for (Player player : playersToCheck) {
             Pawn pawn = player.getPawn();
             if (pawn.getCurrentLocation() == justSunkTile) { // Pawn was on the tile that just sank
-                System.out.println("Pawn of " + player.getName() + " (" + player.getRole().name() + 
+                System.out.println("Pawn of " + player.getName() + " (" + player.getRole().getChineseName() + 
                                    ") is on the just sunken tile " + justSunkTile.getName() + " (was at " + r_sunk + "," + c_sunk + ") and must swim!");
                 boolean swamSafely = attemptSwim(player, justSunkTile, r_sunk, c_sunk); // Use overloaded version
                 if (!swamSafely) {
@@ -858,11 +858,11 @@ public class Game implements Serializable {
             // 玩家选择或随机/第一个选择
             IslandTile destination = swimOptions.get(randomGenerator.nextInt(swimOptions.size()));
             player.getPawn().setCurrentLocation(destination);
-            System.out.println(player.getName() + " (" + role + ") swam to " + destination.getName());
+            System.out.println(player.getName() + " (" + role.getChineseName() + ") swam to " + destination.getName());
             return true;
         }
         
-        System.out.println(player.getName() + " (" + role + ") found no valid tile to swim to from (" + r + "," + c + ").");
+        System.out.println(player.getName() + " (" + role.getChineseName() + ") found no valid tile to swim to from (" + r + "," + c + ").");
         return false;
     }
     
@@ -942,7 +942,7 @@ public class Game implements Serializable {
         resetActions(); // Also reset actions here as it's part of ending a turn in some contexts
         getCurrentPlayer().resetTurnBasedAbilities();
         currentPhase = GamePhase.ACTION_PHASE;
-        System.out.println("--- It is now " + getCurrentPlayer().getName() + "'s turn (" + getCurrentPlayer().getRole().name() + ") ---");
+        System.out.println("--- It is now " + getCurrentPlayer().getName() + "'s turn (" + getCurrentPlayer().getRole().getChineseName() + ") ---");
     }
 
     // GamePhase Getters/Setters (Added from local)

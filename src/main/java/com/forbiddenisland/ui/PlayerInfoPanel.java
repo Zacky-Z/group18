@@ -127,7 +127,7 @@ public class PlayerInfoPanel extends VBox {
         
         public void update() {
             nameLabel.setText(player.getName());
-            roleLabel.setText("角色: " + player.getRole().getDescription());
+            roleLabel.setText("角色: " + player.getRole().getChineseName() + " - " + player.getRole().getDescription());
             cardsLabel.setText("手牌数: " + player.getHand().size());
             
             // 更新当前位置
