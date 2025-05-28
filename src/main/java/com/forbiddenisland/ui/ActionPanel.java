@@ -483,7 +483,7 @@ public class ActionPanel extends VBox {
                 }
             }
         });
-        
+
         playerDialog.getDialogPane().setContent(playerListView);
         
         playerDialog.setResultConverter(dialogButton -> {
@@ -857,6 +857,17 @@ public class ActionPanel extends VBox {
 
         game.playerDrawsTreasureCards(); 
         
+        // 确保UI更新，特别是在抽到洪水上涨卡牌的情况下
+        mainApp.updateGameState();
+        
+        // 检查当前游戏阶段，因为如果抽到了洪水上涨卡牌，阶段可能已经改变
+        if (game.getCurrentPhase() == Game.GamePhase.DRAW_FLOOD_CARDS_PHASE) {
+            // 如果已经进入抽洪水牌阶段（可能是因为抽到了洪水上涨卡牌），直接更新UI
+            System.out.println("游戏阶段已变为抽洪水牌阶段，可能是因为抽到了洪水上涨卡牌");
+            update();
+            return;
+        }
+        
         // 检查手牌上限
         if (currentPlayer.isHandOverLimit()) {
             System.out.println(currentPlayer.getName() + " 手牌超过上限，需要弃牌");
@@ -888,9 +899,15 @@ public class ActionPanel extends VBox {
             disableAllButtons();
             showMessage("游戏结束！");
         } else {
+            // 确保水位计更新
+            mainApp.updateGameState();
+            
             // 进入下一个玩家的回合
             game.nextTurn();
-            update();
+            
+            // 再次更新UI以反映新玩家的状态
+            mainApp.updateGameState();
+            
             showMessage(game.getCurrentPlayer().getName() + " 的回合开始");
         }
     }
@@ -925,6 +942,12 @@ public class ActionPanel extends VBox {
         Player currentPlayer = game.getCurrentPlayer();
         if (!currentPlayer.isHandOverLimit()) {
             showMessage("你的手牌未超过上限，不需要弃牌。");
+            
+            // 如果当前是抽宝藏牌阶段，且手牌未超过上限，确保进入抽洪水牌阶段
+            if (game.getCurrentPhase() == Game.GamePhase.DRAW_TREASURE_CARDS_PHASE) {
+                game.setCurrentPhase(Game.GamePhase.DRAW_FLOOD_CARDS_PHASE);
+                update();
+            }
             return;
         }
         
@@ -943,6 +966,7 @@ public class ActionPanel extends VBox {
         cardListView.getItems().addAll(hand);
         cardListView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         
+        // 设置单元格工厂以显示卡牌信息
         cardListView.setCellFactory(param -> new ListCell<Card>() {
             @Override
             protected void updateItem(Card card, boolean empty) {
@@ -950,14 +974,16 @@ public class ActionPanel extends VBox {
                 if (empty || card == null) {
                     setText(null);
                 } else {
+                    String cardInfo;
                     if (card instanceof TreasureCard) {
                         TreasureCard tc = (TreasureCard) card;
-                        setText(tc.getTreasureType().getDisplayName() + " 宝藏卡");
+                        cardInfo = tc.getTreasureType().getDisplayName() + " 宝藏卡";
                     } else if (card instanceof SpecialActionCard) {
-                        setText(card.getName() + " - " + card.getDescription());
+                        cardInfo = card.getName() + " - " + card.getDescription();
                     } else {
-                        setText(card.getName());
+                        cardInfo = card.getName();
                     }
+                    setText(cardInfo);
                 }
             }
         });
@@ -988,6 +1014,7 @@ public class ActionPanel extends VBox {
                 } else {
                     // 如果在抽宝藏牌阶段弃牌完成，自动进入抽洪水牌阶段
                     if (game.getCurrentPhase() == Game.GamePhase.DRAW_TREASURE_CARDS_PHASE) {
+                        System.out.println("弃牌完成，进入抽洪水牌阶段");
                         game.setCurrentPhase(Game.GamePhase.DRAW_FLOOD_CARDS_PHASE);
                         update();
                     }

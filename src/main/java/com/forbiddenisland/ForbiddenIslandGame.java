@@ -34,6 +34,7 @@ public class ForbiddenIslandGame extends Application {
     private PlayerInfoPanel playerInfoPanel;
     private ActionPanel actionPanel;
     private StatusPanel statusPanel;
+    private WaterMeterView waterMeterView;
 
     @Override
     public void start(Stage primaryStage) {
@@ -382,26 +383,32 @@ public class ForbiddenIslandGame extends Application {
         playerInfoPanel = new PlayerInfoPanel(game);
         actionPanel = new ActionPanel(game, this);
         actionPanel.setGameBoardView(gameBoardView);
+        waterMeterView = new WaterMeterView(game.getWaterMeter());
 
         // 设置最小宽度，确保面板不会被挤压
         playerInfoPanel.setMinWidth(280);
         actionPanel.setMinWidth(280);
+        waterMeterView.setMinWidth(200);
         
         // 为面板添加样式
         playerInfoPanel.setStyle("-fx-background-color: #f5f5f5; -fx-border-color: #ddd; -fx-border-radius: 5;");
         actionPanel.setStyle("-fx-background-color: #f5f5f5; -fx-border-color: #ddd; -fx-border-radius: 5;");
         statusPanel.setStyle("-fx-background-color: #f0f0f0; -fx-border-color: #ddd; -fx-border-radius: 5;");
 
+        // 创建右侧面板，包含操作面板和水位计
+        VBox rightPanel = new VBox(15);
+        rightPanel.getChildren().addAll(actionPanel, waterMeterView);
+        
         // 布局UI组件
         gameLayout.setCenter(gameBoardView);
         gameLayout.setLeft(playerInfoPanel);
-        gameLayout.setRight(actionPanel);
+        gameLayout.setRight(rightPanel);
         gameLayout.setBottom(statusPanel);
 
         // 设置边距
         BorderPane.setMargin(gameBoardView, new Insets(10));
         BorderPane.setMargin(playerInfoPanel, new Insets(10));
-        BorderPane.setMargin(actionPanel, new Insets(10));
+        BorderPane.setMargin(rightPanel, new Insets(10));
         BorderPane.setMargin(statusPanel, new Insets(10, 0, 0, 0));
 
         // 菜单栏
@@ -464,6 +471,8 @@ public class ForbiddenIslandGame extends Application {
         if (playerInfoPanel != null) playerInfoPanel.update();
         
         if (actionPanel != null) actionPanel.update();
+        
+        if (waterMeterView != null) waterMeterView.update();
         
         if (statusPanel != null) {
             statusPanel.setStatus(game.getCurrentPlayer().getName() + " 的回合. 水位: " + game.getWaterMeter().getWaterLevelLabel());

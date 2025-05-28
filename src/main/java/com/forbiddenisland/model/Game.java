@@ -421,9 +421,17 @@ public class Game implements Serializable {
      */
     private void processWatersRiseCard(WatersRiseCard card) {
         System.out.println("Processing WATERS RISE! card.");
+        
+        // 记录处理前的水位
+        int oldLevel = waterMeter.getCurrentWaterLevel();
+        
+        // 增加水位
         waterMeter.increaseWaterLevel();
-        System.out.println("Water level increased to: " + waterMeter.getCurrentWaterLevel() + " (" + waterMeter.getWaterLevelLabel() + ")");
+        
+        int newLevel = waterMeter.getCurrentWaterLevel();
+        System.out.println("Water level increased from: " + oldLevel + " to " + newLevel + " (" + waterMeter.getWaterLevelLabel() + ")");
 
+        // 处理洪水弃牌堆
         List<FloodCard> floodDiscards = floodDeck.getDiscardPile();
         if (!floodDiscards.isEmpty()) {
             Collections.shuffle(floodDiscards, randomGenerator);
@@ -433,7 +441,17 @@ public class Game implements Serializable {
         } else {
             System.out.println("Flood discard pile was empty. No cards to shuffle back.");
         }
+        
+        // 弃掉洪水上涨卡牌
         treasureDeck.discardCard(card); // Discard the Waters Rise! card itself
+        
+        // 确保在处理完洪水上涨卡牌后，如果当前阶段是抽宝藏牌阶段，则转换到抽洪水牌阶段
+        if (currentPhase == GamePhase.DRAW_TREASURE_CARDS_PHASE) {
+            System.out.println("Moving to DRAW_FLOOD_CARDS_PHASE after Waters Rise card.");
+            currentPhase = GamePhase.DRAW_FLOOD_CARDS_PHASE;
+        }
+        
+        // 检查游戏结束条件
         checkGameOverConditions(); 
     }
 

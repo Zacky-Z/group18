@@ -3,6 +3,9 @@ package com.forbiddenisland.ui;
 import com.forbiddenisland.model.Game;
 import com.forbiddenisland.model.IslandTile;
 import com.forbiddenisland.model.Player;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
@@ -25,6 +28,7 @@ import javafx.scene.effect.DropShadow;
 import javafx.scene.effect.InnerShadow;
 import javafx.scene.effect.Light;
 import javafx.scene.effect.Lighting;
+import javafx.util.Duration;
 
 import java.util.List;
 
@@ -141,7 +145,16 @@ public class TileView extends StackPane {
             return;
         }
         
-        nameLabel.setText(tile.getName());
+        // 设置板块名称，如果是愚者起飞点则添加特殊标记
+        if (tile.getName().equals("Fools' Landing")) {
+            nameLabel.setText(tile.getName() + "\n(直升机撤离点)");
+            nameLabel.setTextFill(Color.DARKRED);
+            nameLabel.setFont(Font.font("Arial", FontWeight.BOLD, 14));
+        } else {
+            nameLabel.setText(tile.getName());
+            nameLabel.setTextFill(Color.BLACK);
+            nameLabel.setFont(Font.font("Arial", FontWeight.BOLD, 14));
+        }
         
         if (tile.isFlooded()) {
             // 被淹没的板块
@@ -166,7 +179,10 @@ public class TileView extends StackPane {
             // 正常板块
             setBackground(createNormalBackground(tile));
             
-            if (tile.getAssociatedTreasure() != null) {
+            if (tile.getName().equals("Fools' Landing")) {
+                statusLabel.setText("直升机撤离点");
+                statusLabel.setTextFill(Color.DARKRED);
+            } else if (tile.getAssociatedTreasure() != null) {
                 statusLabel.setText("宝藏: " + tile.getAssociatedTreasure().getDisplayName());
                 statusLabel.setTextFill(Color.DARKGREEN);
             } else {
@@ -176,6 +192,19 @@ public class TileView extends StackPane {
             
             // 移除特殊效果
             contentBox.setEffect(null);
+            
+            // 为愚者起飞点添加特殊发光效果
+            if (tile.getName().equals("Fools' Landing")) {
+                DropShadow glow = new DropShadow();
+                glow.setColor(Color.GOLD);
+                glow.setWidth(20);
+                glow.setHeight(20);
+                glow.setRadius(10);
+                contentBox.setEffect(glow);
+                
+                // 添加脉动动画效果
+                createPulseAnimation();
+            }
         }
         
         // 更新玩家棋子显示
@@ -210,8 +239,11 @@ public class TileView extends StackPane {
     private Background createNormalBackground(IslandTile tile) {
         Color backgroundColor;
         
-        // 根据是否有宝藏来设置不同的背景颜色
-        if (tile.getAssociatedTreasure() != null) {
+        // 根据是否有宝藏或是否是愚者起飞点来设置不同的背景颜色
+        if (tile.getName().equals("Fools' Landing")) {
+            // 愚者起飞点使用特殊颜色
+            backgroundColor = Color.rgb(255, 215, 0); // 金色
+        } else if (tile.getAssociatedTreasure() != null) {
             // 有宝藏的板块使用更鲜艳的绿色
             backgroundColor = Color.rgb(144, 238, 144); // 淡绿色
         } else {
@@ -327,5 +359,36 @@ public class TileView extends StackPane {
      */
     public IslandTile getTile() {
         return tile;
+    }
+    
+    /**
+     * 为愚者起飞点创建脉动动画
+     */
+    private void createPulseAnimation() {
+        // 创建边框脉动效果
+        BorderStroke borderStroke = new BorderStroke(
+                Color.GOLD,
+                BorderStrokeStyle.SOLID,
+                new CornerRadii(10),
+                new BorderWidths(3)
+        );
+        Border border = new Border(borderStroke);
+        setBorder(border);
+        
+        // 创建脉动动画
+        DropShadow glow = (DropShadow) contentBox.getEffect();
+        Timeline timeline = new Timeline(
+                new KeyFrame(Duration.ZERO, 
+                        new KeyValue(glow.radiusProperty(), 10),
+                        new KeyValue(glow.colorProperty(), Color.GOLD)),
+                new KeyFrame(Duration.seconds(1.5), 
+                        new KeyValue(glow.radiusProperty(), 20),
+                        new KeyValue(glow.colorProperty(), Color.ORANGE)),
+                new KeyFrame(Duration.seconds(3), 
+                        new KeyValue(glow.radiusProperty(), 10),
+                        new KeyValue(glow.colorProperty(), Color.GOLD))
+        );
+        timeline.setCycleCount(Timeline.INDEFINITE);
+        timeline.play();
     }
 } 
