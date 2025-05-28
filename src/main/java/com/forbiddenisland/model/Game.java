@@ -554,22 +554,10 @@ public class Game implements Serializable {
      * 检查玩家是否超过了手牌上限并处理弃牌。
      */
     private void checkHandLimit(Player player) {
-        while (player.isHandOverLimit()) {
+        if (player.isHandOverLimit()) {
             System.out.println(player.getName() + "'s hand is over limit (" + player.getHand().size() + "/" + Player.MAX_HAND_SIZE + "). Must discard or play.");
-            Card cardToDiscard = null;
-            // Simple auto-discard: non-special first, then any. UI would allow choice.
-            // 简单自动弃牌：首先非特殊牌，然后任何牌。UI将允许选择。
-            for (Card c : player.getHand()) { if (!(c instanceof SpecialActionCard)) cardToDiscard = c; }
-            if (cardToDiscard == null && !player.getHand().isEmpty()) cardToDiscard = player.getHand().get(player.getHand().size() - 1);
-
-            if (cardToDiscard != null) {
-                // TODO: Allow playing special action card before discarding
-                // 待办：允许在丢弃前打出特殊行动牌
-                player.removeCardFromHand(cardToDiscard);
-                // No need to cast to TreasureCard, Deck<Card> can take any Card
-                treasureDeck.discardCard(cardToDiscard); 
-                System.out.println(player.getName() + " auto-discarded: " + cardToDiscard.getName());
-            } else break; 
+            // 不再自动弃牌，由UI处理弃牌逻辑
+            // UI will handle the discard logic
         }
     }
     

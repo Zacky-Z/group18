@@ -384,6 +384,7 @@ public class ForbiddenIslandGame extends Application {
         gameBoardView = new GameBoardView(game);
         statusPanel = new StatusPanel();
         playerInfoPanel = new PlayerInfoPanel(game);
+        playerInfoPanel.setMainApp(this); // 设置PlayerInfoPanel的mainApp引用
         actionPanel = new ActionPanel(game, this);
         actionPanel.setGameBoardView(gameBoardView);
         waterMeterView = new WaterMeterView(game.getWaterMeter());
@@ -696,6 +697,7 @@ public class ForbiddenIslandGame extends Application {
             if (game != null) {
                 gameBoardView.setGame(game);
                 playerInfoPanel.setGame(game);
+                playerInfoPanel.setMainApp(this); // 设置PlayerInfoPanel的mainApp引用
                 actionPanel.setGame(game);
                 updateGameState();
             }
@@ -706,10 +708,18 @@ public class ForbiddenIslandGame extends Application {
         return statusPanel;
     }
 
+    /**
+     * 获取玩家信息面板
+     * @return 玩家信息面板
+     */
+    public PlayerInfoPanel getPlayerInfoPanel() {
+        return playerInfoPanel;
+    }
+
     public void setGamePhase(Game.GamePhase phase) {
         if (game != null) {
             game.setCurrentPhase(phase);
-            actionPanel.update();
+            updateGameState();
         }
     }
 }

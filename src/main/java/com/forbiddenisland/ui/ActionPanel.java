@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 import java.lang.StringBuilder;
+import javafx.application.Platform;
 
 /**
  * 游戏操作面板，显示当前玩家可以执行的操作按钮
@@ -725,6 +726,11 @@ public class ActionPanel extends VBox {
         boolean isMessenger = currentPlayer.getRole() == AdventurerRole.MESSENGER;
         for (Player otherPlayer : game.getPlayers()) {
             if (otherPlayer != currentPlayer) {
+                // 检查玩家手牌是否已满
+                if (otherPlayer.getHand().size() >= Player.MAX_HAND_SIZE) {
+                    continue; // 跳过手牌已满的玩家
+                }
+                
                 if (isMessenger || otherPlayer.getCurrentLocation() == currentLocation) {
                     validRecipientPlayers.add(otherPlayer);
                 }
@@ -733,9 +739,9 @@ public class ActionPanel extends VBox {
         if (validRecipientPlayers.isEmpty()) {
             String message;
             if (isMessenger) {
-                message = currentPlayer.getName() + " 没有其他玩家可以接收卡牌！";
+                message = currentPlayer.getName() + " 没有其他可以接收卡牌的玩家（所有玩家手牌已满）！";
             } else {
-                message = currentPlayer.getName() + " 同一板块上没有其他玩家！";
+                message = currentPlayer.getName() + " 同一板块上没有可以接收卡牌的玩家！";
             }
             System.out.println(message);
             showMessage(message);
@@ -757,7 +763,7 @@ public class ActionPanel extends VBox {
                 if (empty || p == null) {
                     setText(null);
                 } else {
-                    setText(p.getName() + " (" + p.getRole().getChineseName() + ")");
+                    setText(p.getName() + " (" + p.getRole().getChineseName() + ") - 手牌: " + p.getHand().size() + "/" + Player.MAX_HAND_SIZE);
                 }
             }
         });
@@ -769,6 +775,12 @@ public class ActionPanel extends VBox {
             return null;
         });
         playerDialog.showAndWait().ifPresent(selectedPlayer -> {
+            // 再次检查选择的玩家手牌是否已满（以防在对话框打开期间状态变化）
+            if (selectedPlayer.getHand().size() >= Player.MAX_HAND_SIZE) {
+                showMessage(selectedPlayer.getName() + " 手牌已满，无法接收更多卡牌！");
+                return;
+            }
+            
             Dialog<TreasureCard> cardDialog = new Dialog<>();
             cardDialog.setTitle("选择卡牌");
             cardDialog.setHeaderText("选择要给予 " + selectedPlayer.getName() + " 的卡牌");
@@ -801,7 +813,11 @@ public class ActionPanel extends VBox {
                     String message = currentPlayer.getName() + " 将 " + selectedCardToGive.getTreasureType().getDisplayName() + " 卡给予了 " + selectedPlayer.getName();
                     System.out.println(message);
                     showMessage(message);
-                    mainApp.updateGameState();
+                    
+                    // 确保UI完全更新
+                    if (mainApp != null) {
+                        mainApp.updateGameState();
+                    }
                 } else {
                     String message = currentPlayer.getName() + " 尝试送卡失败：没有行动点。";
                     System.out.println(message);
@@ -844,12 +860,20 @@ public class ActionPanel extends VBox {
                 return;
             }
             
-            // 检查手牌上限 - 现在由PlayerInfoPanel处理
+            // 检查手牌上限
             if (currentPlayer.isHandOverLimit()) {
                 System.out.println(currentPlayer.getName() + " 手牌超过上限，需要弃牌");
                 showMessage(currentPlayer.getName() + " 手牌超过上限，请选择要弃掉的卡牌");
+                
                 // 更新UI以显示弃牌按钮
                 mainApp.updateGameState();
+                
+                // 强制打开弃牌对话框
+                Platform.runLater(() -> {
+                    if (mainApp != null && mainApp.getPlayerInfoPanel() != null) {
+                        mainApp.getPlayerInfoPanel().forceDiscardAction();
+                    }
+                });
             } else {
                 // 如果手牌未超过上限，直接进入抽洪水牌阶段
                 System.out.println(currentPlayer.getName() + " 手牌未超过上限，进入抽洪水牌阶段");

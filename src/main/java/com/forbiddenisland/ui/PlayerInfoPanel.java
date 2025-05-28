@@ -1,5 +1,6 @@
 package com.forbiddenisland.ui;
 
+import com.forbiddenisland.ForbiddenIslandGame;
 import com.forbiddenisland.model.Game;
 import com.forbiddenisland.model.Player;
 import com.forbiddenisland.model.Card;
@@ -42,6 +43,7 @@ public class PlayerInfoPanel extends VBox {
     private TextArea handCardsArea;
     private Button discardButton;
     private Button viewOtherPlayersButton;
+    private ForbiddenIslandGame mainApp;
     
     public PlayerInfoPanel(Game game) {
         this.game = game;
@@ -194,6 +196,11 @@ public class PlayerInfoPanel extends VBox {
         }
         
         handCardsArea.setText(sb.toString());
+        
+        // 确保玩家视图中的手牌数量也更新
+        for (PlayerView playerView : playerViews) {
+            playerView.update();
+        }
     }
     
     /**
@@ -201,27 +208,35 @@ public class PlayerInfoPanel extends VBox {
      */
     private void handleDiscardAction() {
         Player currentPlayer = game.getCurrentPlayer();
-        if (!currentPlayer.isHandOverLimit()) {
-            showMessage("你的手牌未超过上限，不需要弃牌。");
-            
-            // 如果当前是抽宝藏牌阶段，且手牌未超过上限，确保进入抽洪水牌阶段
-            if (game.getCurrentPhase() == Game.GamePhase.DRAW_TREASURE_CARDS_PHASE) {
-                game.setCurrentPhase(Game.GamePhase.DRAW_FLOOD_CARDS_PHASE);
-                update();
-            }
+        List<Card> hand = currentPlayer.getHand();
+        
+        if (hand.isEmpty()) {
+            showMessage("你没有手牌可以弃掉。");
             return;
         }
         
-        List<Card> hand = currentPlayer.getHand();
-        int cardsToDiscard = hand.size() - Player.MAX_HAND_SIZE;
+        boolean isOverLimit = currentPlayer.isHandOverLimit();
+        int cardsToDiscard = isOverLimit ? hand.size() - Player.MAX_HAND_SIZE : 1; // 如果超过上限，必须弃到上限，否则默认弃1张
         
         Dialog<List<Card>> dialog = new Dialog<>();
         dialog.setTitle("弃牌");
-        dialog.setHeaderText("请选择 " + cardsToDiscard + " 张卡牌弃掉\n当前手牌: " + hand.size() + "/" + Player.MAX_HAND_SIZE);
+        
+        String headerText;
+        if (isOverLimit) {
+            headerText = "你必须弃掉 " + cardsToDiscard + " 张卡牌\n当前手牌: " + hand.size() + "/" + Player.MAX_HAND_SIZE;
+        } else {
+            headerText = "请选择要弃掉的卡牌\n当前手牌: " + hand.size() + "/" + Player.MAX_HAND_SIZE;
+        }
+        dialog.setHeaderText(headerText);
         
         ButtonType discardButtonType = new ButtonType("弃掉", ButtonData.OK_DONE);
         ButtonType cancelButtonType = new ButtonType("取消", ButtonData.CANCEL_CLOSE);
         dialog.getDialogPane().getButtonTypes().addAll(discardButtonType, cancelButtonType);
+        
+        // 如果是强制弃牌（手牌超过上限），则不允许取消
+        if (isOverLimit && game.getCurrentPhase() == Game.GamePhase.DRAW_TREASURE_CARDS_PHASE) {
+            dialog.getDialogPane().getButtonTypes().remove(cancelButtonType);
+        }
         
         ListView<Card> cardListView = new ListView<>();
         cardListView.getItems().addAll(hand);
@@ -259,9 +274,15 @@ public class PlayerInfoPanel extends VBox {
         });
         
         dialog.showAndWait().ifPresent(selectedCards -> {
-            if (selectedCards.size() != cardsToDiscard) {
-                showMessage("请选择正确数量的卡牌: " + cardsToDiscard);
+            if (isOverLimit && selectedCards.size() != cardsToDiscard) {
+                showMessage("你必须弃掉 " + cardsToDiscard + " 张卡牌");
                 handleDiscardAction(); // 重新打开弃牌对话框
+            } else if (selectedCards.isEmpty()) {
+                showMessage("请至少选择一张卡牌弃掉");
+                // 如果是超过上限的强制弃牌，则重新打开对话框
+                if (isOverLimit) {
+                    handleDiscardAction();
+                }
             } else {
                 for (Card card : selectedCards) {
                     currentPlayer.removeCardFromHand(card);
@@ -269,15 +290,23 @@ public class PlayerInfoPanel extends VBox {
                     System.out.println(currentPlayer.getName() + " 弃掉了: " + card.getName());
                 }
                 
+                // 更新UI显示
+                updateHandCardsDisplay();
+                
                 // 检查是否仍然超过手牌上限
                 if (currentPlayer.isHandOverLimit()) {
+                    showMessage("你仍然需要弃掉 " + (currentPlayer.getHand().size() - Player.MAX_HAND_SIZE) + " 张卡牌");
                     handleDiscardAction(); // 如果仍然超过，继续弃牌
                 } else {
                     // 如果在抽宝藏牌阶段弃牌完成，自动进入抽洪水牌阶段
                     if (game.getCurrentPhase() == Game.GamePhase.DRAW_TREASURE_CARDS_PHASE) {
                         System.out.println("弃牌完成，进入抽洪水牌阶段");
                         game.setCurrentPhase(Game.GamePhase.DRAW_FLOOD_CARDS_PHASE);
-                        update();
+                        
+                        // 更新整个游戏界面，确保所有按钮状态正确
+                        if (mainApp != null) {
+                            mainApp.updateGameState();
+                        }
                     }
                 }
             }
@@ -406,6 +435,27 @@ public class PlayerInfoPanel extends VBox {
         playerViews.clear();
         initializePlayerViews();
         createHandCardsArea();  // 重新创建手牌区域
+    }
+    
+    /**
+     * 强制打开弃牌对话框
+     * 当玩家手牌超过上限时，会被调用
+     */
+    public void forceDiscardAction() {
+        if (game != null && game.getCurrentPlayer() != null) {
+            Player currentPlayer = game.getCurrentPlayer();
+            if (currentPlayer.isHandOverLimit()) {
+                handleDiscardAction();
+            }
+        }
+    }
+    
+    /**
+     * 设置主应用引用
+     * @param mainApp ForbiddenIslandGame实例
+     */
+    public void setMainApp(ForbiddenIslandGame mainApp) {
+        this.mainApp = mainApp;
     }
     
     /**
