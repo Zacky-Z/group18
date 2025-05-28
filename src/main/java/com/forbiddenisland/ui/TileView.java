@@ -151,7 +151,7 @@ public class TileView extends StackPane {
             nameLabel.setTextFill(Color.DARKRED);
             nameLabel.setFont(Font.font("Arial", FontWeight.BOLD, 14));
         } else {
-            nameLabel.setText(tile.getName());
+        nameLabel.setText(tile.getName());
             nameLabel.setTextFill(Color.BLACK);
             nameLabel.setFont(Font.font("Arial", FontWeight.BOLD, 14));
         }
@@ -270,7 +270,7 @@ public class TileView extends StackPane {
             if (player.getPawn() != null && player.getPawn().getCurrentLocation() != null) {
                 // Compare by tile name instead of object reference
                 if (tile.getName().equals(player.getPawn().getCurrentLocation().getName())) {
-                    createPawnCircle(player);
+                createPawnCircle(player);
                 }
             }
         }
@@ -352,7 +352,7 @@ public class TileView extends StackPane {
     
     private void clearTooltip() {
         javafx.scene.control.Tooltip.uninstall(this, null);
-    }
+            }
     
     /**
      * 获取此视图关联的板块

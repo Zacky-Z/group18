@@ -38,7 +38,7 @@ public enum AdventurerRole {
     public String getDescription() {
         return description;
     }
-    
+
     /**
      * Gets the Chinese name of the role.
      * 获取角色的中文名称。

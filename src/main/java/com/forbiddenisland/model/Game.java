@@ -67,7 +67,7 @@ public class Game implements Serializable {
         for (String name : playerNames) {
             this.players.add(new Player(name));
         }
-        this.currentPlayerIndex = 0;
+        this.currentPlayerIndex = 0; 
 
         initializeAllIslandTiles();
         setupIslandLayout();
@@ -427,7 +427,7 @@ public class Game implements Serializable {
         
         // 增加水位
         waterMeter.increaseWaterLevel();
-        
+
         int newLevel = waterMeter.getCurrentWaterLevel();
         System.out.println("Water level increased from: " + oldLevel + " to " + newLevel + " (" + waterMeter.getWaterLevelLabel() + ")");
 
@@ -1035,3 +1035,4 @@ public class Game implements Serializable {
 
     public Deck<Card> getTreasureDeck() { return treasureDeck; }
 }
+ 

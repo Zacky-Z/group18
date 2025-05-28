@@ -18,7 +18,6 @@ com\forbiddenisland\enums\SpecialCardType.class
 com\forbiddenisland\ui\util\PositionUtils.class
 com\forbiddenisland\core\model\FloodCard.class
 com\forbiddenisland\model\Treasure.class
-com\forbiddenisland\ui\ActionPanel$8.class
 com\forbiddenisland\model\FloodActionReport.class
 com\forbiddenisland\ui\TileView.class
 com\forbiddenisland\Main.class
@@ -27,6 +26,7 @@ com\forbiddenisland\core\model\Adventurer$1.class
 com\forbiddenisland\exceptions\GameException.class
 com\forbiddenisland\model\Deck.class
 com\forbiddenisland\ui\view\StatusBar.class
+com\forbiddenisland\ui\PlayerInfoPanel$3.class
 com\forbiddenisland\ui\StatusPanel.class
 com\forbiddenisland\enums\DifficultyLevel.class
 com\forbiddenisland\model\Card.class
@@ -51,7 +51,6 @@ com\forbiddenisland\enums\TreasureType.class
 com\forbiddenisland\ui\PlayerInfoPanel.class
 com\forbiddenisland\ui\view\PlayerInfoView.class
 com\forbiddenisland\model\Game$GamePhase.class
-com\forbiddenisland\ui\ActionPanel$6.class
 com\example\trywork\HelloApplication.class
 com\forbiddenisland\constants\GameConstants.class
 com\forbiddenisland\core\model\IslandTile.class
@@ -59,6 +58,7 @@ com\forbiddenisland\model\PlaceTileHelper.class
 com\forbiddenisland\ui\ActionPanel$1.class
 com\forbiddenisland\model\SandbagsCard.class
 com\forbiddenisland\model\SpecialActionCard.class
+com\forbiddenisland\ui\PlayerInfoPanel$2.class
 com\forbiddenisland\core\model\Card.class
 com\forbiddenisland\ui\ActionPanel.class
 com\forbiddenisland\model\Game$PlaceTileHelper.class
@@ -68,7 +68,6 @@ com\forbiddenisland\model\WatersRiseCard.class
 com\forbiddenisland\GameConsoleApp.class
 com\forbiddenisland\enums\AdventurerType.class
 com\forbiddenisland\ui\view\LoadingOverlay.class
-com\forbiddenisland\ui\ActionPanel$7.class
 com\forbiddenisland\core\model\Player.class
 com\forbiddenisland\ui\GameBoardView.class
 com\forbiddenisland\ui\PlayerInfoPanel$PlayerView.class
@@ -81,6 +80,7 @@ com\forbiddenisland\ui\util\AssetLoader.class
 com\forbiddenisland\ui\view\StatusBar$1.class
 com\forbiddenisland\ui\view\GameMenu.class
 com\forbiddenisland\model\Player.class
+com\forbiddenisland\ui\PlayerInfoPanel$1.class
 com\forbiddenisland\model\Pawn.class
 com\forbiddenisland\core\model\TreasureCard.class
 com\forbiddenisland\ui\controller\ActionController.class

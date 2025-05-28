@@ -36,6 +36,9 @@ public class ForbiddenIslandGame extends Application {
     private StatusPanel statusPanel;
     private WaterMeterView waterMeterView;
 
+    // 添加标志，用于防止重复显示游戏结束对话框
+    private boolean isGameOver = false;
+
     @Override
     public void start(Stage primaryStage) {
         // 创建初始界面
@@ -453,7 +456,7 @@ public class ForbiddenIslandGame extends Application {
         // 设置窗口最小尺寸，确保UI元素不会被挤压
         primaryStage.setMinWidth(1200);
         primaryStage.setMinHeight(800);
-        
+
         // 最大化窗口
         primaryStage.setMaximized(true);
 
@@ -471,56 +474,162 @@ public class ForbiddenIslandGame extends Application {
         if (playerInfoPanel != null) playerInfoPanel.update();
         
         if (actionPanel != null) actionPanel.update();
-        
+
         if (waterMeterView != null) waterMeterView.update();
         
         if (statusPanel != null) {
             statusPanel.setStatus(game.getCurrentPlayer().getName() + " 的回合. 水位: " + game.getWaterMeter().getWaterLevelLabel());
         }
 
-        if (game.checkGameOverConditions()) {
-            showGameOverDialog(false, "游戏结束！失败了。");
-        } else if (game.checkWinConditions()) {
-            showGameOverDialog(true, "游戏结束！胜利！");
+        // 检查游戏结束条件并确定结束原因
+        if (!isGameOver && game.checkGameOverConditions()) {
+            isGameOver = true; // 设置标志，防止重复显示对话框
+            String gameOverReason = determineGameOverReason();
+            showGameOverDialog(false, "游戏结束！失败了。", gameOverReason);
+        } else if (!isGameOver && game.checkWinConditions()) {
+            isGameOver = true; // 设置标志，防止重复显示对话框
+            showGameOverDialog(true, "游戏结束！胜利！", "恭喜！你们成功收集了所有宝藏并全员撤离了禁闭岛！");
         }
+    }
+
+    /**
+     * 确定游戏结束的具体原因
+     * @return 游戏结束原因的描述
+     */
+    private String determineGameOverReason() {
+        System.out.println("正在确定游戏结束原因...");
+        
+        // 检查水位是否达到最高
+        if (game.getWaterMeter().hasReachedMaxLevel()) {
+            String reason = "水位已达到最高点！岛屿完全被淹没了。";
+            System.out.println("游戏结束原因: " + reason);
+            return reason;
+        }
+        
+        // 检查愚者起飞点是否沉没
+        if (game.getIslandTileByName("Fools' Landing") == null) {
+            String reason = "愚者起飞点（Fools' Landing）已沉没！无法撤离岛屿。";
+            System.out.println("游戏结束原因: " + reason);
+            return reason;
+        }
+        
+        // 检查是否有宝藏无法获取
+        for (Treasure treasure : game.getTreasures()) {
+            if (!treasure.isCollected()) {
+                int sunkTreasureTiles = 0;
+                for (String tileName : treasure.getIslandTileNames()) {
+                    if (game.getIslandTileByName(tileName) == null) {
+                        sunkTreasureTiles++;
+                    }
+                }
+                if (sunkTreasureTiles >= 2) {
+                    String reason = treasure.getType().getDisplayName() + "的两个板块都已沉没！无法收集该宝藏。";
+                    System.out.println("游戏结束原因: " + reason);
+                    return reason;
+                }
+            }
+        }
+        
+        // 检查是否有玩家无法移动到安全位置
+        for (Player player : game.getPlayers()) {
+            if (player.getPawn().getCurrentLocation() == null) {
+                String reason = player.getName() + "(" + player.getRole().getChineseName() + ")无法移动到安全位置！";
+                System.out.println("游戏结束原因: " + reason);
+                return reason;
+            }
+        }
+        
+        String reason = "未知原因导致游戏结束。";
+        System.out.println("游戏结束原因: " + reason);
+        return reason;
     }
 
     /**
      * 显示游戏结束对话框
      * @param isWin 是否胜利
      * @param message 结束信息
+     * @param reason 游戏结束的具体原因
      */
-    private void showGameOverDialog(boolean isWin, String message) {
+    private void showGameOverDialog(boolean isWin, String message, String reason) {
         if (statusPanel != null) statusPanel.setStatus(message);
         if (actionPanel != null) actionPanel.disableAllButtons();
 
+        // 直接创建对话框，不使用Platform.runLater
         javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.INFORMATION);
         alert.setTitle(isWin ? "胜利！" : "游戏结束");
         alert.setHeaderText(message);
-        alert.setContentText("点击确定重新开始游戏或退出。");
+        
+        // 创建一个文本区域来显示详细信息
+        javafx.scene.control.TextArea textArea = new javafx.scene.control.TextArea();
+        textArea.setEditable(false);
+        textArea.setWrapText(true);
+        textArea.setPrefHeight(150);
+        
+        // 设置对话框内容，包括游戏结束原因
+        String content = reason + "\n\n";
+        
+        if (isWin) {
+            content += "你们成功地完成了禁闭岛的挑战！";
+        } else {
+            content += "禁闭岛的挑战失败了...";
+        }
+        
+        textArea.setText(content);
+        
+        // 创建一个显示文本和按钮的容器
+        javafx.scene.layout.VBox dialogContent = new javafx.scene.layout.VBox(10);
+        dialogContent.getChildren().add(textArea);
+        
+        // 添加按钮
+        javafx.scene.layout.HBox buttonBox = new javafx.scene.layout.HBox(10);
+        buttonBox.setAlignment(javafx.geometry.Pos.CENTER);
+        
+        javafx.scene.control.Button restartButton = new javafx.scene.control.Button("重新开始");
+        javafx.scene.control.Button exitButton = new javafx.scene.control.Button("退出");
+        
+        restartButton.setOnAction(e -> {
+            alert.close();
+            restartGame();
+        });
+        
+        exitButton.setOnAction(e -> {
+            alert.close();
+            Node anyNode = null;
+            if (gameBoardView != null) anyNode = gameBoardView;
+            else if (playerInfoPanel != null) anyNode = playerInfoPanel;
+            else if (actionPanel != null) anyNode = actionPanel;
+            else if (statusPanel != null) anyNode = statusPanel;
 
-        javafx.scene.control.ButtonType restartButtonType = new javafx.scene.control.ButtonType("重新开始");
-        javafx.scene.control.ButtonType exitButtonType = new javafx.scene.control.ButtonType("退出", javafx.scene.control.ButtonBar.ButtonData.CANCEL_CLOSE);
-
-        alert.getButtonTypes().setAll(restartButtonType, exitButtonType);
-
-        alert.showAndWait().ifPresent(type -> {
-            if (type == restartButtonType) {
-                restartGame();
+            if (anyNode != null && anyNode.getScene() != null && anyNode.getScene().getWindow() != null) {
+                ((Stage) anyNode.getScene().getWindow()).close();
             } else {
-                Node anyNode = null;
-                if (gameBoardView != null) anyNode = gameBoardView;
-                else if (playerInfoPanel != null) anyNode = playerInfoPanel;
-                else if (actionPanel != null) anyNode = actionPanel;
-                else if (statusPanel != null) anyNode = statusPanel;
-
-                if (anyNode != null && anyNode.getScene() != null && anyNode.getScene().getWindow() != null) {
-                     ((Stage) anyNode.getScene().getWindow()).close();
-                } else {
-                     System.exit(0);
-                }
+                System.exit(0);
             }
         });
+        
+        buttonBox.getChildren().addAll(restartButton, exitButton);
+        dialogContent.getChildren().add(buttonBox);
+        
+        // 设置对话框内容
+        alert.getDialogPane().setContent(dialogContent);
+        
+        // 移除默认按钮
+        alert.getButtonTypes().clear();
+        alert.getButtonTypes().add(javafx.scene.control.ButtonType.CLOSE);
+        
+        // 隐藏关闭按钮
+        javafx.scene.Node closeButton = alert.getDialogPane().lookupButton(javafx.scene.control.ButtonType.CLOSE);
+        closeButton.setVisible(false);
+        closeButton.setManaged(false);
+        
+        // 使对话框更大一些，以便显示更多内容
+        alert.getDialogPane().setPrefWidth(500);
+        alert.getDialogPane().setPrefHeight(300);
+        
+        System.out.println("显示游戏结束对话框: " + message + " - " + reason);
+        
+        // 显示对话框
+        alert.show();
     }
 
     /**
@@ -530,6 +639,9 @@ public class ForbiddenIslandGame extends Application {
         // 清除舞台上的所有内容，完全重建
         Stage primaryStage = (Stage) gameBoardView.getScene().getWindow();
 
+        // 重置游戏结束标志
+        isGameOver = false;
+        
         // 完全重新创建游戏实例和UI组件
         start(primaryStage);
     }
