@@ -43,62 +43,126 @@ public class ForbiddenIslandGame extends Application {
 
     private void createInitialScreen(Stage primaryStage) {
         BorderPane root = new BorderPane();
-        root.setPadding(new Insets(10));
+        root.setPadding(new Insets(30));
+        root.setStyle("-fx-background-color: linear-gradient(to bottom, #87CEEB, #1E90FF);");
 
         // 创建标题
-        Label titleLabel = new Label("禁闭岛 (Forbidden Island)");
-        titleLabel.setFont(Font.font("Arial", FontWeight.BOLD, 24));
-        root.setTop(titleLabel);
+        VBox titleBox = new VBox(10);
+        titleBox.setAlignment(javafx.geometry.Pos.CENTER);
+        
+        Label titleLabel = new Label("禁闭岛");
+        titleLabel.setFont(Font.font("Arial", FontWeight.BOLD, 48));
+        titleLabel.setTextFill(javafx.scene.paint.Color.WHITE);
+        titleLabel.setEffect(new javafx.scene.effect.DropShadow(10, javafx.scene.paint.Color.BLACK));
+        
+        Label subtitleLabel = new Label("Forbidden Island");
+        subtitleLabel.setFont(Font.font("Arial", FontWeight.BOLD, 24));
+        subtitleLabel.setTextFill(javafx.scene.paint.Color.WHITE);
+        
+        titleBox.getChildren().addAll(titleLabel, subtitleLabel);
+        root.setTop(titleBox);
+        BorderPane.setAlignment(titleBox, javafx.geometry.Pos.CENTER);
+        BorderPane.setMargin(titleBox, new Insets(0, 0, 50, 0));
 
         // 创建按钮面板
-        VBox buttonPanel = new VBox(10);
-        buttonPanel.setPadding(new Insets(10));
+        VBox buttonPanel = new VBox(20);
+        buttonPanel.setAlignment(javafx.geometry.Pos.CENTER);
+        buttonPanel.setPadding(new Insets(20));
+        buttonPanel.setMaxWidth(300);
+        buttonPanel.setStyle("-fx-background-color: rgba(255, 255, 255, 0.2); -fx-background-radius: 10;");
+
+        String buttonStyle = "-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-size: 16px; " +
+                             "-fx-padding: 10 20; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-radius: 5;";
+        String exitButtonStyle = "-fx-background-color: #f44336; -fx-text-fill: white; -fx-font-size: 16px; " +
+                                "-fx-padding: 10 20; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-radius: 5;";
 
         Button startButton = new Button("开始游戏");
+        startButton.setStyle(buttonStyle);
+        startButton.setMaxWidth(Double.MAX_VALUE);
         startButton.setOnAction(e -> createDifficultyScreen(primaryStage));
 
         Button exitButton = new Button("退出");
+        exitButton.setStyle(exitButtonStyle);
+        exitButton.setMaxWidth(Double.MAX_VALUE);
         exitButton.setOnAction(e -> primaryStage.close());
 
         buttonPanel.getChildren().addAll(startButton, exitButton);
         root.setCenter(buttonPanel);
 
+        // 添加游戏简介
+        Label infoLabel = new Label("禁闭岛是一款合作类桌游，玩家们需要共同合作收集四件宝藏并全员撤离岛屿。");
+        infoLabel.setWrapText(true);
+        infoLabel.setTextFill(javafx.scene.paint.Color.WHITE);
+        infoLabel.setFont(Font.font("Arial", 14));
+        root.setBottom(infoLabel);
+        BorderPane.setAlignment(infoLabel, javafx.geometry.Pos.CENTER);
+        BorderPane.setMargin(infoLabel, new Insets(30, 0, 0, 0));
+
         // 设置场景
-        Scene scene = new Scene(root, 400, 300);
+        Scene scene = new Scene(root, 600, 500);
         primaryStage.setTitle("禁闭岛游戏 (Forbidden Island Game)");
         primaryStage.setScene(scene);
+        primaryStage.setResizable(false);
+        primaryStage.centerOnScreen();
         primaryStage.show();
     }
 
     private void createDifficultyScreen(Stage primaryStage) {
         BorderPane root = new BorderPane();
-        root.setPadding(new Insets(10));
+        root.setPadding(new Insets(30));
+        root.setStyle("-fx-background-color: linear-gradient(to bottom, #87CEEB, #1E90FF);");
 
         // 创建标题
         Label titleLabel = new Label("选择难度");
-        titleLabel.setFont(Font.font("Arial", FontWeight.BOLD, 24));
+        titleLabel.setFont(Font.font("Arial", FontWeight.BOLD, 36));
+        titleLabel.setTextFill(javafx.scene.paint.Color.WHITE);
+        titleLabel.setEffect(new javafx.scene.effect.DropShadow(10, javafx.scene.paint.Color.BLACK));
         root.setTop(titleLabel);
+        BorderPane.setAlignment(titleLabel, javafx.geometry.Pos.CENTER);
+        BorderPane.setMargin(titleLabel, new Insets(0, 0, 30, 0));
 
         // 创建难度选择面板
-        VBox difficultyPanel = new VBox(10);
-        difficultyPanel.setPadding(new Insets(10));
+        VBox difficultyPanel = new VBox(15);
+        difficultyPanel.setPadding(new Insets(20));
+        difficultyPanel.setAlignment(javafx.geometry.Pos.CENTER);
+        difficultyPanel.setStyle("-fx-background-color: rgba(255, 255, 255, 0.2); -fx-background-radius: 10;");
+        difficultyPanel.setMaxWidth(400);
 
         ToggleGroup difficultyGroup = new ToggleGroup();
+        
+        String radioStyle = "-fx-font-size: 16px; -fx-text-fill: white;";
 
         RadioButton noviceButton = new RadioButton("新手 (难度 1)");
+        noviceButton.setStyle(radioStyle);
         noviceButton.setToggleGroup(difficultyGroup);
         noviceButton.setSelected(true);
+        noviceButton.setContentDisplay(javafx.scene.control.ContentDisplay.RIGHT);
 
         RadioButton normalButton = new RadioButton("正常 (难度 2)");
+        normalButton.setStyle(radioStyle);
         normalButton.setToggleGroup(difficultyGroup);
 
         RadioButton expertButton = new RadioButton("精英 (难度 3)");
+        expertButton.setStyle(radioStyle);
         expertButton.setToggleGroup(difficultyGroup);
 
         RadioButton legendButton = new RadioButton("传奇 (难度 4)");
+        legendButton.setStyle(radioStyle);
         legendButton.setToggleGroup(difficultyGroup);
 
+        // 添加难度说明
+        Label descriptionLabel = new Label("选择游戏难度将影响初始水位和游戏进程");
+        descriptionLabel.setWrapText(true);
+        descriptionLabel.setTextFill(javafx.scene.paint.Color.WHITE);
+        descriptionLabel.setFont(Font.font("Arial", FontWeight.NORMAL, 14));
+        
+        // 按钮样式
+        String buttonStyle = "-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-size: 16px; " +
+                            "-fx-padding: 10 20; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-radius: 5;";
+        
         Button startGameButton = new Button("下一步");
+        startGameButton.setStyle(buttonStyle);
+        startGameButton.setMaxWidth(200);
         startGameButton.setOnAction(e -> {
             int difficulty = 1;
             if (normalButton.isSelected()) {
@@ -111,36 +175,67 @@ public class ForbiddenIslandGame extends Application {
             createRoleSelectionScreen(primaryStage, difficulty);
         });
 
-        difficultyPanel.getChildren().addAll(noviceButton, normalButton, expertButton, legendButton, startGameButton);
+        difficultyPanel.getChildren().addAll(
+            descriptionLabel, 
+            new javafx.scene.control.Separator(),
+            noviceButton, normalButton, expertButton, legendButton, 
+            new javafx.scene.control.Separator(),
+            startGameButton
+        );
         root.setCenter(difficultyPanel);
 
         // 设置场景
-        Scene scene = new Scene(root, 400, 300);
+        Scene scene = new Scene(root, 600, 500);
         primaryStage.setTitle("选择难度 - 禁闭岛游戏 (Forbidden Island Game)");
         primaryStage.setScene(scene);
+        primaryStage.centerOnScreen();
     }
 
     private void createRoleSelectionScreen(Stage primaryStage, int difficulty) {
         BorderPane root = new BorderPane();
-        root.setPadding(new Insets(10));
+        root.setPadding(new Insets(30));
+        root.setStyle("-fx-background-color: linear-gradient(to bottom, #87CEEB, #1E90FF);");
 
         Label titleLabel = new Label("角色选择");
-        titleLabel.setFont(Font.font("Arial", FontWeight.BOLD, 24));
+        titleLabel.setFont(Font.font("Arial", FontWeight.BOLD, 36));
+        titleLabel.setTextFill(javafx.scene.paint.Color.WHITE);
+        titleLabel.setEffect(new javafx.scene.effect.DropShadow(10, javafx.scene.paint.Color.BLACK));
         root.setTop(titleLabel);
+        BorderPane.setAlignment(titleLabel, javafx.geometry.Pos.CENTER);
+        BorderPane.setMargin(titleLabel, new Insets(0, 0, 30, 0));
 
-        VBox selectionPanel = new VBox(10);
-        selectionPanel.setPadding(new Insets(10));
+        VBox selectionPanel = new VBox(15);
+        selectionPanel.setPadding(new Insets(20));
+        selectionPanel.setAlignment(javafx.geometry.Pos.CENTER);
+        selectionPanel.setStyle("-fx-background-color: rgba(255, 255, 255, 0.2); -fx-background-radius: 10;");
+        selectionPanel.setMaxWidth(400);
 
         ToggleGroup selectionGroup = new ToggleGroup();
+        
+        String radioStyle = "-fx-font-size: 16px; -fx-text-fill: white;";
 
         RadioButton randomButton = new RadioButton("随机分配角色 (官方规则)");
+        randomButton.setStyle(radioStyle);
         randomButton.setToggleGroup(selectionGroup);
         randomButton.setSelected(true);
 
         RadioButton chooseButton = new RadioButton("自选角色");
+        chooseButton.setStyle(radioStyle);
         chooseButton.setToggleGroup(selectionGroup);
+        
+        // 添加说明文本
+        Label descriptionLabel = new Label("选择角色分配方式。官方规则为随机分配，或者可以手动选择每个玩家的角色。");
+        descriptionLabel.setWrapText(true);
+        descriptionLabel.setTextFill(javafx.scene.paint.Color.WHITE);
+        descriptionLabel.setFont(Font.font("Arial", FontWeight.NORMAL, 14));
+        
+        // 按钮样式
+        String buttonStyle = "-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-size: 16px; " +
+                            "-fx-padding: 10 20; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-radius: 5;";
 
         Button continueButton = new Button("继续");
+        continueButton.setStyle(buttonStyle);
+        continueButton.setMaxWidth(200);
         continueButton.setOnAction(e -> {
             if (randomButton.isSelected()) {
                 startGame(primaryStage, difficulty);
@@ -149,12 +244,19 @@ public class ForbiddenIslandGame extends Application {
             }
         });
 
-        selectionPanel.getChildren().addAll(randomButton, chooseButton, continueButton);
+        selectionPanel.getChildren().addAll(
+            descriptionLabel,
+            new javafx.scene.control.Separator(),
+            randomButton, chooseButton,
+            new javafx.scene.control.Separator(),
+            continueButton
+        );
         root.setCenter(selectionPanel);
 
-        Scene scene = new Scene(root, 400, 300);
+        Scene scene = new Scene(root, 600, 500);
         primaryStage.setTitle("角色选择 - 禁闭岛游戏 (Forbidden Island Game)");
         primaryStage.setScene(scene);
+        primaryStage.centerOnScreen();
     }
 
     private void createPlayerRoleSelectionScreen(Stage primaryStage, int difficulty) {
@@ -271,7 +373,8 @@ public class ForbiddenIslandGame extends Application {
 
     private void setupMainGameUI(Stage primaryStage) {
         BorderPane gameLayout = new BorderPane();
-        gameLayout.setPadding(new Insets(10));
+        gameLayout.setPadding(new Insets(15));
+        gameLayout.setStyle("-fx-background-color: #f0f8ff;"); // 添加淡蓝色背景
 
         // 初始化UI组件
         gameBoardView = new GameBoardView(game);
@@ -280,32 +383,72 @@ public class ForbiddenIslandGame extends Application {
         actionPanel = new ActionPanel(game, this);
         actionPanel.setGameBoardView(gameBoardView);
 
+        // 设置最小宽度，确保面板不会被挤压
+        playerInfoPanel.setMinWidth(280);
+        actionPanel.setMinWidth(280);
+        
+        // 为面板添加样式
+        playerInfoPanel.setStyle("-fx-background-color: #f5f5f5; -fx-border-color: #ddd; -fx-border-radius: 5;");
+        actionPanel.setStyle("-fx-background-color: #f5f5f5; -fx-border-color: #ddd; -fx-border-radius: 5;");
+        statusPanel.setStyle("-fx-background-color: #f0f0f0; -fx-border-color: #ddd; -fx-border-radius: 5;");
+
         // 布局UI组件
         gameLayout.setCenter(gameBoardView);
         gameLayout.setLeft(playerInfoPanel);
         gameLayout.setRight(actionPanel);
         gameLayout.setBottom(statusPanel);
 
+        // 设置边距
+        BorderPane.setMargin(gameBoardView, new Insets(10));
+        BorderPane.setMargin(playerInfoPanel, new Insets(10));
+        BorderPane.setMargin(actionPanel, new Insets(10));
+        BorderPane.setMargin(statusPanel, new Insets(10, 0, 0, 0));
+
         // 菜单栏
         HBox menuBar = new HBox(10);
-        menuBar.setPadding(new Insets(5));
+        menuBar.setPadding(new Insets(10));
+        menuBar.setStyle("-fx-background-color: #e6e6e6; -fx-border-color: #ccc; -fx-border-radius: 5;");
+        menuBar.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+        
+        // 美化按钮样式
+        String buttonStyle = "-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand;";
+        String exitButtonStyle = "-fx-background-color: #f44336; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand;";
+        
         Button restartButton = new Button("重新开始");
+        restartButton.setStyle(buttonStyle);
         restartButton.setOnAction(e -> restartGame());
+        
         Button helpButton = new Button("游戏帮助");
+        helpButton.setStyle(buttonStyle);
         helpButton.setOnAction(e -> showGameHelp());
+        
         Button saveButton = new Button("保存游戏");
+        saveButton.setStyle(buttonStyle);
         saveButton.setOnAction(e -> saveGame(primaryStage));
+        
         Button loadButton = new Button("加载游戏");
+        loadButton.setStyle(buttonStyle);
         loadButton.setOnAction(e -> loadGame(primaryStage));
+        
         Button exitButton = new Button("退出游戏");
+        exitButton.setStyle(exitButtonStyle);
         exitButton.setOnAction(e -> primaryStage.close());
+        
         menuBar.getChildren().addAll(restartButton, helpButton, saveButton, loadButton, exitButton);
         gameLayout.setTop(menuBar);
 
-        Scene scene = new Scene(gameLayout, 1200, 800);
+        // 创建场景并设置更大的初始尺寸
+        Scene scene = new Scene(gameLayout, 1400, 900);
         primaryStage.setTitle("禁闭岛 (Forbidden Island)");
         primaryStage.setScene(scene);
         primaryStage.setResizable(true);
+        
+        // 设置窗口最小尺寸，确保UI元素不会被挤压
+        primaryStage.setMinWidth(1200);
+        primaryStage.setMinHeight(800);
+        
+        // 最大化窗口
+        primaryStage.setMaximized(true);
 
         updateGameState(); // Initial UI update
     }

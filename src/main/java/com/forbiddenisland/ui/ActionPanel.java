@@ -51,7 +51,6 @@ public class ActionPanel extends VBox {
     private Button drawFloodCardsButton;
     private Button viewOtherPlayersButton;
     private VBox actionButtonsBox;
-    private ScrollPane scrollPane;
     private TextArea handCardsArea;
 
     public ActionPanel(Game game, ForbiddenIslandGame mainApp) {
@@ -60,7 +59,7 @@ public class ActionPanel extends VBox {
 
         setPadding(new Insets(10));
         setSpacing(10);
-        setPrefWidth(250);
+        setPrefWidth(280);
         setStyle("-fx-background-color: #f0f0f0; -fx-border-color: #999; -fx-border-width: 1px;");
 
         Label titleLabel = new Label("行动面板");
@@ -71,56 +70,62 @@ public class ActionPanel extends VBox {
         actionPointsLabel.setFont(Font.font("Arial", 14));
         getChildren().add(actionPointsLabel);
 
+        // 创建按钮面板（不使用滚动条）
         actionButtonsBox = new VBox(8);
         actionButtonsBox.setPadding(new Insets(5));
-
-        scrollPane = new ScrollPane(actionButtonsBox);
-        scrollPane.setFitToWidth(true);
-        scrollPane.setPrefHeight(200);
-        scrollPane.setStyle("-fx-background-color: transparent;");
-        getChildren().add(scrollPane);
+        
+        // 直接添加按钮面板，不使用ScrollPane
+        getChildren().add(actionButtonsBox);
 
         createActionButtons();
-        createDiscardArea();
+        createHandCardsArea();
     }
 
     private void createActionButtons() {
+        // 创建按钮样式
+        String buttonStyle = "-fx-background-color: linear-gradient(#f2f2f2, #d6d6d6); " +
+                             "-fx-background-radius: 5; -fx-padding: 8 15; -fx-font-size: 13px;";
+        String phaseButtonStyle = "-fx-background-color: linear-gradient(#61a2b1, #2A5058); " +
+                                 "-fx-text-fill: white; -fx-font-weight: bold; " +
+                                 "-fx-background-radius: 5; -fx-padding: 8 15; -fx-font-size: 13px;";
+
         moveButton = new Button("移动");
         moveButton.setMaxWidth(Double.MAX_VALUE);
+        moveButton.setStyle(buttonStyle);
         moveButton.setOnAction(e -> handleMoveAction());
 
         shoreUpButton = new Button("治水 (Shore Up)");
         shoreUpButton.setMaxWidth(Double.MAX_VALUE);
+        shoreUpButton.setStyle(buttonStyle);
         shoreUpButton.setOnAction(e -> handleShoreUpAction());
 
         giveCardButton = new Button("送卡 (Give Card)");
         giveCardButton.setMaxWidth(Double.MAX_VALUE);
+        giveCardButton.setStyle(buttonStyle);
         giveCardButton.setOnAction(e -> handleGiveCardAction());
 
         captureTreasureButton = new Button("取宝 (Capture Treasure)");
         captureTreasureButton.setMaxWidth(Double.MAX_VALUE);
+        captureTreasureButton.setStyle(buttonStyle);
         captureTreasureButton.setOnAction(e -> handleCaptureTreasureAction());
 
         specialActionButton = new Button("特殊能力 (Special Ability)");
         specialActionButton.setMaxWidth(Double.MAX_VALUE);
+        specialActionButton.setStyle(buttonStyle);
         specialActionButton.setOnAction(e -> handleSpecialAction());
         
         endActionsAndDrawTreasureButton = new Button("结束行动 / 抽宝藏牌");
         endActionsAndDrawTreasureButton.setMaxWidth(Double.MAX_VALUE);
-        endActionsAndDrawTreasureButton.setStyle("-fx-font-weight: bold;");
+        endActionsAndDrawTreasureButton.setStyle(phaseButtonStyle);
         endActionsAndDrawTreasureButton.setOnAction(e -> handleEndActionsAndDrawTreasure());
         
         drawFloodCardsButton = new Button("抽取洪水牌");
         drawFloodCardsButton.setMaxWidth(Double.MAX_VALUE);
-        drawFloodCardsButton.setStyle("-fx-font-weight: bold;");
+        drawFloodCardsButton.setStyle(phaseButtonStyle);
         drawFloodCardsButton.setDisable(true);
         drawFloodCardsButton.setOnAction(e -> handleDrawFloodCards());
         
-        viewOtherPlayersButton = new Button("查看队友手牌");
-        viewOtherPlayersButton.setPrefWidth(120);
-        viewOtherPlayersButton.setMaxWidth(Double.MAX_VALUE);
-        viewOtherPlayersButton.setOnAction(e -> handleViewOtherPlayersAction());
-        
+        // 添加按钮到面板
         actionButtonsBox.getChildren().addAll(
             moveButton, 
             shoreUpButton, 
@@ -129,15 +134,14 @@ public class ActionPanel extends VBox {
             specialActionButton,
             new Separator(), 
             endActionsAndDrawTreasureButton,
-            drawFloodCardsButton,
-            viewOtherPlayersButton
+            drawFloodCardsButton
         );
     }
 
-    private void createDiscardArea() {
-        Label discardLabel = new Label("手牌");
-        discardLabel.setFont(Font.font("Arial", FontWeight.BOLD, 14));
-        getChildren().add(discardLabel);
+    private void createHandCardsArea() {
+        Label handLabel = new Label("手牌");
+        handLabel.setFont(Font.font("Arial", FontWeight.BOLD, 14));
+        getChildren().add(handLabel);
 
         handCardsArea = new TextArea();
         handCardsArea.setEditable(false);
@@ -154,6 +158,11 @@ public class ActionPanel extends VBox {
         discardButton.setPrefWidth(120);
         discardButton.setMaxWidth(Double.MAX_VALUE);
         discardButton.setOnAction(e -> handleDiscardAction());
+        
+        viewOtherPlayersButton = new Button("查看队友手牌");
+        viewOtherPlayersButton.setPrefWidth(120);
+        viewOtherPlayersButton.setMaxWidth(Double.MAX_VALUE);
+        viewOtherPlayersButton.setOnAction(e -> handleViewOtherPlayersAction());
         
         buttonBox.getChildren().addAll(discardButton, viewOtherPlayersButton);
         buttonBox.setAlignment(Pos.CENTER);

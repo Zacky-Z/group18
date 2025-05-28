@@ -1,19 +1,16 @@
 package com.forbiddenisland.ui;
 
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.Label;
-import javafx.scene.layout.Border;
-import javafx.scene.layout.BorderStroke;
-import javafx.scene.layout.BorderStrokeStyle;
-import javafx.scene.layout.BorderWidths;
-import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.HBox;
-import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import javafx.scene.paint.Color;
+import javafx.scene.effect.DropShadow;
 
 /**
- * 状态面板 - 显示游戏当前状态信息
+ * 状态面板 - 显示游戏状态信息
  */
 public class StatusPanel extends HBox {
     
@@ -22,17 +19,21 @@ public class StatusPanel extends HBox {
     public StatusPanel() {
         setPadding(new Insets(10));
         setSpacing(10);
+        setAlignment(Pos.CENTER);
+        setMinHeight(50);
+        setStyle("-fx-background-color: #f8f8f8; -fx-border-color: #ddd; -fx-border-radius: 5;");
         
-        setBorder(new Border(new BorderStroke(
-                Color.GRAY, 
-                BorderStrokeStyle.SOLID, 
-                new CornerRadii(5), 
-                BorderWidths.DEFAULT
-        )));
+        // 添加阴影效果
+        DropShadow shadow = new DropShadow();
+        shadow.setRadius(5.0);
+        shadow.setOffsetX(2.0);
+        shadow.setOffsetY(2.0);
+        shadow.setColor(Color.color(0, 0, 0, 0.3));
+        setEffect(shadow);
         
-        statusLabel = new Label("准备开始游戏");
-        statusLabel.setFont(Font.font("Arial", FontWeight.BOLD,
-                12));
+        statusLabel = new Label("游戏准备就绪");
+        statusLabel.setFont(Font.font("Arial", FontWeight.BOLD, 16));
+        statusLabel.setTextFill(Color.DARKBLUE);
         
         getChildren().add(statusLabel);
     }

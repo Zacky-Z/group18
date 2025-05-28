@@ -6,6 +6,19 @@ import javafx.geometry.Insets;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
+import javafx.scene.effect.DropShadow;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.BackgroundImage;
+import javafx.scene.layout.BackgroundPosition;
+import javafx.scene.layout.BackgroundRepeat;
+import javafx.scene.layout.BackgroundSize;
+import javafx.scene.layout.Border;
+import javafx.scene.layout.BorderStroke;
+import javafx.scene.layout.BorderStrokeStyle;
+import javafx.scene.layout.BorderWidths;
+import javafx.scene.layout.CornerRadii;
+import javafx.scene.image.Image;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -31,11 +44,55 @@ public class GameBoardView extends GridPane {
         this.tileViews = new TileView[BOARD_SIZE][BOARD_SIZE];
         this.tileCoordinates = new HashMap<>();
         
-        setPadding(new Insets(10));
-        setHgap(5);
-        setVgap(5);
+        // 设置游戏板外观
+        setPadding(new Insets(15));
+        setHgap(8);
+        setVgap(8);
+        
+        // 添加背景
+        setBackground(createGameBoardBackground());
+        
+        // 添加边框和阴影效果
+        setBorder(new Border(new BorderStroke(
+                Color.rgb(0, 0, 100, 0.5),
+                BorderStrokeStyle.SOLID,
+                new CornerRadii(15),
+                new BorderWidths(3)
+        )));
+        
+        DropShadow boardShadow = new DropShadow();
+        boardShadow.setRadius(10.0);
+        boardShadow.setOffsetX(3.0);
+        boardShadow.setOffsetY(3.0);
+        boardShadow.setColor(Color.color(0, 0, 0, 0.5));
+        setEffect(boardShadow);
         
         initializeBoard();
+    }
+    
+    /**
+     * 创建游戏板背景
+     */
+    private Background createGameBoardBackground() {
+        // 尝试加载水纹背景图像
+        try {
+            Image waterImage = new Image(getClass().getResourceAsStream("/images/water_background.png"));
+            BackgroundImage backgroundImage = new BackgroundImage(
+                    waterImage,
+                    BackgroundRepeat.REPEAT,
+                    BackgroundRepeat.REPEAT,
+                    BackgroundPosition.DEFAULT,
+                    BackgroundSize.DEFAULT
+            );
+            return new Background(backgroundImage);
+        } catch (Exception e) {
+            // 如果图像加载失败，使用渐变蓝色背景
+            return new Background(new BackgroundFill(
+                    Color.rgb(70, 130, 180, 0.8), // 钢蓝色半透明
+                    new CornerRadii(15),
+                    Insets.EMPTY
+            ));
+        }
     }
     
     private void initializeBoard() {
@@ -61,7 +118,9 @@ public class GameBoardView extends GridPane {
                     tileViews[r][c] = tileView;
                 }
                 
+                // 使用StackPane包装TileView，以便添加额外的边距
                 StackPane tileContainer = new StackPane(tileView);
+                tileContainer.setPadding(new Insets(3));
                 add(tileContainer, c, r);
             }
         }
@@ -86,7 +145,7 @@ public class GameBoardView extends GridPane {
         
         // 设置新选择
         selectedTileView = tileView;
-        tileView.setStyle("-fx-border-color: red; -fx-border-width: 3;");
+        tileView.setStyle("-fx-border-color: red; -fx-border-width: 3; -fx-border-radius: 8;");
         
         // 调用回调
         if (tileSelectionCallback != null) {
@@ -164,13 +223,27 @@ public class GameBoardView extends GridPane {
         if (tilesToHighlight == null) return;
 
         String borderColor = colorToHex(color);
-        String highlightStyle = "-fx-border-color: " + borderColor + "; -fx-border-width: 3; -fx-opacity: 0.8;";
+        String highlightStyle = "-fx-border-color: " + borderColor + "; -fx-border-width: 3; -fx-border-radius: 8; -fx-effect: dropshadow(three-pass-box, " + borderColor + ", 10, 0.5, 0, 0);";
 
         for (int r = 0; r < BOARD_SIZE; r++) {
             for (int c = 0; c < BOARD_SIZE; c++) {
                 if (tileViews[r][c] != null && tileViews[r][c].getTile() != null) {
                     if (tilesToHighlight.contains(tileViews[r][c].getTile())) {
                         tileViews[r][c].setStyle(highlightStyle);
+                        
+                        // 添加脉动动画效果
+                        javafx.animation.ScaleTransition pulse = new javafx.animation.ScaleTransition(
+                            javafx.util.Duration.millis(800), tileViews[r][c]);
+                        pulse.setFromX(1.0);
+                        pulse.setFromY(1.0);
+                        pulse.setToX(1.05);
+                        pulse.setToY(1.05);
+                        pulse.setCycleCount(javafx.animation.Animation.INDEFINITE);
+                        pulse.setAutoReverse(true);
+                        pulse.play();
+                        
+                        // 存储动画以便稍后停止
+                        tileViews[r][c].setUserData(pulse);
                     }
                 }
             }
@@ -185,6 +258,17 @@ public class GameBoardView extends GridPane {
         for (int r = 0; r < BOARD_SIZE; r++) {
             for (int c = 0; c < BOARD_SIZE; c++) {
                 if (tileViews[r][c] != null) {
+                    // 停止动画
+                    if (tileViews[r][c].getUserData() instanceof javafx.animation.Animation) {
+                        ((javafx.animation.Animation) tileViews[r][c].getUserData()).stop();
+                        tileViews[r][c].setUserData(null);
+                    }
+                    
+                    // 重置缩放
+                    tileViews[r][c].setScaleX(1.0);
+                    tileViews[r][c].setScaleY(1.0);
+                    
+                    // 清除样式
                     tileViews[r][c].setStyle(""); // Reset any custom style
                 }
             }
