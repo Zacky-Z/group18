@@ -9,6 +9,8 @@ import javafx.animation.Timeline;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.Border;
@@ -45,7 +47,7 @@ public class TileView extends StackPane {
     private Game game;
     
     private static final double TILE_SIZE = 120;
-    private static final double PAWN_SIZE = 15;
+    private static final double PAWN_SIZE = 20;
     
     public TileView(IslandTile tile) {
         this(tile, null);
@@ -280,58 +282,109 @@ public class TileView extends StackPane {
      * 根据玩家创建棋子图形
      */
     private void createPawnCircle(Player player) {
-        Circle circle = new Circle(PAWN_SIZE);
         String pawnColor = player.getPawn().getColor();
         
         // 获取玩家编号（从玩家名称中提取数字）
         String playerName = player.getName();
         String playerNumber = playerName.replaceAll("\\D+", ""); // 提取数字部分
         
-        Color fillColor;
-        switch (pawnColor.toUpperCase()) {
-            case "RED":
-                fillColor = Color.RED;
-                break;
-            case "BLUE":
-                fillColor = Color.BLUE;
-                break;
-            case "GREEN":
-                fillColor = Color.GREEN;
-                break;
-            case "BLACK":
-                fillColor = Color.BLACK;
-                break;
-            case "WHITE":
-                fillColor = Color.WHITE;
-                break;
-            case "YELLOW":
-                fillColor = Color.YELLOW;
-                break;
-            default:
-                fillColor = Color.GRAY;
+        // 默认使用1.png，如果提取到有效的数字则使用对应编号的图片
+        int pawnImageNumber = 1;
+        try {
+            pawnImageNumber = Integer.parseInt(playerNumber);
+            // 确保图片编号在1-7范围内
+            if (pawnImageNumber < 1 || pawnImageNumber > 7) {
+                pawnImageNumber = 1;
+            }
+        } catch (NumberFormatException e) {
+            // 如果解析失败，使用默认值1
         }
         
-        circle.setFill(fillColor);
-        circle.setStroke(Color.BLACK);
-        circle.setStrokeWidth(1.5);
+        // 创建棋子图片
+        String imagePath = "/images/pawns/" + pawnImageNumber + ".png";
+        ImageView pawnImageView = null;
         
-        // 添加阴影效果
-        DropShadow pawnShadow = new DropShadow();
-        pawnShadow.setRadius(3.0);
-        pawnShadow.setOffsetX(2.0);
-        pawnShadow.setOffsetY(2.0);
-        pawnShadow.setColor(Color.color(0, 0, 0, 0.5));
-        circle.setEffect(pawnShadow);
+        try {
+            Image pawnImage = new Image(getClass().getResourceAsStream(imagePath), 
+                                       PAWN_SIZE * 2, PAWN_SIZE * 2, true, true);
+            pawnImageView = new ImageView(pawnImage);
+            
+            // 添加阴影效果
+            DropShadow pawnShadow = new DropShadow();
+            pawnShadow.setRadius(3.0);
+            pawnShadow.setOffsetX(2.0);
+            pawnShadow.setOffsetY(2.0);
+            pawnShadow.setColor(Color.color(0, 0, 0, 0.5));
+            pawnImageView.setEffect(pawnShadow);
+        } catch (Exception e) {
+            // 如果图片加载失败，回退到原来的圆形表示
+            Circle circle = new Circle(PAWN_SIZE);
+            
+            Color fillColor;
+            switch (pawnColor.toUpperCase()) {
+                case "RED":
+                    fillColor = Color.RED;
+                    break;
+                case "BLUE":
+                    fillColor = Color.BLUE;
+                    break;
+                case "GREEN":
+                    fillColor = Color.GREEN;
+                    break;
+                case "BLACK":
+                    fillColor = Color.BLACK;
+                    break;
+                case "WHITE":
+                    fillColor = Color.WHITE;
+                    break;
+                case "YELLOW":
+                    fillColor = Color.YELLOW;
+                    break;
+                default:
+                    fillColor = Color.GRAY;
+            }
+            
+            circle.setFill(fillColor);
+            circle.setStroke(Color.BLACK);
+            circle.setStrokeWidth(1.5);
+            
+            // 添加阴影效果
+            DropShadow pawnShadow = new DropShadow();
+            pawnShadow.setRadius(3.0);
+            pawnShadow.setOffsetX(2.0);
+            pawnShadow.setOffsetY(2.0);
+            pawnShadow.setColor(Color.color(0, 0, 0, 0.5));
+            circle.setEffect(pawnShadow);
+            
+            pawnImageView = new ImageView();
+            StackPane fallbackPane = new StackPane(circle);
+            
+            // 在棋子上添加玩家编号文本
+            Label numberLabel = new Label(playerNumber);
+            numberLabel.setTextFill(pawnColor.equalsIgnoreCase("WHITE") || pawnColor.equalsIgnoreCase("YELLOW") ? 
+                                    Color.BLACK : Color.WHITE);
+            numberLabel.setFont(Font.font("Arial", FontWeight.BOLD, 10));
+            fallbackPane.getChildren().add(numberLabel);
+            
+            pawnsPane.getChildren().add(fallbackPane);
+            
+            // 添加玩家信息提示
+            fallbackPane.setOnMouseEntered(e2 -> {
+                setTooltip(player.getName() + " (" + player.getRole().getChineseName() + ")");
+                e2.consume();
+            });
+            
+            fallbackPane.setOnMouseExited(e2 -> {
+                clearTooltip();
+                e2.consume();
+            });
+            
+            return;
+        }
         
-        // 在棋子上添加玩家编号文本
+        // 创建包含棋子图片的容器
         StackPane pawnWithLabel = new StackPane();
-        Label numberLabel = new Label(playerNumber);
-        numberLabel.setTextFill(pawnColor.equalsIgnoreCase("WHITE") || pawnColor.equalsIgnoreCase("YELLOW") ? 
-                                Color.BLACK : Color.WHITE);
-        numberLabel.setFont(Font.font("Arial", FontWeight.BOLD, 10));
-        
-        pawnWithLabel.getChildren().addAll(circle, numberLabel);
-        pawnsPane.getChildren().add(pawnWithLabel);
+        pawnWithLabel.getChildren().add(pawnImageView);
         
         // 添加玩家信息提示
         pawnWithLabel.setOnMouseEntered(e -> {
@@ -343,6 +396,8 @@ public class TileView extends StackPane {
             clearTooltip();
             e.consume();
         });
+        
+        pawnsPane.getChildren().add(pawnWithLabel);
     }
     
     private void setTooltip(String text) {

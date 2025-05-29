@@ -17,6 +17,12 @@ import javafx.scene.text.FontWeight;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.scene.Node;
+import javafx.scene.image.Image;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundImage;
+import javafx.scene.layout.BackgroundPosition;
+import javafx.scene.layout.BackgroundRepeat;
+import javafx.scene.layout.BackgroundSize;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -48,7 +54,22 @@ public class ForbiddenIslandGame extends Application {
     private void createInitialScreen(Stage primaryStage) {
         BorderPane root = new BorderPane();
         root.setPadding(new Insets(30));
-        root.setStyle("-fx-background-color: linear-gradient(to bottom, #87CEEB, #1E90FF);");
+        
+        // 使用背景图片
+        try {
+            Image bgImage = new Image(getClass().getResourceAsStream("/images/background/forbidden_bg_3.png"));
+            BackgroundImage backgroundImage = new BackgroundImage(
+                    bgImage,
+                    BackgroundRepeat.NO_REPEAT,
+                    BackgroundRepeat.NO_REPEAT,
+                    BackgroundPosition.CENTER,
+                    new BackgroundSize(BackgroundSize.AUTO, BackgroundSize.AUTO, false, false, true, true)
+            );
+            root.setBackground(new Background(backgroundImage));
+        } catch (Exception e) {
+            // 如果图像加载失败，使用渐变蓝色背景
+            root.setStyle("-fx-background-color: linear-gradient(to bottom, #87CEEB, #1E90FF);");
+        }
 
         // 创建标题
         VBox titleBox = new VBox(10);
@@ -114,7 +135,22 @@ public class ForbiddenIslandGame extends Application {
     private void createDifficultyScreen(Stage primaryStage) {
         BorderPane root = new BorderPane();
         root.setPadding(new Insets(30));
-        root.setStyle("-fx-background-color: linear-gradient(to bottom, #87CEEB, #1E90FF);");
+        
+        // 使用背景图片
+        try {
+            Image bgImage = new Image(getClass().getResourceAsStream("/images/background/forbidden_bg_3.png"));
+            BackgroundImage backgroundImage = new BackgroundImage(
+                    bgImage,
+                    BackgroundRepeat.NO_REPEAT,
+                    BackgroundRepeat.NO_REPEAT,
+                    BackgroundPosition.CENTER,
+                    new BackgroundSize(BackgroundSize.AUTO, BackgroundSize.AUTO, false, false, true, true)
+            );
+            root.setBackground(new Background(backgroundImage));
+        } catch (Exception e) {
+            // 如果图像加载失败，使用渐变蓝色背景
+            root.setStyle("-fx-background-color: linear-gradient(to bottom, #87CEEB, #1E90FF);");
+        }
 
         // 创建标题
         Label titleLabel = new Label("选择难度");
@@ -198,7 +234,22 @@ public class ForbiddenIslandGame extends Application {
     private void createRoleSelectionScreen(Stage primaryStage, int difficulty) {
         BorderPane root = new BorderPane();
         root.setPadding(new Insets(30));
-        root.setStyle("-fx-background-color: linear-gradient(to bottom, #87CEEB, #1E90FF);");
+        
+        // 使用背景图片
+        try {
+            Image bgImage = new Image(getClass().getResourceAsStream("/images/background/forbidden_bg_3.png"));
+            BackgroundImage backgroundImage = new BackgroundImage(
+                    bgImage,
+                    BackgroundRepeat.NO_REPEAT,
+                    BackgroundRepeat.NO_REPEAT,
+                    BackgroundPosition.CENTER,
+                    new BackgroundSize(BackgroundSize.AUTO, BackgroundSize.AUTO, false, false, true, true)
+            );
+            root.setBackground(new Background(backgroundImage));
+        } catch (Exception e) {
+            // 如果图像加载失败，使用渐变蓝色背景
+            root.setStyle("-fx-background-color: linear-gradient(to bottom, #87CEEB, #1E90FF);");
+        }
 
         Label titleLabel = new Label("角色选择");
         titleLabel.setFont(Font.font("Arial", FontWeight.BOLD, 36));
@@ -266,9 +317,27 @@ public class ForbiddenIslandGame extends Application {
     private void createPlayerRoleSelectionScreen(Stage primaryStage, int difficulty) {
         BorderPane root = new BorderPane();
         root.setPadding(new Insets(10));
+        
+        // 使用背景图片
+        try {
+            Image bgImage = new Image(getClass().getResourceAsStream("/images/background/forbidden_bg_3.png"));
+            BackgroundImage backgroundImage = new BackgroundImage(
+                    bgImage,
+                    BackgroundRepeat.NO_REPEAT,
+                    BackgroundRepeat.NO_REPEAT,
+                    BackgroundPosition.CENTER,
+                    new BackgroundSize(BackgroundSize.AUTO, BackgroundSize.AUTO, false, false, true, true)
+            );
+            root.setBackground(new Background(backgroundImage));
+        } catch (Exception e) {
+            // 如果图像加载失败，使用渐变蓝色背景
+            root.setStyle("-fx-background-color: linear-gradient(to bottom, #87CEEB, #1E90FF);");
+        }
 
         Label titleLabel = new Label("选择角色");
         titleLabel.setFont(Font.font("Arial", FontWeight.BOLD, 24));
+        titleLabel.setTextFill(javafx.scene.paint.Color.WHITE);
+        titleLabel.setEffect(new javafx.scene.effect.DropShadow(5, javafx.scene.paint.Color.BLACK));
         root.setTop(titleLabel);
 
         VBox contentBox = new VBox(20);
@@ -559,7 +628,7 @@ public class ForbiddenIslandGame extends Application {
         javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.INFORMATION);
         alert.setTitle(isWin ? "胜利！" : "游戏结束");
         alert.setHeaderText(message);
-        
+
         // 创建一个文本区域来显示详细信息
         javafx.scene.control.TextArea textArea = new javafx.scene.control.TextArea();
         textArea.setEditable(false);
@@ -576,7 +645,7 @@ public class ForbiddenIslandGame extends Application {
         }
         
         textArea.setText(content);
-        
+
         // 创建一个显示文本和按钮的容器
         javafx.scene.layout.VBox dialogContent = new javafx.scene.layout.VBox(10);
         dialogContent.getChildren().add(textArea);
@@ -590,7 +659,7 @@ public class ForbiddenIslandGame extends Application {
         
         restartButton.setOnAction(e -> {
             alert.close();
-            restartGame();
+                restartGame();
         });
         
         exitButton.setOnAction(e -> {
@@ -642,7 +711,7 @@ public class ForbiddenIslandGame extends Application {
 
         // 重置游戏结束标志
         isGameOver = false;
-        
+
         // 完全重新创建游戏实例和UI组件
         start(primaryStage);
     }

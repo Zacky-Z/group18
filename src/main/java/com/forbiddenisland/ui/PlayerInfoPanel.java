@@ -6,6 +6,7 @@ import com.forbiddenisland.model.Player;
 import com.forbiddenisland.model.Card;
 import com.forbiddenisland.model.TreasureCard;
 import com.forbiddenisland.model.SpecialActionCard;
+import com.forbiddenisland.model.AdventurerRole;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
@@ -29,6 +30,10 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.StackPane;
+import javafx.scene.effect.DropShadow;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -69,11 +74,22 @@ public class PlayerInfoPanel extends VBox {
     }
     
     private void initializePlayerViews() {
+        VBox playersContainer = new VBox(10); // 添加10像素的间距
+        playersContainer.setPadding(new Insets(5));
+        playersContainer.setStyle("-fx-background-color: #f8f8f8; -fx-border-color: #ddd; -fx-border-radius: 5;");
+        
+        Label playersHeader = new Label("游戏玩家");
+        playersHeader.setFont(Font.font("Arial", FontWeight.BOLD, 14));
+        playersHeader.setPadding(new Insets(0, 0, 5, 0));
+        playersContainer.getChildren().add(playersHeader);
+        
         for (Player player : game.getPlayers()) {
             PlayerView playerView = new PlayerView(player);
             playerViews.add(playerView);
-            getChildren().add(playerView);
+            playersContainer.getChildren().add(playerView);
         }
+        
+        getChildren().add(playersContainer);
     }
     
     /**
@@ -468,40 +484,142 @@ public class PlayerInfoPanel extends VBox {
         private Label cardsLabel;
         private Label locationLabel;
         private Label colorLabel;
+        private ImageView pawnImageView;
         
         public PlayerView(Player player) {
             this.player = player;
             
-            setPadding(new Insets(5));
-            setSpacing(3);
+            setPadding(new Insets(8));
+            setSpacing(5);
             
+            // 设置边框和圆角
+            setBorder(new Border(new BorderStroke(
+                Color.LIGHTGRAY, 
+                BorderStrokeStyle.SOLID, 
+                new CornerRadii(8), 
+                BorderWidths.DEFAULT
+            )));
+            
+            // 创建标题栏，包含玩家编号和角色
+            HBox headerBox = new HBox(8);
+            headerBox.setAlignment(Pos.CENTER_LEFT);
+            
+            // 提取玩家编号
+            String playerName = player.getName();
+            String playerNumber = playerName.replaceAll("\\D+", ""); // 提取数字部分
+            
+            // 创建棋子图片
+            int pawnImageNumber = 1;
+            try {
+                pawnImageNumber = Integer.parseInt(playerNumber);
+                // 确保图片编号在1-7范围内
+                if (pawnImageNumber < 1 || pawnImageNumber > 7) {
+                    pawnImageNumber = 1;
+                }
+            } catch (NumberFormatException e) {
+                // 如果解析失败，使用默认值1
+            }
+            
+            // 加载棋子图片
+            String imagePath = "/images/pawns/" + pawnImageNumber + ".png";
+            pawnImageView = new ImageView();
+            try {
+                Image pawnImage = new Image(getClass().getResourceAsStream(imagePath), 
+                                          30, 30, true, true);
+                pawnImageView.setImage(pawnImage);
+                
+                // 添加阴影效果
+                DropShadow pawnShadow = new DropShadow();
+                pawnShadow.setRadius(3.0);
+                pawnShadow.setOffsetX(2.0);
+                pawnShadow.setOffsetY(2.0);
+                pawnShadow.setColor(Color.color(0, 0, 0, 0.5));
+                pawnImageView.setEffect(pawnShadow);
+            } catch (Exception e) {
+                // 如果图片加载失败，创建一个颜色方块代替
+                String playerColor = player.getPawn().getColor();
+                javafx.scene.paint.Color color = getColorFromString(playerColor);
+                
+                javafx.scene.shape.Rectangle colorRect = new javafx.scene.shape.Rectangle(24, 24);
+                colorRect.setFill(color);
+                colorRect.setStroke(Color.BLACK);
+                colorRect.setStrokeWidth(1);
+                colorRect.setArcWidth(5);
+                colorRect.setArcHeight(5);
+                
+                // 创建一个StackPane来包含方块和玩家编号
+                StackPane pawnStack = new StackPane();
+                Label numLabel = new Label(playerNumber);
+                numLabel.setTextFill(playerColor.equalsIgnoreCase("WHITE") || 
+                                    playerColor.equalsIgnoreCase("YELLOW") ? 
+                                    Color.BLACK : Color.WHITE);
+                numLabel.setFont(Font.font("Arial", FontWeight.BOLD, 12));
+                pawnStack.getChildren().addAll(colorRect, numLabel);
+                
+                headerBox.getChildren().add(pawnStack);
+                pawnImageView = null;
+            }
+            
+            // 如果成功加载了图片，添加到headerBox
+            if (pawnImageView != null) {
+                headerBox.getChildren().add(pawnImageView);
+            }
+            
+            // 创建玩家名称和角色标签
             nameLabel = new Label();
-            nameLabel.setFont(Font.font("Arial", FontWeight.BOLD, 12));
+            nameLabel.setFont(Font.font("Arial", FontWeight.BOLD, 14));
             
-            // 创建图标来显示玩家颜色
-            String playerColor = player.getPawn().getColor();
-            javafx.scene.paint.Color color = getColorFromString(playerColor);
+            // 创建带背景色的玩家角色标签
+            VBox playerInfoBox = new VBox(2);
+            playerInfoBox.setAlignment(Pos.CENTER_LEFT);
             
-            HBox nameBox = new HBox(5);
-            javafx.scene.shape.Rectangle colorRect = new javafx.scene.shape.Rectangle(12, 12);
-            colorRect.setFill(color);
-            colorRect.setStroke(Color.BLACK);
-            nameBox.getChildren().addAll(colorRect, nameLabel);
+            // 添加玩家名称到headerBox
+            headerBox.getChildren().add(nameLabel);
             
+            // 创建角色标签，使用背景色来区分不同角色
             roleLabel = new Label();
-            cardsLabel = new Label();
+            roleLabel.setFont(Font.font("Arial", 12));
+            roleLabel.setPadding(new Insets(3, 6, 3, 6));
+            roleLabel.setTextFill(Color.WHITE);
+            
+            // 根据角色设置不同的背景色
+            String roleBgColor = getRoleBackgroundColor(player.getRole());
+            roleLabel.setStyle("-fx-background-color: " + roleBgColor + "; -fx-background-radius: 3;");
+            
+            // 创建位置和手牌标签
             locationLabel = new Label();
+            locationLabel.setFont(Font.font("Arial", 12));
+            
+            cardsLabel = new Label();
+            cardsLabel.setFont(Font.font("Arial", 12));
+            
+            // 当前玩家标记
             colorLabel = new Label();
+            colorLabel.setFont(Font.font("Arial", FontWeight.BOLD, 12));
             
-            getChildren().addAll(nameBox, roleLabel, locationLabel, cardsLabel);
+            // 将所有组件添加到玩家信息框
+            playerInfoBox.getChildren().addAll(roleLabel, locationLabel, cardsLabel);
             
+            // 将所有组件添加到主容器
+            getChildren().addAll(headerBox, playerInfoBox);
+            
+            // 初始更新
             update();
         }
         
         public void update() {
             nameLabel.setText(player.getName());
-            roleLabel.setText("角色: " + player.getRole().getChineseName() + " - " + player.getRole().getDescription());
-            cardsLabel.setText("手牌数: " + player.getHand().size());
+            
+            // 获取角色的简短描述（第一个括号前的内容）
+            String roleDesc = player.getRole().getDescription();
+            int bracketIndex = roleDesc.indexOf('(');
+            String shortDesc = bracketIndex > 0 ? roleDesc.substring(0, bracketIndex).trim() : roleDesc;
+            
+            // 设置角色名称和简短描述
+            roleLabel.setText(player.getRole().getChineseName() + " - " + shortDesc);
+            
+            // 更新手牌信息
+            cardsLabel.setText("手牌数: " + player.getHand().size() + "/" + Player.MAX_HAND_SIZE);
             
             // 更新当前位置
             if (player.getPawn() != null && player.getPawn().getCurrentLocation() != null) {
@@ -513,18 +631,29 @@ public class PlayerInfoPanel extends VBox {
         
         public void setHighlighted(boolean highlighted) {
             if (highlighted) {
-                setStyle("-fx-background-color: lightyellow; -fx-border-color: gold; -fx-border-width: 2;");
+                // 使用更明显的高亮效果
+                setStyle("-fx-background-color: #FFFFE0; -fx-border-color: #FFD700; -fx-border-width: 2; -fx-effect: dropshadow(three-pass-box, #FFD700, 10, 0.5, 0, 0);");
+                
                 // 添加当前玩家标记
                 if (!getChildren().contains(colorLabel)) {
                     colorLabel.setText("【当前玩家】");
                     colorLabel.setTextFill(Color.RED);
-                    colorLabel.setFont(Font.font("Arial", FontWeight.BOLD, 12));
+                    colorLabel.setFont(Font.font("Arial", FontWeight.BOLD, 14));
                     getChildren().add(0, colorLabel);
+                    
+                    // 添加箭头指示器
+                    Label arrowLabel = new Label("➤");
+                    arrowLabel.setTextFill(Color.RED);
+                    arrowLabel.setFont(Font.font("Arial", FontWeight.BOLD, 18));
+                    HBox arrowBox = new HBox(arrowLabel);
+                    arrowBox.setAlignment(Pos.CENTER_LEFT);
+                    getChildren().add(1, arrowBox);
                 }
             } else {
-                setStyle("");
+                setStyle("-fx-background-color: white; -fx-border-color: #CCCCCC; -fx-border-width: 1;");
+                
                 // 移除当前玩家标记
-                getChildren().remove(colorLabel);
+                getChildren().removeIf(node -> node == colorLabel || (node instanceof HBox && ((HBox) node).getChildren().size() == 1 && ((HBox) node).getChildren().get(0) instanceof Label && ((Label) ((HBox) node).getChildren().get(0)).getText().equals("➤")));
             }
         }
         
@@ -537,6 +666,18 @@ public class PlayerInfoPanel extends VBox {
                 case "WHITE": return Color.WHITE;
                 case "YELLOW": return Color.YELLOW;
                 default: return Color.GRAY;
+            }
+        }
+        
+        private String getRoleBackgroundColor(AdventurerRole role) {
+            switch (role) {
+                case DIVER: return "#0066CC"; // 潜水员：蓝色
+                case ENGINEER: return "#CC6600"; // 工程师：棕色
+                case EXPLORER: return "#009933"; // 探险家：绿色
+                case MESSENGER: return "#CC33FF"; // 信使：紫色
+                case NAVIGATOR: return "#FFCC00"; // 领航员：黄色
+                case PILOT: return "#FF3300"; // 飞行员：红色
+                default: return "#666666"; // 默认：灰色
             }
         }
         

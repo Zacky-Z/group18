@@ -76,7 +76,7 @@ public class GameBoardView extends GridPane {
     private Background createGameBoardBackground() {
         // 尝试加载水纹背景图像
         try {
-            Image waterImage = new Image(getClass().getResourceAsStream("/images/water_background.png"));
+            Image waterImage = new Image(getClass().getResourceAsStream("/images/background/forbidden_bg_3.png"));
             BackgroundImage backgroundImage = new BackgroundImage(
                     waterImage,
                     BackgroundRepeat.REPEAT,
