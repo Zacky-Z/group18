@@ -42,7 +42,6 @@ import java.util.List;
  * Player Information Panel
  * Displays information for all players in the game
  * Part of the GUI integration work (Week 12)
- * 玩家信息面板 - 显示游戏中所有玩家的信息
  */
 public class PlayerInfoPanel extends VBox {
     
@@ -86,11 +85,11 @@ public class PlayerInfoPanel extends VBox {
     }
     
     private void initializePlayerViews() {
-        VBox playersContainer = new VBox(10); // 添加10像素的间距
+        VBox playersContainer = new VBox(10); // 10 pixels spacing
         playersContainer.setPadding(new Insets(5));
         playersContainer.setStyle("-fx-background-color: #f8f8f8; -fx-border-color: #ddd; -fx-border-radius: 5;");
         
-        Label playersHeader = new Label("游戏玩家");
+        Label playersHeader = new Label("Game Players");
         playersHeader.setFont(Font.font("Arial", FontWeight.BOLD, 14));
         playersHeader.setPadding(new Insets(0, 0, 5, 0));
         playersContainer.getChildren().add(playersHeader);
@@ -105,37 +104,37 @@ public class PlayerInfoPanel extends VBox {
     }
     
     /**
-     * 创建手牌显示区域
+     * Create hand cards display area
      */
     private void createHandCardsArea() {
-        // 创建手牌区域容器
+        // Create hand cards container
         VBox handCardsContainer = new VBox(10);
         handCardsContainer.setPadding(new Insets(10));
         handCardsContainer.setStyle("-fx-background-color: white; -fx-border-color: #cccccc; -fx-border-width: 1px; -fx-border-radius: 5;");
 
-        Label handLabel = new Label("手牌");
+        Label handLabel = new Label("Hand Cards");
         handLabel.setFont(Font.font("Arial", FontWeight.BOLD, 14));
         
-        // 设置手牌显示区域
+        // Set up hand cards display area
         handCardsArea = new TextArea();
         handCardsArea.setEditable(false);
-        handCardsArea.setPrefRowCount(12);  // 增加显示行数，平铺显示
+        handCardsArea.setPrefRowCount(12);  // Increase row count for better display
         handCardsArea.setPrefColumnCount(30);
         handCardsArea.setWrapText(true);
         handCardsArea.setStyle("-fx-font-size: 14px; -fx-font-family: 'Arial';");
         
-        // 创建按钮容器
+        // Create button container
         HBox buttonBox = new HBox(10);
         buttonBox.setPadding(new Insets(5));
         buttonBox.setAlignment(Pos.CENTER);
         
-        discardButton = new Button("弃牌");
+        discardButton = new Button("Discard");
         discardButton.setPrefWidth(120);
         discardButton.setMaxWidth(Double.MAX_VALUE);
         discardButton.setStyle("-fx-font-size: 13px;");
         discardButton.setOnAction(e -> handleDiscardAction());
         
-        viewOtherPlayersButton = new Button("查看队友手牌");
+        viewOtherPlayersButton = new Button("View Team Cards");
         viewOtherPlayersButton.setPrefWidth(120);
         viewOtherPlayersButton.setMaxWidth(Double.MAX_VALUE);
         viewOtherPlayersButton.setStyle("-fx-font-size: 13px;");
@@ -143,26 +142,26 @@ public class PlayerInfoPanel extends VBox {
         
         buttonBox.getChildren().addAll(discardButton, viewOtherPlayersButton);
         
-        // 将所有元素添加到手牌容器
+        // Add all elements to hand cards container
         handCardsContainer.getChildren().addAll(handLabel, handCardsArea, buttonBox);
         
-        // 设置手牌容器的对齐方式和大小
+        // Set alignment and size for hand cards container
         handCardsContainer.setAlignment(Pos.CENTER);
         handCardsContainer.setPrefWidth(280);
         handCardsContainer.setMaxWidth(Double.MAX_VALUE);
         
-        // 添加到主面板
+        // Add to main panel
         getChildren().add(handCardsContainer);
         
-        // 初始更新手牌显示
+        // Initial update of hand cards display
         updateHandCardsDisplay();
     }
     
     /**
-     * 更新所有玩家信息
+     * Update all player information
      */
     public void update() {
-        // 更新当前玩家突出显示
+        // Update current player highlight
         Player currentPlayer = game.getCurrentPlayer();
         
         for (PlayerView playerView : playerViews) {
@@ -170,12 +169,12 @@ public class PlayerInfoPanel extends VBox {
             playerView.setHighlighted(playerView.getPlayer().equals(currentPlayer));
         }
         
-        // 更新手牌显示
+        // Update hand cards display
         updateHandCardsDisplay();
     }
     
     /**
-     * 更新手牌显示区域
+     * Update hand cards display area
      */
     private void updateHandCardsDisplay() {
         if (game == null || handCardsArea == null) return;
@@ -187,13 +186,13 @@ public class PlayerInfoPanel extends VBox {
         List<Card> hand = currentPlayer.getHand();
         
         sb.append(currentPlayer.getName())
-          .append(" (").append(currentPlayer.getRole().getChineseName()).append(") ")
-          .append("的手牌：").append(hand.size()).append("/").append(Player.MAX_HAND_SIZE).append("\n\n");
+          .append(" (").append(currentPlayer.getRole().name()).append(") ")
+          .append("Hand Cards: ").append(hand.size()).append("/").append(Player.MAX_HAND_SIZE).append("\n\n");
         
         if (hand.isEmpty()) {
-            sb.append("没有手牌");
+            sb.append("No cards in hand");
         } else {
-            // 按卡牌类型分组显示
+            // Group cards by type
             List<TreasureCard> treasureCards = new ArrayList<>();
             List<SpecialActionCard> specialCards = new ArrayList<>();
             
@@ -205,18 +204,18 @@ public class PlayerInfoPanel extends VBox {
                 }
             }
             
-            // 显示宝藏卡
+            // Display treasure cards
             if (!treasureCards.isEmpty()) {
-                sb.append("宝藏卡：\n");
+                sb.append("Treasure Cards:\n");
                 for (TreasureCard card : treasureCards) {
                     sb.append("• ").append(card.getTreasureType().getDisplayName()).append("\n");
                 }
                 sb.append("\n");
             }
             
-            // 显示特殊行动卡
+            // Display special action cards
             if (!specialCards.isEmpty()) {
-                sb.append("特殊行动卡：\n");
+                sb.append("Special Action Cards:\n");
                 for (SpecialActionCard card : specialCards) {
                     sb.append("• ").append(card.getName()).append(" - ").append(card.getDescription()).append("\n");
                 }
@@ -225,43 +224,43 @@ public class PlayerInfoPanel extends VBox {
         
         handCardsArea.setText(sb.toString());
         
-        // 确保玩家视图中的手牌数量也更新
+        // Ensure hand card counts are updated in player views
         for (PlayerView playerView : playerViews) {
             playerView.update();
         }
     }
     
     /**
-     * 处理弃牌操作
+     * Handle discard action
      */
     private void handleDiscardAction() {
         Player currentPlayer = game.getCurrentPlayer();
         List<Card> hand = currentPlayer.getHand();
         
         if (hand.isEmpty()) {
-            showMessage("你没有手牌可以弃掉。");
+            showMessage("You have no cards to discard.");
             return;
         }
         
         boolean isOverLimit = currentPlayer.isHandOverLimit();
-        int cardsToDiscard = isOverLimit ? hand.size() - Player.MAX_HAND_SIZE : 1; // 如果超过上限，必须弃到上限，否则默认弃1张
+        int cardsToDiscard = isOverLimit ? hand.size() - Player.MAX_HAND_SIZE : 1; // If over limit, must discard down to limit, otherwise default to 1
         
         Dialog<List<Card>> dialog = new Dialog<>();
-        dialog.setTitle("弃牌");
+        dialog.setTitle("Discard Cards");
         
         String headerText;
         if (isOverLimit) {
-            headerText = "你必须弃掉 " + cardsToDiscard + " 张卡牌\n当前手牌: " + hand.size() + "/" + Player.MAX_HAND_SIZE;
+            headerText = "You must discard " + cardsToDiscard + " cards\nCurrent hand: " + hand.size() + "/" + Player.MAX_HAND_SIZE;
         } else {
-            headerText = "请选择要弃掉的卡牌\n当前手牌: " + hand.size() + "/" + Player.MAX_HAND_SIZE;
+            headerText = "Please select cards to discard\nCurrent hand: " + hand.size() + "/" + Player.MAX_HAND_SIZE;
         }
         dialog.setHeaderText(headerText);
         
-        ButtonType discardButtonType = new ButtonType("弃掉", ButtonData.OK_DONE);
-        ButtonType cancelButtonType = new ButtonType("取消", ButtonData.CANCEL_CLOSE);
+        ButtonType discardButtonType = new ButtonType("Discard", ButtonData.OK_DONE);
+        ButtonType cancelButtonType = new ButtonType("Cancel", ButtonData.CANCEL_CLOSE);
         dialog.getDialogPane().getButtonTypes().addAll(discardButtonType, cancelButtonType);
         
-        // 如果是强制弃牌（手牌超过上限），则不允许取消
+        // If it's a forced discard (hand over limit) and in the draw treasure cards phase, disallow cancel
         if (isOverLimit && game.getCurrentPhase() == Game.GamePhase.DRAW_TREASURE_CARDS_PHASE) {
             dialog.getDialogPane().getButtonTypes().remove(cancelButtonType);
         }
@@ -270,7 +269,7 @@ public class PlayerInfoPanel extends VBox {
         cardListView.getItems().addAll(hand);
         cardListView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         
-        // 设置单元格工厂以显示卡牌信息
+        // Set cell factory to display card information
         cardListView.setCellFactory(param -> new ListCell<Card>() {
             @Override
             protected void updateItem(Card card, boolean empty) {
@@ -281,7 +280,7 @@ public class PlayerInfoPanel extends VBox {
                     String cardInfo;
                     if (card instanceof TreasureCard) {
                         TreasureCard tc = (TreasureCard) card;
-                        cardInfo = tc.getTreasureType().getDisplayName() + " 宝藏卡";
+                        cardInfo = tc.getTreasureType().getDisplayName() + " Treasure Card";
                     } else if (card instanceof SpecialActionCard) {
                         cardInfo = card.getName() + " - " + card.getDescription();
                     } else {
@@ -303,11 +302,11 @@ public class PlayerInfoPanel extends VBox {
         
         dialog.showAndWait().ifPresent(selectedCards -> {
             if (isOverLimit && selectedCards.size() != cardsToDiscard) {
-                showMessage("你必须弃掉 " + cardsToDiscard + " 张卡牌");
-                handleDiscardAction(); // 重新打开弃牌对话框
+                showMessage("You must discard " + cardsToDiscard + " cards");
+                handleDiscardAction(); // Reopen discard dialog
             } else if (selectedCards.isEmpty()) {
-                showMessage("请至少选择一张卡牌弃掉");
-                // 如果是超过上限的强制弃牌，则重新打开对话框
+                showMessage("Please select at least one card to discard");
+                // If it's a forced discard and over limit, reopen dialog
                 if (isOverLimit) {
                     handleDiscardAction();
                 }
@@ -315,23 +314,23 @@ public class PlayerInfoPanel extends VBox {
                 for (Card card : selectedCards) {
                     currentPlayer.removeCardFromHand(card);
                     game.getTreasureDeck().discardCard(card);
-                    System.out.println(currentPlayer.getName() + " 弃掉了: " + card.getName());
+                    System.out.println(currentPlayer.getName() + " discarded: " + card.getName());
                 }
                 
-                // 更新UI显示
+                // Update UI display
                 updateHandCardsDisplay();
                 
-                // 检查是否仍然超过手牌上限
+                // Check if still over hand limit
                 if (currentPlayer.isHandOverLimit()) {
-                    showMessage("你仍然需要弃掉 " + (currentPlayer.getHand().size() - Player.MAX_HAND_SIZE) + " 张卡牌");
-                    handleDiscardAction(); // 如果仍然超过，继续弃牌
+                    showMessage("You still need to discard " + (currentPlayer.getHand().size() - Player.MAX_HAND_SIZE) + " cards");
+                    handleDiscardAction(); // If still over, continue discarding
                 } else {
-                    // 如果在抽宝藏牌阶段弃牌完成，自动进入抽洪水牌阶段
+                    // If discard completed in draw treasure cards phase, automatically enter draw flood cards phase
                     if (game.getCurrentPhase() == Game.GamePhase.DRAW_TREASURE_CARDS_PHASE) {
-                        System.out.println("弃牌完成，进入抽洪水牌阶段");
+                        System.out.println("Discard completed, entering draw flood cards phase");
                         game.setCurrentPhase(Game.GamePhase.DRAW_FLOOD_CARDS_PHASE);
                         
-                        // 更新整个游戏界面，确保所有按钮状态正确
+                        // Update entire game UI to ensure all button states are correct
                         if (mainApp != null) {
                             mainApp.updateGameState();
                         }
@@ -342,7 +341,7 @@ public class PlayerInfoPanel extends VBox {
     }
     
     /**
-     * 处理查看其他玩家手牌的操作
+     * Handle view other players' cards action
      */
     private void handleViewOtherPlayersAction() {
         List<Player> otherPlayers = new ArrayList<>();
@@ -355,16 +354,16 @@ public class PlayerInfoPanel extends VBox {
         }
         
         if (otherPlayers.isEmpty()) {
-            showMessage("没有其他玩家");
+            showMessage("No other players");
             return;
         }
         
         Dialog<Player> dialog = new Dialog<>();
-        dialog.setTitle("查看队友手牌");
-        dialog.setHeaderText("选择要查看手牌的玩家");
+        dialog.setTitle("View Team Cards");
+        dialog.setHeaderText("Select player to view cards");
         
-        ButtonType viewButtonType = new ButtonType("查看", ButtonData.OK_DONE);
-        ButtonType cancelButtonType = new ButtonType("取消", ButtonData.CANCEL_CLOSE);
+        ButtonType viewButtonType = new ButtonType("View", ButtonData.OK_DONE);
+        ButtonType cancelButtonType = new ButtonType("Cancel", ButtonData.CANCEL_CLOSE);
         dialog.getDialogPane().getButtonTypes().addAll(viewButtonType, cancelButtonType);
         
         ListView<Player> playerListView = new ListView<>();
@@ -396,20 +395,20 @@ public class PlayerInfoPanel extends VBox {
     }
     
     /**
-     * 显示指定玩家的手牌
+     * Show player's cards
      */
     private void showPlayerCards(Player player) {
         if (player == null || player.getHand().isEmpty()) {
-            showMessage(player == null ? "玩家不存在" : player.getName() + " 没有手牌");
+            showMessage(player == null ? "Player does not exist" : player.getName() + " has no cards");
             return;
         }
         
         Dialog<Void> cardsDialog = new Dialog<>();
-        cardsDialog.setTitle(player.getName() + " 的手牌");
-        cardsDialog.setHeaderText(player.getName() + " (" + player.getRole().getChineseName() + ") 当前拥有 " + 
-                                  player.getHand().size() + " 张手牌");
+        cardsDialog.setTitle(player.getName() + "'s Cards");
+        cardsDialog.setHeaderText(player.getName() + " (" + player.getRole().name() + ") currently has " + 
+                                  player.getHand().size() + " cards in hand");
         
-        ButtonType closeButtonType = new ButtonType("关闭", ButtonData.CANCEL_CLOSE);
+        ButtonType closeButtonType = new ButtonType("Close", ButtonData.CANCEL_CLOSE);
         cardsDialog.getDialogPane().getButtonTypes().add(closeButtonType);
         
         ListView<Card> cardListView = new ListView<>();
@@ -423,7 +422,7 @@ public class PlayerInfoPanel extends VBox {
                 } else {
                     if (card instanceof TreasureCard) {
                         TreasureCard tc = (TreasureCard) card;
-                        setText(tc.getTreasureType().getDisplayName() + " 宝藏卡");
+                        setText(tc.getTreasureType().getDisplayName() + " Treasure Card");
                     } else if (card instanceof SpecialActionCard) {
                         setText(card.getName() + " - " + card.getDescription());
                     } else {
@@ -438,19 +437,19 @@ public class PlayerInfoPanel extends VBox {
     }
     
     /**
-     * 显示消息对话框
+     * Show message dialog
      */
     private void showMessage(String message) {
         Alert alert = new Alert(AlertType.INFORMATION);
-        alert.setTitle("游戏信息");
+        alert.setTitle("Game Information");
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
     }
     
     /**
-     * 设置游戏对象
-     * @param game 新的游戏对象
+     * Set game object
+     * @param game New game object
      */
     public void setGame(Game game) {
         this.game = game;
@@ -462,12 +461,12 @@ public class PlayerInfoPanel extends VBox {
         
         playerViews.clear();
         initializePlayerViews();
-        createHandCardsArea();  // 重新创建手牌区域
+        createHandCardsArea();  // Recreate hand cards area
     }
     
     /**
-     * 强制打开弃牌对话框
-     * 当玩家手牌超过上限时，会被调用
+     * Force open discard dialog
+     * Called when player hand over limit
      */
     public void forceDiscardAction() {
         if (game != null && game.getCurrentPlayer() != null) {
@@ -479,15 +478,15 @@ public class PlayerInfoPanel extends VBox {
     }
     
     /**
-     * 设置主应用引用
-     * @param mainApp ForbiddenIslandGame实例
+     * Set main application reference
+     * @param mainApp ForbiddenIslandGame instance
      */
     public void setMainApp(ForbiddenIslandGame mainApp) {
         this.mainApp = mainApp;
     }
     
     /**
-     * 内部类：单个玩家视图
+     * Inner class: Single player view
      */
     private class PlayerView extends VBox {
         private Player player;
@@ -504,7 +503,7 @@ public class PlayerInfoPanel extends VBox {
             setPadding(new Insets(8));
             setSpacing(5);
             
-            // 设置边框和圆角
+            // Set border and corner radius
             setBorder(new Border(new BorderStroke(
                 Color.LIGHTGRAY, 
                 BorderStrokeStyle.SOLID, 
@@ -512,27 +511,27 @@ public class PlayerInfoPanel extends VBox {
                 BorderWidths.DEFAULT
             )));
             
-            // 创建标题栏，包含玩家编号和角色
+            // Create title bar, including player number and role
             HBox headerBox = new HBox(8);
             headerBox.setAlignment(Pos.CENTER_LEFT);
             
-            // 提取玩家编号
+            // Extract player number
             String playerName = player.getName();
-            String playerNumber = playerName.replaceAll("\\D+", ""); // 提取数字部分
+            String playerNumber = playerName.replaceAll("\\D+", ""); // Extract numeric part
             
-            // 创建棋子图片
+            // Create pawn image
             int pawnImageNumber = 1;
             try {
                 pawnImageNumber = Integer.parseInt(playerNumber);
-                // 确保图片编号在1-7范围内
+                // Ensure image number is within 1-7 range
                 if (pawnImageNumber < 1 || pawnImageNumber > 7) {
                     pawnImageNumber = 1;
                 }
             } catch (NumberFormatException e) {
-                // 如果解析失败，使用默认值1
+                // If parsing fails, use default value 1
             }
             
-            // 加载棋子图片
+            // Load pawn image
             String imagePath = "/images/pawns/" + pawnImageNumber + ".png";
             pawnImageView = new ImageView();
             try {
@@ -540,7 +539,7 @@ public class PlayerInfoPanel extends VBox {
                                           30, 30, true, true);
                 pawnImageView.setImage(pawnImage);
                 
-                // 添加阴影效果
+                // Add shadow effect
                 DropShadow pawnShadow = new DropShadow();
                 pawnShadow.setRadius(3.0);
                 pawnShadow.setOffsetX(2.0);
@@ -548,7 +547,7 @@ public class PlayerInfoPanel extends VBox {
                 pawnShadow.setColor(Color.color(0, 0, 0, 0.5));
                 pawnImageView.setEffect(pawnShadow);
             } catch (Exception e) {
-                // 如果图片加载失败，创建一个颜色方块代替
+                // If image load fails, create a color block instead
             String playerColor = player.getPawn().getColor();
             javafx.scene.paint.Color color = getColorFromString(playerColor);
             
@@ -559,7 +558,7 @@ public class PlayerInfoPanel extends VBox {
                 colorRect.setArcWidth(5);
                 colorRect.setArcHeight(5);
                 
-                // 创建一个StackPane来包含方块和玩家编号
+                // Create a StackPane to contain the block and player number
                 StackPane pawnStack = new StackPane();
                 Label numLabel = new Label(playerNumber);
                 numLabel.setTextFill(playerColor.equalsIgnoreCase("WHITE") || 
@@ -572,88 +571,88 @@ public class PlayerInfoPanel extends VBox {
                 pawnImageView = null;
             }
             
-            // 如果成功加载了图片，添加到headerBox
+            // If image loaded successfully, add to headerBox
             if (pawnImageView != null) {
                 headerBox.getChildren().add(pawnImageView);
             }
             
-            // 创建玩家名称和角色标签
+            // Create player name and role label
             nameLabel = new Label();
             nameLabel.setFont(Font.font("Arial", FontWeight.BOLD, 14));
             
-            // 创建带背景色的玩家角色标签
+            // Create background-colored player role label
             VBox playerInfoBox = new VBox(2);
             playerInfoBox.setAlignment(Pos.CENTER_LEFT);
             
-            // 添加玩家名称到headerBox
+            // Add player name to headerBox
             headerBox.getChildren().add(nameLabel);
             
-            // 创建角色标签，使用背景色来区分不同角色
+            // Create role label, using background color to distinguish different roles
             roleLabel = new Label();
             roleLabel.setFont(Font.font("Arial", 12));
             roleLabel.setPadding(new Insets(3, 6, 3, 6));
             roleLabel.setTextFill(Color.WHITE);
             
-            // 根据角色设置不同的背景色
+            // Set different background colors based on role
             String roleBgColor = getRoleBackgroundColor(player.getRole());
             roleLabel.setStyle("-fx-background-color: " + roleBgColor + "; -fx-background-radius: 3;");
             
-            // 创建位置和手牌标签
+            // Create location and cards label
             locationLabel = new Label();
             locationLabel.setFont(Font.font("Arial", 12));
             
             cardsLabel = new Label();
             cardsLabel.setFont(Font.font("Arial", 12));
             
-            // 当前玩家标记
+            // Current player marker
             colorLabel = new Label();
             colorLabel.setFont(Font.font("Arial", FontWeight.BOLD, 12));
             
-            // 将所有组件添加到玩家信息框
+            // Add all components to player info box
             playerInfoBox.getChildren().addAll(roleLabel, locationLabel, cardsLabel);
             
-            // 将所有组件添加到主容器
+            // Add all components to main container
             getChildren().addAll(headerBox, playerInfoBox);
             
-            // 初始更新
+            // Initial update
             update();
         }
         
         public void update() {
             nameLabel.setText(player.getName());
             
-            // 获取角色的简短描述（第一个括号前的内容）
+            // Get short description of role (content before first bracket)
             String roleDesc = player.getRole().getDescription();
             int bracketIndex = roleDesc.indexOf('(');
             String shortDesc = bracketIndex > 0 ? roleDesc.substring(0, bracketIndex).trim() : roleDesc;
             
-            // 设置角色名称和简短描述
-            roleLabel.setText(player.getRole().getChineseName() + " - " + shortDesc);
+            // Set role name and short description
+            roleLabel.setText(player.getRole().name() + " - " + shortDesc);
             
-            // 更新手牌信息
-            cardsLabel.setText("手牌数: " + player.getHand().size() + "/" + Player.MAX_HAND_SIZE);
+            // Update hand card information
+            cardsLabel.setText("Cards: " + player.getHand().size() + "/" + Player.MAX_HAND_SIZE);
             
-            // 更新当前位置
+            // Update current location
             if (player.getPawn() != null && player.getPawn().getCurrentLocation() != null) {
-                locationLabel.setText("位置: " + player.getPawn().getCurrentLocation().getName());
+                locationLabel.setText("Location: " + player.getPawn().getCurrentLocation().getName());
             } else {
-                locationLabel.setText("位置: 未知");
+                locationLabel.setText("Location: Unknown");
             }
         }
         
         public void setHighlighted(boolean highlighted) {
             if (highlighted) {
-                // 使用更明显的高亮效果
+                // Use more noticeable highlight effect
                 setStyle("-fx-background-color: #FFFFE0; -fx-border-color: #FFD700; -fx-border-width: 2; -fx-effect: dropshadow(three-pass-box, #FFD700, 10, 0.5, 0, 0);");
                 
-                // 添加当前玩家标记
+                // Add current player marker
                 if (!getChildren().contains(colorLabel)) {
-                    colorLabel.setText("【当前玩家】");
+                    colorLabel.setText("【Current Player】");
                     colorLabel.setTextFill(Color.RED);
                     colorLabel.setFont(Font.font("Arial", FontWeight.BOLD, 14));
                     getChildren().add(0, colorLabel);
                     
-                    // 添加箭头指示器
+                    // Add arrow indicator
                     Label arrowLabel = new Label("➤");
                     arrowLabel.setTextFill(Color.RED);
                     arrowLabel.setFont(Font.font("Arial", FontWeight.BOLD, 18));
@@ -664,7 +663,7 @@ public class PlayerInfoPanel extends VBox {
             } else {
                 setStyle("-fx-background-color: white; -fx-border-color: #CCCCCC; -fx-border-width: 1;");
                 
-                // 移除当前玩家标记
+                // Remove current player marker
                 getChildren().removeIf(node -> node == colorLabel || (node instanceof HBox && ((HBox) node).getChildren().size() == 1 && ((HBox) node).getChildren().get(0) instanceof Label && ((Label) ((HBox) node).getChildren().get(0)).getText().equals("➤")));
             }
         }
@@ -683,13 +682,13 @@ public class PlayerInfoPanel extends VBox {
         
         private String getRoleBackgroundColor(AdventurerRole role) {
             switch (role) {
-                case DIVER: return "#0066CC"; // 潜水员：蓝色
-                case ENGINEER: return "#CC6600"; // 工程师：棕色
-                case EXPLORER: return "#009933"; // 探险家：绿色
-                case MESSENGER: return "#CC33FF"; // 信使：紫色
-                case NAVIGATOR: return "#FFCC00"; // 领航员：黄色
-                case PILOT: return "#FF3300"; // 飞行员：红色
-                default: return "#666666"; // 默认：灰色
+                case DIVER: return "#0066CC"; // Diver: Blue
+                case ENGINEER: return "#CC6600"; // Engineer: Brown
+                case EXPLORER: return "#009933"; // Explorer: Green
+                case MESSENGER: return "#CC33FF"; // Messenger: Purple
+                case NAVIGATOR: return "#FFCC00"; // Navigator: Yellow
+                case PILOT: return "#FF3300"; // Pilot: Red
+                default: return "#666666"; // Default: Gray
             }
         }
         

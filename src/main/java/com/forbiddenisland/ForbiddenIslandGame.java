@@ -764,7 +764,7 @@ private void loadGame(Stage primaryStage) {
         if (game != null) {
             gameBoardView.setGame(game);
             playerInfoPanel.setGame(game);
-            playerInfoPanel.setMainApp(this); // 设置PlayerInfoPanel的mainApp引用
+            playerInfoPanel.setMainApp(this); // Set mainApp reference for PlayerInfoPanel
             actionPanel.setGame(game);
             updateGameState();
         }
@@ -776,8 +776,8 @@ public StatusPanel getStatusPanel() {
 }
 
 /**
- * 获取玩家信息面板
- * @return 玩家信息面板
+ * Get the player information panel
+ * @return The player information panel
  */
 public PlayerInfoPanel getPlayerInfoPanel() {
     return playerInfoPanel;
