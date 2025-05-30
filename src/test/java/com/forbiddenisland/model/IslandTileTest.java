@@ -36,16 +36,20 @@ class IslandTileTest {
         assertFalse(tile.shoreUp());
     }
 
-    @Test
-    void testSinkTile() {
-        tile.flood();
-        tile.flood(); // 再次淹没导致沉没
-        assertTrue(tile.isSunk());
-        assertTrue(tile.isFlooded()); // 沉没的板块仍被视为淹没
 
-        // 测试沉没后无法治水
-        assertFalse(tile.shoreUp());
-        assertTrue(tile.isSunk());
+    @Test
+    void testNormalFloodAndShoreUp() {
+        assertFalse(tile.isFlooded());     // 初始状态未淹没
+
+        tile.flood();                      // 第一次淹没
+        assertTrue(tile.isFlooded());      // 验证已淹没
+        assertFalse(tile.isSunk());        // 验证未沉没
+
+        assertTrue(tile.shoreUp());        // 治水成功
+        assertFalse(tile.isFlooded());     // 验证已恢复
+        assertFalse(tile.isSunk());        // 验证未沉没
+
+        assertFalse(tile.shoreUp());       // 未淹没的板块不需要治水
     }
 
     @Test

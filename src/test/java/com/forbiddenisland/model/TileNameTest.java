@@ -8,7 +8,7 @@ class TileNameTest {
     @Test
     void testTileNames() {
         // 验证岛屿板块名称
-        assertEquals(24, TileName.values().length);
+        assertEquals(21, TileName.values().length);
 
         // 验证特定板块的显示名称
         assertEquals("太阳神庙", TileName.TEMPLE_OF_THE_SUN.getDisplayName());

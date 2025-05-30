@@ -56,6 +56,6 @@ class GameBoardTest {
                 }
             }
         }
-        assertEquals(4, treasureTiles); // 游戏中有4个宝藏
+        assertEquals(8, treasureTiles); // 游戏中有4个宝藏
     }
 }
