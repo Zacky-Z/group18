@@ -39,10 +39,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Player Information Panel
+ * Displays information for all players in the game
+ * Part of the GUI integration work (Week 12)
  * 玩家信息面板 - 显示游戏中所有玩家的信息
  */
 public class PlayerInfoPanel extends VBox {
     
+    // Core components for player information display
     private Game game;
     private List<PlayerView> playerViews;
     private TextArea handCardsArea;
@@ -50,13 +54,20 @@ public class PlayerInfoPanel extends VBox {
     private Button viewOtherPlayersButton;
     private ForbiddenIslandGame mainApp;
     
+    /**
+     * Constructor for PlayerInfoPanel
+     * Initializes the panel with game state and player information
+     * Part of GUI integration (Week 12)
+     * @param game The current game instance
+     */
     public PlayerInfoPanel(Game game) {
         this.game = game;
         this.playerViews = new ArrayList<>();
         
+        // Setup panel layout and styling
         setPadding(new Insets(10));
         setSpacing(10);
-        setPrefWidth(300);  // 增加宽度以适应手牌区域
+        setPrefWidth(300);
         
         setBorder(new Border(new BorderStroke(
                 Color.GRAY, 
@@ -65,12 +76,13 @@ public class PlayerInfoPanel extends VBox {
                 BorderWidths.DEFAULT
         )));
         
-        Label titleLabel = new Label("玩家信息");
+        // Initialize panel components
+        Label titleLabel = new Label("Player Information");
         titleLabel.setFont(Font.font("Arial", FontWeight.BOLD, 14));
         getChildren().add(titleLabel);
         
         initializePlayerViews();
-        createHandCardsArea();  // 添加手牌区域
+        createHandCardsArea();
     }
     
     private void initializePlayerViews() {
@@ -444,7 +456,7 @@ public class PlayerInfoPanel extends VBox {
         this.game = game;
         getChildren().clear();
         
-        Label titleLabel = new Label("玩家信息");
+        Label titleLabel = new Label("Player Information");
         titleLabel.setFont(Font.font("Arial", FontWeight.BOLD, 14));
         getChildren().add(titleLabel);
         
@@ -537,12 +549,12 @@ public class PlayerInfoPanel extends VBox {
                 pawnImageView.setEffect(pawnShadow);
             } catch (Exception e) {
                 // 如果图片加载失败，创建一个颜色方块代替
-                String playerColor = player.getPawn().getColor();
-                javafx.scene.paint.Color color = getColorFromString(playerColor);
-                
+            String playerColor = player.getPawn().getColor();
+            javafx.scene.paint.Color color = getColorFromString(playerColor);
+            
                 javafx.scene.shape.Rectangle colorRect = new javafx.scene.shape.Rectangle(24, 24);
-                colorRect.setFill(color);
-                colorRect.setStroke(Color.BLACK);
+            colorRect.setFill(color);
+            colorRect.setStroke(Color.BLACK);
                 colorRect.setStrokeWidth(1);
                 colorRect.setArcWidth(5);
                 colorRect.setArcHeight(5);

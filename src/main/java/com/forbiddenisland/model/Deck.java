@@ -52,10 +52,13 @@ public class Deck<T extends Card> {
                 return null; // No cards left anywhere (任何地方都没有牌了)
             }
             reshuffleDiscardIntoDraw();
-            if (drawPile.isEmpty()) { // Still empty after reshuffle (e.g. Waters Rise with empty discard)
-                return null;          // 重洗后仍然为空（例如，弃牌堆为空时触发洪水上涨）
             }
+        
+        // 检查洗牌后摸牌堆是否为空
+        if (drawPile.isEmpty()) {
+            return null; // 如果仍然为空，返回null
         }
+        
         return drawPile.pop();
     }
 
@@ -95,11 +98,19 @@ public class Deck<T extends Card> {
      */
     public void reshuffleDiscardIntoDraw() {
         if (!discardPile.isEmpty()) {
-            Collections.shuffle(discardPile);
-            drawPile.addAll(discardPile); // Add to bottom, then shuffle ensures randomness with existing cards
+            // 先创建一个临时列表，复制弃牌堆中的所有卡牌
+            List<T> tempList = new ArrayList<>(discardPile);
+            // 洗混临时列表
+            Collections.shuffle(tempList);
+            // 将洗混后的卡牌添加到摸牌堆，使用Stack的push方法确保卡牌正确添加
+            for (int i = 0; i < tempList.size(); i++) {
+                drawPile.push(tempList.get(i));
+            }
+            // 清空弃牌堆
             discardPile.clear();
-            shuffleDrawPile(); // Shuffle the whole draw pile again for good measure
-                               // 再次洗混整个摸牌堆以确保随机性
+            
+            // 打印日志，帮助调试
+            System.out.println("Reshuffled " + tempList.size() + " cards from discard pile into draw pile");
         }
     }
 

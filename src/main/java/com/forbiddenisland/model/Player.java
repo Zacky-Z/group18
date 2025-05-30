@@ -9,19 +9,20 @@ import java.util.Set;
 
 /**
  * Represents a player in the game.
+ * Core class for player management and movement mechanics implementation (Week 11).
  * 代表游戏中的一个玩家。
  */
 public class Player {
+    // Core player attributes
     private String name; // Name of the player (玩家姓名)
     private AdventurerRole role; // The adventurer role of the player (玩家的探险家角色)
-    private Pawn pawn; // The player's pawn (玩家的棋子)
+    private Pawn pawn; // The player's pawn on the game board (玩家的棋子)
     private List<Card> hand; // The cards currently in the player's hand (玩家当前手牌)
     private List<TreasureType> collectedTreasures; // Treasures collected by the player (玩家收集到的宝藏)
 
+    // Game constants and state tracking
     public static final int MAX_HAND_SIZE = 5; // Maximum number of cards a player can hold (玩家最多可持有的卡牌数量)
-
-    // Add a field to track if the pilot has used their special flight ability this turn
-    private boolean pilotAbilityUsedThisTurn = false;
+    private boolean pilotAbilityUsedThisTurn = false; // Tracks if pilot's special ability was used this turn
 
     /**
      * Constructor for Player.

@@ -321,26 +321,26 @@ public class TileView extends StackPane {
             Circle circle = new Circle(PAWN_SIZE);
             
             Color fillColor;
-            switch (pawnColor.toUpperCase()) {
-                case "RED":
+        switch (pawnColor.toUpperCase()) {
+            case "RED":
                     fillColor = Color.RED;
-                    break;
-                case "BLUE":
+                break;
+            case "BLUE":
                     fillColor = Color.BLUE;
-                    break;
-                case "GREEN":
+                break;
+            case "GREEN":
                     fillColor = Color.GREEN;
-                    break;
-                case "BLACK":
+                break;
+            case "BLACK":
                     fillColor = Color.BLACK;
-                    break;
-                case "WHITE":
+                break;
+            case "WHITE":
                     fillColor = Color.WHITE;
-                    break;
-                case "YELLOW":
+                break;
+            case "YELLOW":
                     fillColor = Color.YELLOW;
-                    break;
-                default:
+                break;
+            default:
                     fillColor = Color.GRAY;
             }
             
@@ -358,11 +358,11 @@ public class TileView extends StackPane {
             
             pawnImageView = new ImageView();
             StackPane fallbackPane = new StackPane(circle);
-            
-            // 在棋子上添加玩家编号文本
-            Label numberLabel = new Label(playerNumber);
-            numberLabel.setTextFill(pawnColor.equalsIgnoreCase("WHITE") || pawnColor.equalsIgnoreCase("YELLOW") ? 
-                                    Color.BLACK : Color.WHITE);
+        
+        // 在棋子上添加玩家编号文本
+        Label numberLabel = new Label(playerNumber);
+        numberLabel.setTextFill(pawnColor.equalsIgnoreCase("WHITE") || pawnColor.equalsIgnoreCase("YELLOW") ? 
+                                Color.BLACK : Color.WHITE);
             numberLabel.setFont(Font.font("Arial", FontWeight.BOLD, 10));
             fallbackPane.getChildren().add(numberLabel);
             

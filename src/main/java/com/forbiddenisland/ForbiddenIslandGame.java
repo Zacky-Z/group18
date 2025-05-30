@@ -168,7 +168,7 @@ public class ForbiddenIslandGame extends Application {
         difficultyPanel.setMaxWidth(400);
 
         ToggleGroup difficultyGroup = new ToggleGroup();
-        
+
         String radioStyle = "-fx-font-size: 16px; -fx-text-fill: white;";
 
         RadioButton noviceButton = new RadioButton("Begainer Lv.1");
@@ -316,7 +316,7 @@ public class ForbiddenIslandGame extends Application {
     private void createPlayerRoleSelectionScreen(Stage primaryStage, int difficulty) {
         BorderPane root = new BorderPane();
         root.setPadding(new Insets(10));
-        
+
         // Use Background Image
        try {
     Image bgImage = new Image(getClass().getResourceAsStream("/images/background/forbidden_bg_3.png"));
@@ -334,7 +334,7 @@ public class ForbiddenIslandGame extends Application {
 }
 
 Label titleLabel = new Label("Select Character");
-titleLabel.setFont(Font.font("Arial", FontWeight.BOLD, 24));
+        titleLabel.setFont(Font.font("Arial", FontWeight.BOLD, 24));
 titleLabel.setTextFill(javafx.scene.paint.Color.WHITE);
 titleLabel.setEffect(new javafx.scene.effect.DropShadow(5, javafx.scene.paint.Color.BLACK));
 root.setTop(titleLabel);
@@ -449,12 +449,12 @@ private void setupMainGameUI(Stage primaryStage) {
     gameLayout.setStyle("-fx-background-color: #f0f8ff;"); // Add light blue background
 
     // Initialize UI components
-    gameBoardView = new GameBoardView(game);
+        gameBoardView = new GameBoardView(game);
     statusPanel = new StatusPanel();
-    playerInfoPanel = new PlayerInfoPanel(game);
+        playerInfoPanel = new PlayerInfoPanel(game);
     playerInfoPanel.setMainApp(this); // Set mainApp reference for PlayerInfoPanel
-    actionPanel = new ActionPanel(game, this);
-    actionPanel.setGameBoardView(gameBoardView);
+        actionPanel = new ActionPanel(game, this);
+        actionPanel.setGameBoardView(gameBoardView);
     waterMeterView = new WaterMeterView(game.getWaterMeter());
 
     // Set minimum width to prevent panels from being squashed
@@ -519,7 +519,7 @@ private void setupMainGameUI(Stage primaryStage) {
     // Create scene and set larger initial size
     Scene scene = new Scene(gameLayout, 1400, 900);
     primaryStage.setTitle("Forbidden Island");
-    primaryStage.setScene(scene);
+        primaryStage.setScene(scene);
     primaryStage.setResizable(true);
 
     // Set minimum window size to ensure UI elements aren't squashed
@@ -534,8 +534,8 @@ private void setupMainGameUI(Stage primaryStage) {
 
 /**
  * Update the game state and refresh the interface
- */
-public void updateGameState() {
+     */
+    public void updateGameState() {
     if (game == null) return;
 
     if (gameBoardView != null) gameBoardView.update();
@@ -626,7 +626,7 @@ private void showGameOverDialog(boolean isWin, String message, String reason) {
     // Create dialog directly without using Platform.runLater
     javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.INFORMATION);
     alert.setTitle(isWin ? "Victory!" : "Game Over");
-    alert.setHeaderText(message);
+        alert.setHeaderText(message);
 
     // Create a text area to display detailed information
     javafx.scene.control.TextArea textArea = new javafx.scene.control.TextArea();
@@ -658,7 +658,7 @@ private void showGameOverDialog(boolean isWin, String message, String reason) {
     
     restartButton.setOnAction(e -> {
         alert.close();
-        restartGame();
+                restartGame();
     });
     
     exitButton.setOnAction(e -> {
@@ -671,7 +671,7 @@ private void showGameOverDialog(boolean isWin, String message, String reason) {
 
         if (anyNode != null && anyNode.getScene() != null && anyNode.getScene().getWindow() != null) {
             ((Stage) anyNode.getScene().getWindow()).close();
-        } else {
+            } else {
             System.exit(0);
         }
     });
@@ -703,23 +703,23 @@ private void showGameOverDialog(boolean isWin, String message, String reason) {
 
 /**
  * Restart the game
- */
-private void restartGame() {
+     */
+    private void restartGame() {
     // Clear all content from the stage and fully rebuild
-    Stage primaryStage = (Stage) gameBoardView.getScene().getWindow();
+        Stage primaryStage = (Stage) gameBoardView.getScene().getWindow();
 
     // Reset game over flag
     isGameOver = false;
 
     // Fully recreate game instance and UI components
-    start(primaryStage);
-}
+        start(primaryStage);
+    }
 
-/**
+    /**
  * Show game help dialog
- */
-private void showGameHelp() {
-    javafx.scene.control.Alert.AlertType.INFORMATION);
+     */
+    private void showGameHelp() {
+    javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.INFORMATION);
 
         alert.setTitle("禁闭岛游戏帮助");
         alert.setHeaderText("游戏规则与操作说明");
@@ -744,49 +744,49 @@ private void showGameHelp() {
         alert.showAndWait();
     }
 
-    private void saveGame(Stage primaryStage) {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("保存游戏");
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Game Save Files", "*.sav"));
-        File file = fileChooser.showSaveDialog(primaryStage);
-        if (file != null) {
-            game.saveGame(file.getAbsolutePath());
-        }
+private void saveGame(Stage primaryStage) {
+    FileChooser fileChooser = new FileChooser();
+    fileChooser.setTitle("保存游戏");
+    fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Game Save Files", "*.sav"));
+    File file = fileChooser.showSaveDialog(primaryStage);
+    if (file != null) {
+        game.saveGame(file.getAbsolutePath());
     }
+}
 
-    private void loadGame(Stage primaryStage) {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("加载游戏");
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Game Save Files", "*.sav"));
-        File file = fileChooser.showOpenDialog(primaryStage);
-        if (file != null) {
-            game = GameLoader.loadGame(file.getAbsolutePath());
-            if (game != null) {
-                gameBoardView.setGame(game);
-                playerInfoPanel.setGame(game);
-                playerInfoPanel.setMainApp(this); // 设置PlayerInfoPanel的mainApp引用
-                actionPanel.setGame(game);
-                updateGameState();
-            }
-        }
-    }
-
-    public StatusPanel getStatusPanel() {
-        return statusPanel;
-    }
-
-    /**
-     * 获取玩家信息面板
-     * @return 玩家信息面板
-     */
-    public PlayerInfoPanel getPlayerInfoPanel() {
-        return playerInfoPanel;
-    }
-
-    public void setGamePhase(Game.GamePhase phase) {
+private void loadGame(Stage primaryStage) {
+    FileChooser fileChooser = new FileChooser();
+    fileChooser.setTitle("加载游戏");
+    fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Game Save Files", "*.sav"));
+    File file = fileChooser.showOpenDialog(primaryStage);
+    if (file != null) {
+        game = GameLoader.loadGame(file.getAbsolutePath());
         if (game != null) {
-            game.setCurrentPhase(phase);
+            gameBoardView.setGame(game);
+            playerInfoPanel.setGame(game);
+            playerInfoPanel.setMainApp(this); // 设置PlayerInfoPanel的mainApp引用
+            actionPanel.setGame(game);
             updateGameState();
         }
     }
+}
+
+public StatusPanel getStatusPanel() {
+    return statusPanel;
+}
+
+/**
+ * 获取玩家信息面板
+ * @return 玩家信息面板
+ */
+public PlayerInfoPanel getPlayerInfoPanel() {
+    return playerInfoPanel;
+}
+
+public void setGamePhase(Game.GamePhase phase) {
+    if (game != null) {
+        game.setCurrentPhase(phase);
+        updateGameState();
+    }
+}
 }

@@ -34,14 +34,20 @@ import java.lang.StringBuilder;
 import javafx.application.Platform;
 
 /**
+ * Game Action Panel
+ * Displays and manages available actions for the current player
+ * Part of the GUI integration work (Week 12)
+ * Core component for turn management system (Week 13)
  * 游戏操作面板，显示当前玩家可以执行的操作按钮
- * 优化布局以确保在各种窗口尺寸下完整显示
  */
 public class ActionPanel extends VBox {
 
+    // Core components for game action management
     private Game game;
     private ForbiddenIslandGame mainApp;
     private GameBoardView gameBoardView;
+    
+    // UI Components for action display and control
     private Label actionPointsLabel;
     private Button moveButton;
     private Button shoreUpButton;
@@ -51,30 +57,37 @@ public class ActionPanel extends VBox {
     private Button endActionsAndDrawTreasureButton;
     private Button drawFloodCardsButton;
     private VBox actionButtonsBox;
-    private boolean isProcessingAction = false; // 添加状态锁定标志
+    private boolean isProcessingAction = false; // Action processing lock flag
 
+    /**
+     * Constructor for ActionPanel
+     * Initializes the panel with game actions and turn management controls
+     * @param game The current game instance
+     * @param mainApp The main application instance
+     */
     public ActionPanel(Game game, ForbiddenIslandGame mainApp) {
         this.game = game;
         this.mainApp = mainApp;
 
+        // Setup panel layout and styling
         setPadding(new Insets(10));
         setSpacing(10);
         setPrefWidth(280);
         setStyle("-fx-background-color: #f0f0f0; -fx-border-color: #999; -fx-border-width: 1px;");
 
-        Label titleLabel = new Label("行动面板");
+        // Initialize panel components
+        Label titleLabel = new Label("Action Panel");
         titleLabel.setFont(Font.font("Arial", FontWeight.BOLD, 16));
         getChildren().add(titleLabel);
 
-        actionPointsLabel = new Label("行动点数: " + game.getActionsRemainingInTurn());
+        // Setup action points display
+        actionPointsLabel = new Label("Actions Remaining: " + game.getActionsRemainingInTurn());
         actionPointsLabel.setFont(Font.font("Arial", 14));
         getChildren().add(actionPointsLabel);
 
-        // 创建按钮面板（不使用滚动条）
+        // Create action buttons container
         actionButtonsBox = new VBox(8);
         actionButtonsBox.setPadding(new Insets(5));
-        
-        // 直接添加按钮面板，不使用ScrollPane
         getChildren().add(actionButtonsBox);
 
         createActionButtons();
