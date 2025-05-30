@@ -7,20 +7,16 @@ import java.util.Stack;
 
 /**
  * Represents a deck of cards in the game.
- * 代表游戏中的一副牌堆。
  * @param <T> The type of cards in the deck, must extend Card.
- *           牌堆中卡牌的类型，必须继承自 Card。
  */
 public class Deck<T extends Card> {
-    private Stack<T> drawPile;    // The pile of cards to draw from (摸牌堆)
-    private List<T> discardPile; // The pile of discarded cards (弃牌堆)
+    private Stack<T> drawPile;    // The pile of cards to draw from
+    private List<T> discardPile; // The pile of discarded cards
 
     /**
      * Constructor for Deck.
-     * Deck 的构造函数。
      * Initializes with a list of cards that form the initial draw pile.
-     * 使用构成初始摸牌堆的卡牌列表进行初始化。
-     * @param initialCards The list of cards to start the deck with. (用于开始牌堆的卡牌列表)
+     * @param initialCards The list of cards to start the deck with.
      */
     public Deck(List<T> initialCards) {
         this.drawPile = new Stack<>();
@@ -33,7 +29,6 @@ public class Deck<T extends Card> {
 
     /**
      * Shuffles the draw pile.
-     * 洗混摸牌堆。
      */
     public void shuffleDrawPile() {
         Collections.shuffle(this.drawPile);
@@ -41,22 +36,19 @@ public class Deck<T extends Card> {
 
     /**
      * Draws a card from the top of the draw pile.
-     * 从摸牌堆顶部摸一张牌。
      * If the draw pile is empty, it attempts to reshuffle the discard pile into the draw pile.
-     * 如果摸牌堆为空，它会尝试将弃牌堆重新洗入摸牌堆。
-     * @return The card drawn, or null if no cards are available. (摸到的牌，如果无牌可摸则为 null)
+     * @return The card drawn, or null if no cards are available.
      */
     public T drawCard() {
         if (drawPile.isEmpty()) {
             if (discardPile.isEmpty()) {
-                return null; // No cards left anywhere (任何地方都没有牌了)
+                return null; // No cards left anywhere
             }
             reshuffleDiscardIntoDraw();
             }
-        
-        // 检查洗牌后摸牌堆是否为空
+
         if (drawPile.isEmpty()) {
-            return null; // 如果仍然为空，返回null
+            return null;
         }
         
         return drawPile.pop();
@@ -64,8 +56,7 @@ public class Deck<T extends Card> {
 
     /**
      * Adds a card to the discard pile.
-     * 将一张牌加入弃牌堆。
-     * @param card The card to discard. (要弃掉的牌)
+     * @param card The card to discard.
      */
     public void discardCard(T card) {
         if (card != null) {
@@ -76,14 +67,11 @@ public class Deck<T extends Card> {
     /**
      * Adds a list of cards to the top of the draw pile.
      * Used for "Waters Rise!" where discard pile is shuffled and placed on top.
-     * 将一个卡牌列表添加到摸牌堆顶部。
-     * 用于"洪水上涨！"效果，弃牌堆被洗混并放在顶部。
-     * @param cards The list of cards to add. (要添加的卡牌列表)
+     * @param cards The list of cards to add.
      */
     public void addCardsToDrawPileTop(List<T> cards) {
         if (cards != null) {
             // Add in reverse order to maintain the order of the list when popping from stack
-            // 逆序添加，以便从堆栈中弹出时保持列表的顺序
             for (int i = cards.size() - 1; i >= 0; i--) {
                 drawPile.push(cards.get(i));
             }
@@ -93,40 +81,30 @@ public class Deck<T extends Card> {
     /**
      * Takes all cards from the discard pile, shuffles them, and places them into the draw pile.
      * The discard pile becomes empty.
-     * 从弃牌堆中取出所有牌，洗混它们，然后将它们放入摸牌堆。
-     * 弃牌堆变为空。
      */
     public void reshuffleDiscardIntoDraw() {
         if (!discardPile.isEmpty()) {
-            // 先创建一个临时列表，复制弃牌堆中的所有卡牌
             List<T> tempList = new ArrayList<>(discardPile);
-            // 洗混临时列表
             Collections.shuffle(tempList);
-            // 将洗混后的卡牌添加到摸牌堆，使用Stack的push方法确保卡牌正确添加
             for (int i = 0; i < tempList.size(); i++) {
                 drawPile.push(tempList.get(i));
             }
-            // 清空弃牌堆
             discardPile.clear();
-            
-            // 打印日志，帮助调试
+
             System.out.println("Reshuffled " + tempList.size() + " cards from discard pile into draw pile");
         }
     }
 
     /**
      * Gets the current discard pile.
-     * 获取当前的弃牌堆。
-     * @return A list of cards in the discard pile. (弃牌堆中的卡牌列表)
+     * @return A list of cards in the discard pile.
      */
     public List<T> getDiscardPile() {
         return new ArrayList<>(discardPile); // Return a copy to prevent external modification
-                                            // 返回一个副本以防止外部修改
     }
 
     /**
      * Clears the discard pile.
-     * 清空弃牌堆。
      */
     public void clearDiscardPile() {
         discardPile.clear();
@@ -134,8 +112,7 @@ public class Deck<T extends Card> {
 
     /**
      * Checks if the draw pile is empty.
-     * 检查摸牌堆是否为空。
-     * @return true if the draw pile is empty, false otherwise. (如果摸牌堆为空则为 true，否则为 false)
+     * @return true if the draw pile is empty, false otherwise.
      */
     public boolean isDrawPileEmpty() {
         return drawPile.isEmpty();
@@ -143,8 +120,7 @@ public class Deck<T extends Card> {
 
     /**
      * Gets the number of cards remaining in the draw pile.
-     * 获取摸牌堆中剩余的卡牌数量。
-     * @return The number of cards in the draw pile. (摸牌堆中的卡牌数量)
+     * @return The number of cards in the draw pile.
      */
     public int getDrawPileSize() {
         return drawPile.size();
@@ -152,8 +128,7 @@ public class Deck<T extends Card> {
 
     /**
      * Gets the number of cards in the discard pile.
-     * 获取弃牌堆中的卡牌数量。
-     * @return The number of cards in the discard pile. (弃牌堆中的卡牌数量)
+     * @return The number of cards in the discard pile.
      */
     public int getDiscardPileSize() {
         return discardPile.size();

@@ -4,6 +4,9 @@ import com.forbiddenisland.model.TreasureType;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Test class for TreasureCard functionality.
+ */
 class TreasureCardTest {
 
     @Test
@@ -19,7 +22,7 @@ class TreasureCardTest {
     @Test
     void testTreasureCardDescription() {
         TreasureCard card = new TreasureCard("Earth Stone", TreasureType.THE_EARTH_STONE);
-        String expectedDescription = "宝藏卡：" + TreasureType.THE_EARTH_STONE.getDisplayName();
+        String expectedDescription = "Treasure Card: " + TreasureType.THE_EARTH_STONE.getDisplayName();
         assertEquals(expectedDescription, card.getDescription(), "Card description should match the expected format");
     }
 

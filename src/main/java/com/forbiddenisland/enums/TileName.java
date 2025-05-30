@@ -1,34 +1,46 @@
 package com.forbiddenisland.enums;
 
+/**
+ * Enum representing the different tiles in the game.
+ * Each tile has a display name that represents its location on the island.
+ */
 public enum TileName {
-    CRYSTAL_CAVE("水晶洞穴"),
-    CORAL_PALACE("珊瑚宫殿"),
-    TEMPLE_OF_THE_SUN("太阳神庙"),
-    TEMPLE_OF_THE_MOON("月亮神庙"),
-    IRON_ANVIL_ROCK("铁砧岩"),
-    CLIFF_OF_AGES("岁月悬崖"),
-    OBSERVATORY("天文台"),
-    PHANTOM_ROCK("幻影岩"),
-    BREAKERS_BRIDGE("碎浪桥"),
-    DUNES_OF_DECEPTION("欺骗沙丘"),
-    HOWLING_GARDEN("呼啸花园"),
-    LOST_LAGOON("失落泻湖"),
-    MISTY_MARSH("迷雾沼泽"),
-    SHADOW_WOODS("暗影森林"),
-    WHISPERING_GARDEN("低语花园"),
-    CAVE_OF_EMBERS("余烬洞穴"),
-    TWILIGHT_HOLLOW("黄昏山谷"),
-    TIDAL_PALACE("潮汐宫殿"),
-    WATCHTOWER("瞭望塔"),
-    BAY_OF_SILVER("银湾"),
-    GOLD_GATE("金门");
+    CRYSTAL_CAVE("Crystal Cave"),
+    CORAL_PALACE("Coral Palace"),
+    TEMPLE_OF_THE_SUN("Temple of the Sun"),
+    TEMPLE_OF_THE_MOON("Temple of the Moon"),
+    IRON_ANVIL_ROCK("Iron Anvil Rock"),
+    CLIFF_OF_AGES("Cliff of Ages"),
+    OBSERVATORY("Observatory"),
+    PHANTOM_ROCK("Phantom Rock"),
+    BREAKERS_BRIDGE("Breakers Bridge"),
+    DUNES_OF_DECEPTION("Dunes of Deception"),
+    HOWLING_GARDEN("Howling Garden"),
+    LOST_LAGOON("Lost Lagoon"),
+    MISTY_MARSH("Misty Marsh"),
+    SHADOW_WOODS("Shadow Woods"),
+    WHISPERING_GARDEN("Whispering Garden"),
+    CAVE_OF_EMBERS("Cave of Embers"),
+    TWILIGHT_HOLLOW("Twilight Hollow"),
+    TIDAL_PALACE("Tidal Palace"),
+    WATCHTOWER("Watchtower"),
+    BAY_OF_SILVER("Bay of Silver"),
+    GOLD_GATE("Gold Gate");
 
     private final String displayName;
 
+    /**
+     * Constructor for TileName.
+     * @param displayName The display name of the tile
+     */
     TileName(String displayName) {
         this.displayName = displayName;
     }
 
+    /**
+     * Gets the display name of the tile.
+     * @return The display name
+     */
     public String getDisplayName() {
         return displayName;
     }

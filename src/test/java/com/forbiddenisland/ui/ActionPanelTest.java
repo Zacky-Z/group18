@@ -14,125 +14,125 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * 测试ActionPanel类的功能
- * 使用简单的测试方法验证移动功能的逻辑
+ * Test class for ActionPanel functionality.
+ * Tests the basic movement logic using simple test methods.
  */
 public class ActionPanelTest {
 
     /**
-     * 测试移动功能的基本逻辑
-     * 由于ActionPanel依赖于JavaFX组件，这里只测试核心逻辑
+     * Tests the basic movement logic.
+     * Since ActionPanel depends on JavaFX components, we only test the core logic here.
      */
     @Test
     public void testMovementLogic() {
-        // 创建测试用的板块
-        IslandTile startTile = new IslandTile("起始板块");
-        IslandTile destinationTile = new IslandTile("目标板块");
+        // Create test tiles
+        IslandTile startTile = new IslandTile("Start Tile");
+        IslandTile destinationTile = new IslandTile("Destination Tile");
         
-        // 创建玩家
-        Player player = new Player("测试玩家");
+        // Create player
+        Player player = new Player("Test Player");
         player.assignRoleAndPawn(AdventurerRole.EXPLORER, startTile, "GREEN");
         
-        // 验证玩家初始位置
+        // Verify initial player position
         assertEquals(startTile, player.getCurrentLocation());
         
-        // 模拟移动
+        // Simulate movement
         player.moveTo(destinationTile);
         
-        // 验证玩家移动后的位置
+        // Verify player position after movement
         assertEquals(destinationTile, player.getCurrentLocation());
     }
 
     /**
-     * 测试探险家的斜向移动能力
+     * Tests the Explorer's diagonal movement ability.
      */
     @Test
     public void testExplorerDiagonalMovement() {
-        // 创建一个简单的游戏实例
-        Game game = new Game(Arrays.asList("测试玩家"), 1, 
+        // Create a simple game instance
+        Game game = new Game(Arrays.asList("Test Player"), 1, 
                              Arrays.asList(AdventurerRole.EXPLORER));
         
-        // 获取玩家
+        // Get player
         Player player = game.getCurrentPlayer();
         
-        // 验证玩家是探险家
+        // Verify player is Explorer
         assertEquals(AdventurerRole.EXPLORER, player.getRole());
         
-        // 验证探险家可以斜向移动
+        // Verify Explorer can move diagonally
         assertTrue(player.getRole().canMoveDiagonally());
     }
     
     /**
-     * 测试飞行员的飞行能力
+     * Tests the Pilot's flight ability.
      */
     @Test
     public void testPilotFlightAbility() {
-        // 创建一个简单的游戏实例
-        Game game = new Game(Arrays.asList("测试玩家"), 1, 
+        // Create a simple game instance
+        Game game = new Game(Arrays.asList("Test Player"), 1, 
                              Arrays.asList(AdventurerRole.PILOT));
         
-        // 获取玩家
+        // Get player
         Player player = game.getCurrentPlayer();
         
-        // 验证玩家是飞行员
+        // Verify player is Pilot
         assertEquals(AdventurerRole.PILOT, player.getRole());
         
-        // 验证飞行员可以飞到任何板块
+        // Verify Pilot can fly to any tile
         assertTrue(player.getRole().canFlyToAnyTile());
         
-        // 验证飞行员能力初始未使用
+        // Verify Pilot ability is initially unused
         assertFalse(player.isPilotAbilityUsedThisTurn());
         
-        // 模拟使用飞行能力
+        // Simulate using flight ability
         player.setPilotAbilityUsedThisTurn(true);
         assertTrue(player.isPilotAbilityUsedThisTurn());
         
-        // 模拟回合结束，重置能力
+        // Simulate turn end, reset ability
         player.resetTurnBasedAbilities();
         assertFalse(player.isPilotAbilityUsedThisTurn());
     }
     
     /**
-     * 测试行动点消耗机制
+     * Tests the action point consumption mechanism.
      */
     @Test
     public void testActionPointConsumption() {
-        // 创建一个简单的游戏实例
-        Game game = new Game(Arrays.asList("测试玩家"), 1);
+        // Create a simple game instance
+        Game game = new Game(Arrays.asList("Test Player"), 1);
         
-        // 获取初始行动点
+        // Get initial action points
         int initialActions = game.getActionsRemainingInTurn();
         assertEquals(Game.MAX_ACTIONS_PER_TURN, initialActions);
         
-        // 消耗一个行动点
+        // Consume one action point
         assertTrue(game.spendAction());
         assertEquals(initialActions - 1, game.getActionsRemainingInTurn());
         
-        // 消耗所有行动点
+        // Consume all action points
         while (game.getActionsRemainingInTurn() > 0) {
             assertTrue(game.spendAction());
         }
         
-        // 验证无法再消耗行动点
+        // Verify no more action points can be consumed
         assertFalse(game.spendAction());
     }
     
     /**
-     * 测试游戏阶段切换
+     * Tests game phase changes.
      */
     @Test
     public void testGamePhaseChanges() {
-        // 创建一个简单的游戏实例
-        Game game = new Game(Arrays.asList("测试玩家"), 1);
+        // Create a simple game instance
+        Game game = new Game(Arrays.asList("Test Player"), 1);
         
-        // 初始应该是行动阶段
+        // Should initially be in action phase
         assertEquals(Game.GamePhase.ACTION_PHASE, game.getCurrentPhase());
         
-        // 切换到抽宝藏牌阶段
+        // Switch to draw treasure cards phase
         game.setCurrentPhase(Game.GamePhase.DRAW_TREASURE_CARDS_PHASE);
         assertEquals(Game.GamePhase.DRAW_TREASURE_CARDS_PHASE, game.getCurrentPhase());
         
-        // 切换到抽洪水牌阶段
+        // Switch to draw flood cards phase
         game.setCurrentPhase(Game.GamePhase.DRAW_FLOOD_CARDS_PHASE);
         assertEquals(Game.GamePhase.DRAW_FLOOD_CARDS_PHASE, game.getCurrentPhase());
     }

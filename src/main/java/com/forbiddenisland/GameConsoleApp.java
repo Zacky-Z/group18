@@ -5,9 +5,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
-
 /**
- * 控制台版本的禁闭岛游戏，用于测试游戏逻辑
+ * Console version of the Forbidden Island game for testing game logic.
  */
 public class GameConsoleApp {
 
@@ -15,83 +14,83 @@ public class GameConsoleApp {
         Scanner scanner = new Scanner(System.in);
         Game game = null;
 
-        System.out.println("=== 禁闭岛游戏 (控制台版) ===");
-        System.out.println("1. 开始新游戏");
-        System.out.println("2. 加载存档");
-        System.out.print("请选择: ");
+        System.out.println("=== Forbidden Island Game (Console Version) ===");
+        System.out.println("1. Start New Game");
+        System.out.println("2. Load Game");
+        System.out.print("Please choose: ");
         int choice = scanner.nextInt();
-        scanner.nextLine(); // 消耗换行符
+        scanner.nextLine(); // Consume newline
 
         if (choice == 1) {
-            System.out.println("初始化游戏...");
+            System.out.println("Initializing game...");
 
-            // 创建2 - 4名玩家
-            List<String> playerNames = Arrays.asList("玩家1", "玩家2", "玩家3", "玩家4");
+            // Create 2-4 players
+            List<String> playerNames = Arrays.asList("Player 1", "Player 2", "Player 3", "Player 4");
 
-            // 难度级别 (1 - 4): 新手、正常、精英、传奇
-            int difficulty = 1; // 新手难度
+            // Difficulty level (1-4): Novice, Normal, Elite, Legendary
+            int difficulty = 1; // Novice difficulty
 
-            // 创建游戏实例
+            // Create game instance
             game = new Game(playerNames, difficulty);
         } else if (choice == 2) {
-            System.out.print("请输入存档文件的路径: ");
+            System.out.print("Please enter the save file path: ");
             String filePath = scanner.nextLine();
             game = GameLoader.loadGame(filePath);
             if (game == null) {
-                System.out.println("加载存档失败，开始新游戏。");
-                // 创建2 - 4名玩家
-                List<String> playerNames = Arrays.asList("玩家1", "玩家2", "玩家3", "玩家4");
-                // 难度级别 (1 - 4): 新手、正常、精英、传奇
-                int difficulty = 1; // 新手难度
+                System.out.println("Failed to load save file, starting new game.");
+                // Create 2-4 players
+                List<String> playerNames = Arrays.asList("Player 1", "Player 2", "Player 3", "Player 4");
+                // Difficulty level (1-4): Novice, Normal, Elite, Legendary
+                int difficulty = 1; // Novice difficulty
                 game = new Game(playerNames, difficulty);
             }
         } else {
-            System.out.println("无效的选择，开始新游戏。");
-            // 创建2 - 4名玩家
-            List<String> playerNames = Arrays.asList("玩家1", "玩家2", "玩家3", "玩家4");
-            // 难度级别 (1 - 4): 新手、正常、精英、传奇
-            int difficulty = 1; // 新手难度
+            System.out.println("Invalid choice, starting new game.");
+            // Create 2-4 players
+            List<String> playerNames = Arrays.asList("Player 1", "Player 2", "Player 3", "Player 4");
+            // Difficulty level (1-4): Novice, Normal, Elite, Legendary
+            int difficulty = 1; // Novice difficulty
             game = new Game(playerNames, difficulty);
         }
 
-        System.out.println("\n游戏初始化完成!");
-        System.out.println("按回车键继续...");
+        System.out.println("\nGame initialization complete!");
+        System.out.println("Press Enter to continue...");
         waitForEnter();
 
         while (true) {
-            System.out.println("\n1. 进行回合");
-            System.out.println("2. 保存游戏");
-            System.out.println("3. 退出游戏");
-            System.out.print("请选择: ");
+            System.out.println("\n1. Take Turn");
+            System.out.println("2. Save Game");
+            System.out.println("3. Exit Game");
+            System.out.print("Please choose: ");
             choice = scanner.nextInt();
-            scanner.nextLine(); // 消耗换行符
+            scanner.nextLine(); // Consume newline
 
             if (choice == 1) {
-                System.out.println("\n===== 回合 =====");
+                System.out.println("\n===== Turn =====");
                 game.runTurn();
 
-                // 检查游戏是否结束
+                // Check if game is over
                 if (game.checkGameOverConditions()) {
-                    System.out.println("\n游戏结束 - 玩家失败!");
+                    System.out.println("\nGame Over - Players Lost!");
                     break;
                 }
 
                 if (game.checkWinConditions()) {
-                    System.out.println("\n游戏结束 - 玩家胜利!");
+                    System.out.println("\nGame Over - Players Won!");
                     break;
                 }
 
-                System.out.println("\n回合结束。按回车键继续...");
+                System.out.println("\nTurn ended. Press Enter to continue...");
                 waitForEnter();
             } else if (choice == 2) {
-                System.out.print("请输入保存文件的路径: ");
+                System.out.print("Please enter the save file path: ");
                 String filePath = scanner.nextLine();
                 game.saveGame(filePath);
             } else if (choice == 3) {
-                System.out.println("\n退出游戏。感谢游玩!");
+                System.out.println("\nExiting game. Thanks for playing!");
                 break;
             } else {
-                System.out.println("无效的选择，请重新输入。");
+                System.out.println("Invalid choice, please try again.");
             }
         }
     }

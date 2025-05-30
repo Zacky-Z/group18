@@ -1,19 +1,31 @@
 package com.forbiddenisland.enums;
 
+/**
+ * Enum representing the different types of adventurers in the game.
+ * Each adventurer has unique abilities and a display name.
+ */
 public enum AdventurerType {
-    PILOT("飞行员"),
-    ENGINEER("工程师"),
-    MESSENGER("信差"),
-    DIVER("潜水员"),
-    EXPLORER("探险家"),
-    NAVIGATOR("领航员");
+    PILOT("Pilot"),
+    ENGINEER("Engineer"),
+    MESSENGER("Messenger"),
+    DIVER("Diver"),
+    EXPLORER("Explorer"),
+    NAVIGATOR("Navigator");
 
     private final String displayName;
 
+    /**
+     * Constructor for AdventurerType.
+     * @param displayName The display name of the adventurer
+     */
     AdventurerType(String displayName) {
         this.displayName = displayName;
     }
 
+    /**
+     * Gets the display name of the adventurer.
+     * @return The display name
+     */
     public String getDisplayName() {
         return displayName;
     }
