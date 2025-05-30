@@ -7,7 +7,7 @@ package com.forbiddenisland.model;
 public enum TreasureType {
     THE_EARTH_STONE("大地之石"),
     THE_STATUE_OF_THE_WIND("风之雕像"),
-    THE_CRYSTAL_OF_FIRE("烈火水晶"),
+    THE_CRYSTAL_OF_FIRE("CRYSTAL_OF_FIRE"),
     THE_OCEANS_CHALICE("海洋圣杯");
 
     private final String displayName;
