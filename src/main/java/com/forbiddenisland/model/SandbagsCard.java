@@ -11,7 +11,7 @@ public class SandbagsCard extends SpecialActionCard {
      * SandbagsCard 的构造函数。
      */
     public SandbagsCard() {
-        super("沙袋");
+        super("Sandbag");
     }
 
     /**
@@ -21,7 +21,7 @@ public class SandbagsCard extends SpecialActionCard {
      */
     @Override
     public String getDescription() {
-        return "沙袋：填补岛上任意一个被淹没的板块";
+        return "Sandbags: Use this card to shore up a tile on the island, preventing it from flooding.";
     }
 
     // The specific action for this card (shoring up a tile) will be implemented

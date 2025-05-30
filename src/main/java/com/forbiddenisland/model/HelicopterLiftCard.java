@@ -11,7 +11,7 @@ public class HelicopterLiftCard extends SpecialActionCard {
      * HelicopterLiftCard 的构造函数。
      */
     public HelicopterLiftCard() {
-        super("直升机升空");
+        super("Helicopter Lift");
     }
 
     /**
@@ -21,7 +21,7 @@ public class HelicopterLiftCard extends SpecialActionCard {
      */
     @Override
     public String getDescription() {
-        return "直升机升空：将同一板块上的一个或多个棋子移动到任何其他板块，可用于最终逃脱";
+        return "Helicopter Lift: Move any number of pawns to any tile on the board.";
     }
 
     // The specific action for this card (moving pawns) will be implemented

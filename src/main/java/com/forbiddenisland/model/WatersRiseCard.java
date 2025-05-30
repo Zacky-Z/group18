@@ -11,7 +11,7 @@ public class WatersRiseCard extends SpecialActionCard {
      * WatersRiseCard 的构造函数。
      */
     public WatersRiseCard() {
-        super("洪水上涨！");
+        super("Waters Rise!");
     }
 
     /**
@@ -21,7 +21,7 @@ public class WatersRiseCard extends SpecialActionCard {
      */
     @Override
     public String getDescription() {
-        return "洪水上涨！提升水位，并将洪水弃牌堆洗回洪水摸牌堆顶部";
+        return "Waters Rise! - Raise the water level by one step and shuffle the flood cards.";
     }
 
     // The specific action for this card (raising water level, shuffling flood cards)
