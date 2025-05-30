@@ -23,7 +23,7 @@ public class AssetLoader {
             imageCache.put(name, image);
             return image;
         } catch (Exception e) {
-            // 加载失败时返回默认图片
+            // Return default image when loading fails
             return getDefaultImage();
         }
     }
@@ -32,10 +32,8 @@ public class AssetLoader {
         try {
             return new Image(getClass().getResourceAsStream(IMAGE_PATH + "default.png"));
         } catch (Exception e) {
-            // 如果默认图片也不存在，创建一个空白图片
+            // Create a blank image if the default image is also missing
             return new Image("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=");
         }
     }
-
-    // 其他资源加载方法（如声音）
-}    
+}

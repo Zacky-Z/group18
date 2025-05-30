@@ -1,5 +1,5 @@
 package com.forbiddenisland.model;
-
+import java.io.Serializable;
 /**
  * Represents the outcome of drawing a single flood card.
  * 代表抽取一张洪水牌的结果。

@@ -1,9 +1,9 @@
 package com.forbiddenisland.enums;
 
 public enum TurnPhase {
-    ACTION("行动阶段"),
-    TREASURE_CARD_DRAW("抽取宝物卡阶段"),
-    FLOOD("洪水阶段");
+    ACTION("Action Phase"),
+    TREASURE_CARD_DRAW("Treasure Card Draw Phase"),
+    FLOOD("Flood Phase");
 
     private final String displayName;
 
@@ -14,4 +14,4 @@ public enum TurnPhase {
     public String getDisplayName() {
         return displayName;
     }
-}    
+}

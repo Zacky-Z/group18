@@ -1,4 +1,5 @@
 package com.forbiddenisland.model;
+import java.io.Serializable;
 
 // Integration note: Will use JavaFX Color for GUI implementation in Week 12
 // GUI集成说明：将在第12周使用JavaFX的Color类实现
@@ -8,7 +9,7 @@ package com.forbiddenisland.model;
  * Core component for player movement and position tracking (Week 11).
  * 代表游戏中的玩家棋子。
  */
-public class Pawn {
+public class Pawn implements Serializable{
     private String color; // Visual identifier for the pawn in the GUI (棋子的颜色)
     private IslandTile currentLocation; // Current tile position on the game board (棋子在岛屿板块上的当前位置)
 

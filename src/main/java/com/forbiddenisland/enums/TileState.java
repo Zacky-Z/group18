@@ -1,9 +1,9 @@
 package com.forbiddenisland.enums;
 
 public enum TileState {
-    NORMAL("正常"),
-    FLOODED("洪水"),
-    SUNK("沉没");
+    NORMAL("Normal"),
+    FLOODED("Flooded"),
+    SUNK("Sunk");
 
     private final String displayName;
 
@@ -14,4 +14,4 @@ public enum TileState {
     public String getDisplayName() {
         return displayName;
     }
-}    
+}

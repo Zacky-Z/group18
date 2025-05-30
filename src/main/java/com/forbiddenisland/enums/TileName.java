@@ -1,9 +1,5 @@
 package com.forbiddenisland.enums;
 
-/**
- * Enum representing the different tiles in the game.
- * Each tile has a display name that represents its location on the island.
- */
 public enum TileName {
     CRYSTAL_CAVE("Crystal Cave"),
     CORAL_PALACE("Coral Palace"),
@@ -29,19 +25,11 @@ public enum TileName {
 
     private final String displayName;
 
-    /**
-     * Constructor for TileName.
-     * @param displayName The display name of the tile
-     */
     TileName(String displayName) {
         this.displayName = displayName;
     }
 
-    /**
-     * Gets the display name of the tile.
-     * @return The display name
-     */
     public String getDisplayName() {
         return displayName;
     }
-}    
+}

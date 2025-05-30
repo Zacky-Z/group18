@@ -35,167 +35,167 @@ import javafx.util.Duration;
 import java.util.List;
 
 /**
- * 岛屿板块视图 - 显示单个岛屿板块的状态
+ * Island Tile View - Displays the state of a single island tile
  */
 public class TileView extends StackPane {
-    
+
     private IslandTile tile;
     private Label nameLabel;
     private Label statusLabel;
     private VBox contentBox;
     private FlowPane pawnsPane;
     private Game game;
-    
+
     private static final double TILE_SIZE = 120;
     private static final double PAWN_SIZE = 20;
-    
+
     public TileView(IslandTile tile) {
         this(tile, null);
     }
-    
+
     public TileView(IslandTile tile, Game game) {
         this.tile = tile;
         this.game = game;
-        
+
         setPrefSize(TILE_SIZE, TILE_SIZE);
         setMinSize(TILE_SIZE, TILE_SIZE);
         setMaxSize(TILE_SIZE, TILE_SIZE);
-        
-        // 添加阴影效果
+
+        // Add shadow effect
         DropShadow dropShadow = new DropShadow();
         dropShadow.setRadius(5.0);
         dropShadow.setOffsetX(3.0);
         dropShadow.setOffsetY(3.0);
         dropShadow.setColor(Color.color(0, 0, 0, 0.3));
         setEffect(dropShadow);
-        
+
         setBorder(new Border(new BorderStroke(
-                Color.BLACK, 
-                BorderStrokeStyle.SOLID, 
-                new CornerRadii(10), // 更圆润的边角
+                Color.BLACK,
+                BorderStrokeStyle.SOLID,
+                new CornerRadii(10), // More rounded corners
                 new BorderWidths(2)
         )));
-        
+
         contentBox = new VBox(5);
         contentBox.setPadding(new Insets(8));
         contentBox.setAlignment(Pos.CENTER);
-        
+
         nameLabel = new Label();
         nameLabel.setWrapText(true);
         nameLabel.setTextAlignment(TextAlignment.CENTER);
         nameLabel.setFont(Font.font("Arial", FontWeight.BOLD, 14));
-        
+
         statusLabel = new Label();
         statusLabel.setFont(Font.font("Arial", 12));
-        
-        // 添加棋子显示区域
+
+        // Add pawn display area
         pawnsPane = new FlowPane();
         pawnsPane.setHgap(6);
         pawnsPane.setVgap(6);
         pawnsPane.setPadding(new Insets(5));
         pawnsPane.setAlignment(Pos.CENTER);
-        
+
         contentBox.getChildren().addAll(nameLabel, statusLabel, pawnsPane);
         getChildren().add(contentBox);
-        
-        // 添加鼠标悬停效果
+
+        // Add mouse hover effects
         setOnMouseEntered(e -> {
-            // 轻微放大效果
+            // Slight zoom effect
             setScaleX(1.05);
             setScaleY(1.05);
-            // 增强阴影
+            // Enhanced shadow
             dropShadow.setRadius(8.0);
             dropShadow.setOffsetX(4.0);
             dropShadow.setOffsetY(4.0);
         });
-        
+
         setOnMouseExited(e -> {
-            // 恢复正常大小
+            // Return to normal size
             setScaleX(1.0);
             setScaleY(1.0);
-            // 恢复正常阴影
+            // Return to normal shadow
             dropShadow.setRadius(5.0);
             dropShadow.setOffsetX(3.0);
             dropShadow.setOffsetY(3.0);
         });
-        
+
         update(tile);
     }
-    
+
     /**
-     * 更新板块视图
-     * @param tile 岛屿板块，null表示水域
+     * Update tile view
+     * @param tile Island tile, null represents water
      */
     public void update(IslandTile tile) {
         this.tile = tile;
-        
+
         if (tile == null) {
-            // 水域
-            nameLabel.setText("水域");
+            // Water tile
+            nameLabel.setText("Water");
             statusLabel.setText("");
-            
-            // 水域使用渐变蓝色背景
+
+            // Use gradient blue background for water
             setBackground(createWaterBackground());
-            
-            // 添加水波纹效果
+
+            // Add water ripple effect
             InnerShadow innerShadow = new InnerShadow();
             innerShadow.setRadius(5.0);
             innerShadow.setColor(Color.color(0, 0, 0.5, 0.3));
             contentBox.setEffect(innerShadow);
-            
+
             pawnsPane.getChildren().clear();
             return;
         }
-        
-        // 设置板块名称，如果是愚者起飞点则添加特殊标记
+
+        // Set tile name, add special marker for Fools' Landing
         if (tile.getName().equals("Fools' Landing")) {
-            nameLabel.setText(tile.getName() + "\n(直升机撤离点)");
+            nameLabel.setText(tile.getName() + "\n(Helicopter Lift)");
             nameLabel.setTextFill(Color.DARKRED);
             nameLabel.setFont(Font.font("Arial", FontWeight.BOLD, 14));
         } else {
-        nameLabel.setText(tile.getName());
+            nameLabel.setText(tile.getName());
             nameLabel.setTextFill(Color.BLACK);
             nameLabel.setFont(Font.font("Arial", FontWeight.BOLD, 14));
         }
-        
+
         if (tile.isFlooded()) {
-            // 被淹没的板块
+            // Flooded tile
             setBackground(createFloodedBackground());
-            statusLabel.setText("已淹没");
+            statusLabel.setText("Flooded");
             statusLabel.setTextFill(Color.DARKBLUE);
-            
-            // 添加水波纹效果
+
+            // Add water ripple effect
             Lighting lighting = new Lighting();
             lighting.setDiffuseConstant(1.0);
             lighting.setSpecularConstant(0.0);
             lighting.setSpecularExponent(0.0);
             lighting.setSurfaceScale(5.0);
-            
+
             Light.Distant light = new Light.Distant();
             light.setAzimuth(45.0);
             light.setElevation(45.0);
             lighting.setLight(light);
-            
+
             contentBox.setEffect(lighting);
         } else {
-            // 正常板块
+            // Normal tile
             setBackground(createNormalBackground(tile));
-            
+
             if (tile.getName().equals("Fools' Landing")) {
-                statusLabel.setText("直升机撤离点");
+                statusLabel.setText("Helicopter Lift");
                 statusLabel.setTextFill(Color.DARKRED);
             } else if (tile.getAssociatedTreasure() != null) {
-                statusLabel.setText("宝藏: " + tile.getAssociatedTreasure().getDisplayName());
+                statusLabel.setText("Treasure: " + tile.getAssociatedTreasure().getDisplayName());
                 statusLabel.setTextFill(Color.DARKGREEN);
             } else {
-                statusLabel.setText("正常");
+                statusLabel.setText("Normal");
                 statusLabel.setTextFill(Color.BLACK);
             }
-            
-            // 移除特殊效果
+
+            // Remove special effects
             contentBox.setEffect(null);
-            
-            // 为愚者起飞点添加特殊发光效果
+
+            // Add special glow effect for Fools' Landing
             if (tile.getName().equals("Fools' Landing")) {
                 DropShadow glow = new DropShadow();
                 glow.setColor(Color.GOLD);
@@ -203,113 +203,113 @@ public class TileView extends StackPane {
                 glow.setHeight(20);
                 glow.setRadius(10);
                 contentBox.setEffect(glow);
-                
-                // 添加脉动动画效果
+
+                // Add pulse animation
                 createPulseAnimation();
             }
         }
-        
-        // 更新玩家棋子显示
+
+        // Update player pawns display
         updatePawns();
     }
-    
+
     /**
-     * 创建水域背景
+     * Create water background
      */
     private Background createWaterBackground() {
         return new Background(new BackgroundFill(
-                Color.rgb(100, 180, 255), // 更亮的蓝色
+                Color.rgb(100, 180, 255), // Brighter blue
                 new CornerRadii(8),
                 Insets.EMPTY
         ));
     }
-    
+
     /**
-     * 创建被淹没板块的背景
+     * Create flooded tile background
      */
     private Background createFloodedBackground() {
         return new Background(new BackgroundFill(
-                Color.rgb(135, 206, 250), // 天蓝色
+                Color.rgb(135, 206, 250), // Sky blue
                 new CornerRadii(8),
                 Insets.EMPTY
         ));
     }
-    
+
     /**
-     * 创建正常板块的背景
+     * Create normal tile background
      */
     private Background createNormalBackground(IslandTile tile) {
         Color backgroundColor;
-        
-        // 根据是否有宝藏或是否是愚者起飞点来设置不同的背景颜色
+
+        // Set different background colors based on treasure or Fools' Landing
         if (tile.getName().equals("Fools' Landing")) {
-            // 愚者起飞点使用特殊颜色
-            backgroundColor = Color.rgb(255, 215, 0); // 金色
+            // Fools' Landing uses special color
+            backgroundColor = Color.rgb(255, 215, 0); // Gold
         } else if (tile.getAssociatedTreasure() != null) {
-            // 有宝藏的板块使用更鲜艳的绿色
-            backgroundColor = Color.rgb(144, 238, 144); // 淡绿色
+            // Treasure tiles use brighter green
+            backgroundColor = Color.rgb(144, 238, 144); // Light green
         } else {
-            backgroundColor = Color.rgb(152, 251, 152); // 浅绿色
+            backgroundColor = Color.rgb(152, 251, 152); // Pale green
         }
-        
+
         return new Background(new BackgroundFill(
                 backgroundColor,
                 new CornerRadii(8),
                 Insets.EMPTY
         ));
     }
-    
+
     /**
-     * 更新板块上的玩家棋子显示
+     * Update player pawns display on the tile
      */
     private void updatePawns() {
         pawnsPane.getChildren().clear();
-        
+
         if (game == null || tile == null || tile.getName() == null) return; // Ensure current tile is valid and has a name
-        
+
         List<Player> players = game.getPlayers();
         for (Player player : players) {
             if (player.getPawn() != null && player.getPawn().getCurrentLocation() != null) {
                 // Compare by tile name instead of object reference
                 if (tile.getName().equals(player.getPawn().getCurrentLocation().getName())) {
-                createPawnCircle(player);
+                    createPawnCircle(player);
                 }
             }
         }
     }
-    
+
     /**
-     * 根据玩家创建棋子图形
+     * Create pawn graphic based on player
      */
     private void createPawnCircle(Player player) {
         String pawnColor = player.getPawn().getColor();
-        
-        // 获取玩家编号（从玩家名称中提取数字）
+
+        // Get player number (extract number from player name)
         String playerName = player.getName();
-        String playerNumber = playerName.replaceAll("\\D+", ""); // 提取数字部分
-        
-        // 默认使用1.png，如果提取到有效的数字则使用对应编号的图片
+        String playerNumber = playerName.replaceAll("\\D+", ""); // Extract numeric part
+
+        // Default to 1.png, use corresponding image if valid number is found
         int pawnImageNumber = 1;
         try {
             pawnImageNumber = Integer.parseInt(playerNumber);
-            // 确保图片编号在1-7范围内
+            // Ensure image number is between 1-7
             if (pawnImageNumber < 1 || pawnImageNumber > 7) {
                 pawnImageNumber = 1;
             }
         } catch (NumberFormatException e) {
-            // 如果解析失败，使用默认值1
+            // Use default value 1 if parsing fails
         }
-        
-        // 创建棋子图片
+
+        // Create pawn image
         String imagePath = "/images/pawns/" + pawnImageNumber + ".png";
         ImageView pawnImageView = null;
-        
+
         try {
-            Image pawnImage = new Image(getClass().getResourceAsStream(imagePath), 
-                                       PAWN_SIZE * 2, PAWN_SIZE * 2, true, true);
+            Image pawnImage = new Image(getClass().getResourceAsStream(imagePath),
+                    PAWN_SIZE * 2, PAWN_SIZE * 2, true, true);
             pawnImageView = new ImageView(pawnImage);
-            
-            // 添加阴影效果
+
+            // Add shadow effect
             DropShadow pawnShadow = new DropShadow();
             pawnShadow.setRadius(3.0);
             pawnShadow.setOffsetX(2.0);
@@ -317,110 +317,110 @@ public class TileView extends StackPane {
             pawnShadow.setColor(Color.color(0, 0, 0, 0.5));
             pawnImageView.setEffect(pawnShadow);
         } catch (Exception e) {
-            // 如果图片加载失败，回退到原来的圆形表示
+            // Fall back to circle representation if image loading fails
             Circle circle = new Circle(PAWN_SIZE);
-            
+
             Color fillColor;
-        switch (pawnColor.toUpperCase()) {
-            case "RED":
+            switch (pawnColor.toUpperCase()) {
+                case "RED":
                     fillColor = Color.RED;
-                break;
-            case "BLUE":
+                    break;
+                case "BLUE":
                     fillColor = Color.BLUE;
-                break;
-            case "GREEN":
+                    break;
+                case "GREEN":
                     fillColor = Color.GREEN;
-                break;
-            case "BLACK":
+                    break;
+                case "BLACK":
                     fillColor = Color.BLACK;
-                break;
-            case "WHITE":
+                    break;
+                case "WHITE":
                     fillColor = Color.WHITE;
-                break;
-            case "YELLOW":
+                    break;
+                case "YELLOW":
                     fillColor = Color.YELLOW;
-                break;
-            default:
+                    break;
+                default:
                     fillColor = Color.GRAY;
             }
-            
+
             circle.setFill(fillColor);
             circle.setStroke(Color.BLACK);
             circle.setStrokeWidth(1.5);
-            
-            // 添加阴影效果
+
+            // Add shadow effect
             DropShadow pawnShadow = new DropShadow();
             pawnShadow.setRadius(3.0);
             pawnShadow.setOffsetX(2.0);
             pawnShadow.setOffsetY(2.0);
             pawnShadow.setColor(Color.color(0, 0, 0, 0.5));
             circle.setEffect(pawnShadow);
-            
+
             pawnImageView = new ImageView();
             StackPane fallbackPane = new StackPane(circle);
-        
-        // 在棋子上添加玩家编号文本
-        Label numberLabel = new Label(playerNumber);
-        numberLabel.setTextFill(pawnColor.equalsIgnoreCase("WHITE") || pawnColor.equalsIgnoreCase("YELLOW") ? 
-                                Color.BLACK : Color.WHITE);
+
+            // Add player number text on the pawn
+            Label numberLabel = new Label(playerNumber);
+            numberLabel.setTextFill(pawnColor.equalsIgnoreCase("WHITE") || pawnColor.equalsIgnoreCase("YELLOW") ?
+                    Color.BLACK : Color.WHITE);
             numberLabel.setFont(Font.font("Arial", FontWeight.BOLD, 10));
             fallbackPane.getChildren().add(numberLabel);
-            
+
             pawnsPane.getChildren().add(fallbackPane);
-            
-            // 添加玩家信息提示
+
+            // Add player info tooltip
             fallbackPane.setOnMouseEntered(e2 -> {
                 setTooltip(player.getName() + " (" + player.getRole().getChineseName() + ")");
                 e2.consume();
             });
-            
+
             fallbackPane.setOnMouseExited(e2 -> {
                 clearTooltip();
                 e2.consume();
             });
-            
+
             return;
         }
-        
-        // 创建包含棋子图片的容器
+
+        // Create container for pawn image
         StackPane pawnWithLabel = new StackPane();
         pawnWithLabel.getChildren().add(pawnImageView);
-        
-        // 添加玩家信息提示
+
+        // Add player info tooltip
         pawnWithLabel.setOnMouseEntered(e -> {
-            setTooltip(player.getName() + " (" + player.getRole().getChineseName() + ")");
+            setTooltip(player.getName() + " (" + player.getRole().getChineseName()+ ")");
             e.consume();
         });
-        
+
         pawnWithLabel.setOnMouseExited(e -> {
             clearTooltip();
             e.consume();
         });
-        
+
         pawnsPane.getChildren().add(pawnWithLabel);
     }
-    
+
     private void setTooltip(String text) {
         javafx.scene.control.Tooltip tooltip = new javafx.scene.control.Tooltip(text);
         javafx.scene.control.Tooltip.install(this, tooltip);
     }
-    
+
     private void clearTooltip() {
         javafx.scene.control.Tooltip.uninstall(this, null);
-            }
-    
+    }
+
     /**
-     * 获取此视图关联的板块
+     * Get the tile associated with this view
      */
     public IslandTile getTile() {
         return tile;
     }
-    
+
     /**
-     * 为愚者起飞点创建脉动动画
+     * Create pulse animation for Fools' Landing
      */
     private void createPulseAnimation() {
-        // 创建边框脉动效果
+        // Create border pulse effect
         BorderStroke borderStroke = new BorderStroke(
                 Color.GOLD,
                 BorderStrokeStyle.SOLID,
@@ -429,21 +429,21 @@ public class TileView extends StackPane {
         );
         Border border = new Border(borderStroke);
         setBorder(border);
-        
-        // 创建脉动动画
+
+        // Create pulse animation
         DropShadow glow = (DropShadow) contentBox.getEffect();
         Timeline timeline = new Timeline(
-                new KeyFrame(Duration.ZERO, 
+                new KeyFrame(Duration.ZERO,
                         new KeyValue(glow.radiusProperty(), 10),
                         new KeyValue(glow.colorProperty(), Color.GOLD)),
-                new KeyFrame(Duration.seconds(1.5), 
+                new KeyFrame(Duration.seconds(1.5),
                         new KeyValue(glow.radiusProperty(), 20),
                         new KeyValue(glow.colorProperty(), Color.ORANGE)),
-                new KeyFrame(Duration.seconds(3), 
+                new KeyFrame(Duration.seconds(3),
                         new KeyValue(glow.radiusProperty(), 10),
                         new KeyValue(glow.colorProperty(), Color.GOLD))
         );
         timeline.setCycleCount(Timeline.INDEFINITE);
         timeline.play();
     }
-} 
+}

@@ -12,12 +12,12 @@ public class GiveCardAction {
     }
 
     public boolean execute(Adventurer giver, Adventurer receiver, TreasureCard card) {
-        // 检查是否可以赠卡
+        // Check if the card transfer is valid
         if (!isValidCardTransfer(giver, receiver, card)) {
             return false;
         }
 
-        // 执行赠卡
+        // Execute the card transfer
         giver.removeTreasureCard(card);
         receiver.addTreasureCard(card);
         return true;
@@ -28,23 +28,23 @@ public class GiveCardAction {
         if (giver == null || receiver == null || card == null) {
             return false;
         }
-        
+
         // Players must be on valid tiles
         if (giver.getCurrentTile() == null || receiver.getCurrentTile() == null) {
             return false;
         }
-        
+
         // Check if giver has the card
         if (!giver.getTreasureCards().contains(card)) {
             return false;
         }
-        
+
         // Handle Messenger's special ability - can give cards to players on any tile
         if (giver.getType() == com.forbiddenisland.enums.AdventurerType.MESSENGER) {
             return true; // Messenger can give cards to any player regardless of location
         }
-        
+
         // Regular case - players must be on the same tile
         return giver.getCurrentTile().equals(receiver.getCurrentTile());
     }
-}    
+}

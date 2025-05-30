@@ -1,12 +1,13 @@
 package com.forbiddenisland.model;
 
 import java.util.List;
+import java.io.Serializable;
 
 /**
  * Represents a treasure that can be collected in the game.
  * 代表游戏中可以收集的宝藏。
  */
-public class Treasure {
+public class Treasure implements Serializable{
     private TreasureType type; // The type of the treasure (宝藏的类型)
     private List<String> islandTileNames; // Names of the IslandTiles where this treasure can be captured (可以获取此宝藏的岛屿板块名称列表)
     private boolean collected; // Whether this treasure has been collected by any player (此宝藏是否已被任何玩家收集)

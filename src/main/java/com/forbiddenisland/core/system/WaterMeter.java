@@ -14,7 +14,7 @@ public class WaterMeter {
     }
 
     private void setFloodRateBasedOnDifficulty(DifficultyLevel difficulty) {
-        // 根据难度设置洪水速率
+        // Set flood rate based on difficulty
         switch (difficulty) {
             case NOVICE:
                 floodRate = 2;
@@ -41,7 +41,7 @@ public class WaterMeter {
     }
 
     private void updateFloodRate() {
-        // 根据水位更新洪水速率
+        // Update flood rate based on water level
         if (waterLevel >= 8) {
             floodRate = 5;
         } else if (waterLevel >= 6) {
@@ -57,7 +57,7 @@ public class WaterMeter {
     public int getWaterLevel() { return waterLevel; }
     public int getFloodRate() { return floodRate; }
     public boolean isAtMaxLevel() { return waterLevel >= maxWaterLevel; }
-    
-    // 添加获取当前水位的方法
+
+    // Method to get the current water level
     public int getCurrentLevel() { return waterLevel; }
-}    
+}

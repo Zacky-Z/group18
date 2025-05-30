@@ -25,14 +25,14 @@ public class CardDeckManager {
         treasureDeck = new ArrayList<>();
         treasureDiscardPile = new ArrayList<>();
 
-        // 添加普通宝物卡牌
+        // Add regular treasure cards
         for (TreasureType treasureType : TreasureType.values()) {
             for (int i = 0; i < 4; i++) {
                 treasureDeck.add(new TreasureCard(treasureType));
             }
         }
 
-        // 添加特殊行动卡牌
+        // Add special action cards
         treasureDeck.add(new SpecialActionCard(SpecialCardType.HELICOPTER_LIFT));
         treasureDeck.add(new SpecialActionCard(SpecialCardType.HELICOPTER_LIFT));
         treasureDeck.add(new SpecialActionCard(SpecialCardType.SANDBAGS));
@@ -40,7 +40,7 @@ public class CardDeckManager {
         treasureDeck.add(new SpecialActionCard(SpecialCardType.WATERS_RISE));
         treasureDeck.add(new SpecialActionCard(SpecialCardType.WATERS_RISE));
 
-        // 洗牌
+        // Shuffle the deck
         Collections.shuffle(treasureDeck);
     }
 
@@ -48,12 +48,12 @@ public class CardDeckManager {
         floodDeck = new ArrayList<>();
         floodDiscardPile = new ArrayList<>();
 
-        // 为每个陆地瓷砖创建洪水卡牌
+        // Create flood cards for each island tile
         for (TileName tileName : TileName.values()) {
             floodDeck.add(new FloodCard(tileName));
         }
 
-        // 洗牌
+        // Shuffle the deck
         Collections.shuffle(floodDeck);
     }
 
@@ -105,4 +105,4 @@ public class CardDeckManager {
     public int getTreasureDiscardPileSize() { return treasureDiscardPile.size(); }
     public int getFloodDeckSize() { return floodDeck.size(); }
     public int getFloodDiscardPileSize() { return floodDiscardPile.size(); }
-}    
+}

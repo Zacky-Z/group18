@@ -32,10 +32,10 @@ public class TurnManager {
     }
 
     public void startNextTurn() {
-        // 移动到下一个玩家
+        // Move to the next player
         currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
-        
-        // 重置回合状态
+
+        // Reset turn state
         currentPhase = TurnPhase.ACTION;
         actionsRemaining = MAX_ACTIONS_PER_TURN;
     }
@@ -44,8 +44,8 @@ public class TurnManager {
         if (actionsRemaining > 0) {
             actionsRemaining--;
         }
-        
-        // 检查是否需要进入下一阶段
+
+        // Check if it's time to move to the next phase
         if (actionsRemaining == 0 && currentPhase == TurnPhase.ACTION) {
             currentPhase = TurnPhase.TREASURE_CARD_DRAW;
         }
@@ -59,9 +59,9 @@ public class TurnManager {
 
     public void completeFloodPhase() {
         if (currentPhase == TurnPhase.FLOOD) {
-            // 回合结束
+            // End of turn
         }
     }
 
-    // 其他回合管理方法
-}    
+    // Other turn management methods
+}

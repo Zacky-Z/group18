@@ -4,7 +4,9 @@ package com.forbiddenisland.model;
  * Represents a Flood card in the game.
  * 代表游戏中的一张洪水牌。
  */
-public class FloodCard extends Card {
+import java.io.Serializable;
+
+public class FloodCard extends Card implements Serializable {
     private String islandTileName; // The name of the island tile this card corresponds to (此牌对应的岛屿板块名称)
 
     /**

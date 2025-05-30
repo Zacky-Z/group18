@@ -27,15 +27,15 @@ public class ActionController {
     public void handleMove(IslandTile targetTile) {
         try {
             if (gameController.getCurrentPhase() != TurnPhase.ACTION) {
-                throw new InvalidActionException("只能在行动阶段移动");
+                throw new InvalidActionException("You can only move during the Action Phase.");
             }
-            
+
             Adventurer currentPlayer = gameController.getCurrentPlayer();
             if (moveAction.execute(currentPlayer, targetTile)) {
                 gameController.useAction();
-                showSuccessAlert("移动成功");
+                showSuccessAlert("Move successful");
             } else {
-                showErrorAlert("无法移动到该位置");
+                showErrorAlert("Cannot move to this location");
             }
         } catch (InvalidActionException e) {
             showErrorAlert(e.getMessage());
@@ -45,15 +45,15 @@ public class ActionController {
     public void handleShoreUp(IslandTile targetTile) {
         try {
             if (gameController.getCurrentPhase() != TurnPhase.ACTION) {
-                throw new InvalidActionException("只能在行动阶段加固");
+                throw new InvalidActionException("You can only shore up during the Action Phase.");
             }
-            
+
             Adventurer currentPlayer = gameController.getCurrentPlayer();
             if (shoreUpAction.execute(currentPlayer, targetTile)) {
                 gameController.useAction();
-                showSuccessAlert("加固成功");
+                showSuccessAlert("Shore up successful");
             } else {
-                showErrorAlert("无法加固该位置");
+                showErrorAlert("Cannot shore up this location");
             }
         } catch (InvalidActionException e) {
             showErrorAlert(e.getMessage());
@@ -63,15 +63,15 @@ public class ActionController {
     public void handleGiveCard(Adventurer receiver, TreasureCard card) {
         try {
             if (gameController.getCurrentPhase() != TurnPhase.ACTION) {
-                throw new InvalidActionException("只能在行动阶段赠卡");
+                throw new InvalidActionException("You can only give cards during the Action Phase.");
             }
-            
+
             Adventurer currentPlayer = gameController.getCurrentPlayer();
             if (giveCardAction.execute(currentPlayer, receiver, card)) {
                 gameController.useAction();
-                showSuccessAlert("赠卡成功");
+                showSuccessAlert("Card given successfully");
             } else {
-                showErrorAlert("无法赠送该卡牌");
+                showErrorAlert("Cannot give this card");
             }
         } catch (InvalidActionException e) {
             showErrorAlert(e.getMessage());
@@ -81,15 +81,15 @@ public class ActionController {
     public void handleCaptureTreasure() {
         try {
             if (gameController.getCurrentPhase() != TurnPhase.ACTION) {
-                throw new InvalidActionException("只能在行动阶段获取宝物");
+                throw new InvalidActionException("You can only capture treasure during the Action Phase.");
             }
-            
+
             Adventurer currentPlayer = gameController.getCurrentPlayer();
             if (captureTreasureAction.execute(currentPlayer)) {
                 gameController.useAction();
-                showSuccessAlert("成功获取宝物!");
+                showSuccessAlert("Treasure captured successfully!");
             } else {
-                showErrorAlert("无法在此位置获取宝物");
+                showErrorAlert("Cannot capture treasure at this location");
             }
         } catch (InvalidActionException e) {
             showErrorAlert(e.getMessage());
@@ -98,7 +98,7 @@ public class ActionController {
 
     private void showSuccessAlert(String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("成功");
+        alert.setTitle("Success");
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
@@ -106,9 +106,9 @@ public class ActionController {
 
     private void showErrorAlert(String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle("错误");
+        alert.setTitle("Error");
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
     }
-}    
+}

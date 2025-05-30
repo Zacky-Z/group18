@@ -1,10 +1,10 @@
 package com.forbiddenisland.enums;
 
 public enum DifficultyLevel {
-    NOVICE("新手", 1),
-    NORMAL("标准", 2),
-    ELITE("精英", 3),
-    LEGENDARY("传奇", 5);
+    NOVICE("Novice", 1),
+    NORMAL("Normal", 2),
+    ELITE("Elite", 3),
+    LEGENDARY("Legendary", 5);
 
     private final String displayName;
     private final int initialWaterLevel;
@@ -21,4 +21,4 @@ public enum DifficultyLevel {
     public int getInitialWaterLevel() {
         return initialWaterLevel;
     }
-}    
+}

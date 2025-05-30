@@ -22,8 +22,8 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 
 /**
- * 水位计可视化组件
- * 显示当前水位和对应的洪水牌抽取数量
+ * Water Meter visualization component
+ * Displays current water level and corresponding number of flood cards to draw
  */
 public class WaterMeterView extends VBox {
     
@@ -35,26 +35,26 @@ public class WaterMeterView extends VBox {
     private Rectangle waterFill;
     private int previousWaterLevel;
     
-    // 水位计的最大级别
+    // Maximum levels for the water meter
     private final int MAX_LEVELS = 10;
     
-    // 水位计的颜色定义
+    // Color definitions for water levels
     private final Color[] LEVEL_COLORS = {
-        Color.rgb(173, 216, 230),  // 浅蓝色 - 1级
-        Color.rgb(135, 206, 235),  // 天蓝色 - 2级
-        Color.rgb(100, 149, 237),  // 矢车菊蓝 - 3级
-        Color.rgb(65, 105, 225),   // 品蓝 - 4级
-        Color.rgb(0, 0, 255),      // 蓝色 - 5级
-        Color.rgb(0, 0, 205),      // 中蓝色 - 6级
-        Color.rgb(0, 0, 139),      // 深蓝色 - 7级
-        Color.rgb(25, 25, 112),    // 午夜蓝 - 8级
-        Color.rgb(128, 0, 0),      // 栗色 - 9级
-        Color.rgb(255, 0, 0)       // 红色 - 10级
+        Color.rgb(173, 216, 230),  // Light blue - Level 1
+        Color.rgb(135, 206, 235),  // Sky blue - Level 2
+        Color.rgb(100, 149, 237),  // Cornflower blue - Level 3
+        Color.rgb(65, 105, 225),   // Royal blue - Level 4
+        Color.rgb(0, 0, 255),      // Blue - Level 5
+        Color.rgb(0, 0, 205),      // Medium blue - Level 6
+        Color.rgb(0, 0, 139),      // Dark blue - Level 7
+        Color.rgb(25, 25, 112),    // Midnight blue - Level 8
+        Color.rgb(128, 0, 0),      // Maroon - Level 9
+        Color.rgb(255, 0, 0)       // Red - Level 10
     };
     
     /**
-     * 构造函数
-     * @param waterMeter 水位计模型
+     * Constructor
+     * @param waterMeter Water meter model
      */
     public WaterMeterView(WaterMeter waterMeter) {
         this.waterMeter = waterMeter;
@@ -86,31 +86,31 @@ public class WaterMeterView extends VBox {
     }
     
     /**
-     * 创建水位计标题
+     * Create water meter header/title
      */
     private void createHeader() {
-        Label titleLabel = new Label("水位计");
+        Label titleLabel = new Label("Water Meter");
         titleLabel.setFont(Font.font("Arial", FontWeight.BOLD, 16));
         
         getChildren().add(titleLabel);
     }
     
     /**
-     * 创建水位计视觉组件
+     * Create visual components for water meter
      */
     private void createWaterMeterVisual() {
-        // 创建水位计容器
+        // Create water meter container
         waterContainer = new StackPane();
         waterContainer.setPrefSize(160, 300);
         waterContainer.setMaxSize(160, 300);
         waterContainer.setStyle("-fx-border-color: black; -fx-border-width: 2; -fx-background-color: white;");
         
-        // 创建水位填充
+        // Create water fill
         waterFill = new Rectangle(156, 0);
         waterFill.setFill(Color.BLUE);
-        waterFill.setTranslateY(150); // 初始位置在底部
+        waterFill.setTranslateY(150); // Initial position at bottom
         
-        // 创建水位刻度
+        // Create water level markers
         VBox levelsBox = new VBox(5);
         levelsBox.setPadding(new Insets(5));
         levelsBox.setAlignment(Pos.BOTTOM_CENTER);
@@ -130,7 +130,7 @@ public class WaterMeterView extends VBox {
             Text levelText = new Text(String.valueOf(i + 1));
             levelText.setFont(Font.font("Arial", FontWeight.BOLD, 12));
             
-            Text cardsText = new Text("(" + getCardsForLevel(i + 1) + "张洪水牌)");
+            Text cardsText = new Text("(" + getCardsForLevel(i + 1) + " flood cards)");
             cardsText.setFont(Font.font("Arial", 10));
             
             levelRow.getChildren().addAll(levelRect, levelText, cardsText);
@@ -142,7 +142,7 @@ public class WaterMeterView extends VBox {
     }
     
     /**
-     * 获取特定级别需要抽取的洪水牌数量
+     * Get number of flood cards to draw for specific level
      */
     private int getCardsForLevel(int level) {
         int[] cardLevels = {2, 2, 3, 3, 4, 4, 5, 5, 6, 10};
@@ -153,20 +153,20 @@ public class WaterMeterView extends VBox {
     }
     
     /**
-     * 创建标签
+     * Create labels
      */
     private void createLabels() {
-        waterLevelLabel = new Label("当前水位: 1");
+        waterLevelLabel = new Label("Current Level: 1");
         waterLevelLabel.setFont(Font.font("Arial", FontWeight.BOLD, 14));
         
-        cardsToDrawLabel = new Label("抽取洪水牌: 2张");
+        cardsToDrawLabel = new Label("Draw Flood Cards: 2");
         cardsToDrawLabel.setFont(Font.font("Arial", 14));
         
         getChildren().addAll(waterLevelLabel, cardsToDrawLabel);
     }
     
     /**
-     * 更新水位计显示
+     * Update water meter display
      */
     public void update() {
         if (waterMeter == null) {
@@ -178,14 +178,14 @@ public class WaterMeterView extends VBox {
         System.out.println("WaterMeterView: Updating water meter display. Current level: " + currentLevel + 
                            ", Previous level: " + previousWaterLevel);
         
-        // 检查水位是否变化
+        // Check if water level changed
         boolean waterLevelIncreased = currentLevel > previousWaterLevel;
         
-        // 更新标签
-        waterLevelLabel.setText("当前水位: " + currentLevel + " - " + waterMeter.getWaterLevelLabel());
-        cardsToDrawLabel.setText("抽取洪水牌: " + waterMeter.getNumberOfFloodCardsToDraw() + "张");
+        // Update labels
+        waterLevelLabel.setText("Current Level: " + currentLevel + " - " + waterMeter.getWaterLevelLabel());
+        cardsToDrawLabel.setText("Draw Flood Cards: " + waterMeter.getNumberOfFloodCardsToDraw());
         
-        // 高亮当前水位
+        // Highlight current water level
         for (int i = 0; i < MAX_LEVELS; i++) {
             if (i < currentLevel) {
                 waterLevelRects[i].setOpacity(1.0);
@@ -198,16 +198,16 @@ public class WaterMeterView extends VBox {
             }
         }
         
-        // 更新水位填充高度
+        // Update water fill height
         double fillHeight = (currentLevel * 1.0 / MAX_LEVELS) * 300;
         TranslateTransition transition = new TranslateTransition(Duration.millis(500), waterFill);
         transition.setToY(150 - fillHeight/2);
         waterFill.setHeight(fillHeight);
         
-        // 根据水位设置颜色
+        // Set color based on water level
         waterFill.setFill(LEVEL_COLORS[currentLevel - 1]);
         
-        // 如果水位危险，添加警告闪烁效果
+        // Add warning blink effect if level is dangerous
         if (currentLevel >= 7) {
             FadeTransition fade = new FadeTransition(Duration.millis(500), waterLevelLabel);
             fade.setFromValue(1.0);
@@ -221,12 +221,12 @@ public class WaterMeterView extends VBox {
             waterLevelLabel.setTextFill(Color.BLACK);
         }
         
-        // 如果水位上升，添加动画效果
+        // Add animation effect if water level increased
         if (waterLevelIncreased) {
             System.out.println("WaterMeterView: Water level increased from " + previousWaterLevel + " to " + currentLevel);
             playWaterLevelIncreaseAnimation(currentLevel);
             
-            // 显示水位上升警告
+            // Show water level increase warning
             if (currentLevel >= 7) {
                 showHighWaterLevelWarning(currentLevel);
             }
@@ -234,18 +234,18 @@ public class WaterMeterView extends VBox {
         
         transition.play();
         
-        // 更新之前的水位
+        // Update previous water level
         previousWaterLevel = currentLevel;
     }
     
     /**
-     * 播放水位上升动画
+     * Play water level increase animation
      */
     private void playWaterLevelIncreaseAnimation(int currentLevel) {
-        // 对当前水位的矩形进行动画
+        // Animate rectangle for current level
         Rectangle currentLevelRect = waterLevelRects[currentLevel - 1];
         
-        // 创建缩放动画
+        // Create scale animation
         ScaleTransition scaleTransition = new ScaleTransition(Duration.millis(300), currentLevelRect);
         scaleTransition.setFromX(1.0);
         scaleTransition.setFromY(1.0);
@@ -254,7 +254,7 @@ public class WaterMeterView extends VBox {
         scaleTransition.setCycleCount(2);
         scaleTransition.setAutoReverse(true);
         
-        // 创建颜色闪烁动画
+        // Create color blink animation
         Timeline colorTimeline = new Timeline(
             new KeyFrame(Duration.ZERO, 
                 new KeyValue(currentLevelRect.fillProperty(), LEVEL_COLORS[currentLevel - 1])),
@@ -265,11 +265,11 @@ public class WaterMeterView extends VBox {
         );
         colorTimeline.setCycleCount(2);
         
-        // 并行运行两个动画
+        // Run animations in parallel
         ParallelTransition parallelTransition = new ParallelTransition(scaleTransition, colorTimeline);
         parallelTransition.play();
         
-        // 水位填充的波动效果
+        // Water fill wave effect
         Timeline waterWaveTimeline = new Timeline(
             new KeyFrame(Duration.ZERO, 
                 new KeyValue(waterFill.heightProperty(), waterFill.getHeight())),
@@ -284,37 +284,37 @@ public class WaterMeterView extends VBox {
     }
     
     /**
-     * 显示高水位警告
+     * Show high water level warning
      */
     private void showHighWaterLevelWarning(int currentLevel) {
         String warningMessage;
         
         if (currentLevel == 10) {
-            warningMessage = "危险！水位已达最高点！游戏即将结束！";
+            warningMessage = "Danger! Water level has reached maximum! Game will end soon!";
         } else if (currentLevel == 9) {
-            warningMessage = "警告！水位已达危险级别！每回合需抽取6张洪水牌！";
+            warningMessage = "Warning! Water level has reached dangerous level! Draw 6 flood cards per turn!";
         } else if (currentLevel == 8) {
-            warningMessage = "警告！水位已达警戒级别！每回合需抽取5张洪水牌！";
+            warningMessage = "Warning! Water level has reached alert level! Draw 5 flood cards per turn!";
         } else if (currentLevel == 7) {
-            warningMessage = "注意！水位上升到较高级别！每回合需抽取5张洪水牌！";
+            warningMessage = "Attention! Water level has risen to high level! Draw 5 flood cards per turn!";
         } else {
-            return; // 不显示警告
+            return; // No warning
         }
         
         Alert alert = new Alert(AlertType.WARNING);
-        alert.setTitle("水位警告");
-        alert.setHeaderText("水位上升到" + currentLevel + "级！");
+        alert.setTitle("Water Level Warning");
+        alert.setHeaderText("Water level has risen to " + currentLevel + "!");
         alert.setContentText(warningMessage);
         alert.show();
     }
     
     /**
-     * 设置水位计模型
-     * @param waterMeter 新的水位计模型
+     * Set water meter model
+     * @param waterMeter New water meter model
      */
     public void setWaterMeter(WaterMeter waterMeter) {
         this.waterMeter = waterMeter;
         this.previousWaterLevel = waterMeter.getCurrentWaterLevel();
         update();
     }
-} 
+}

@@ -20,18 +20,18 @@ public class CaptureTreasureAction {
         IslandTile currentTile = player.getCurrentTile();
         TreasureType treasureType = currentTile.getTreasure();
 
-        // 检查是否可以获取宝物
+        // Check if the treasure can be captured
         if (!canCaptureTreasure(player, treasureType)) {
             return false;
         }
 
-        // 执行获取宝物
-        // 移除所需卡牌
+        // Execute treasure capture
+        // Remove the required cards
         removeRequiredCards(player, treasureType);
-        
-        // 标记宝物为已获取
+
+        // Mark the treasure as captured
         markTreasureAsCaptured(treasureType);
-        
+
         return true;
     }
 
@@ -40,27 +40,27 @@ public class CaptureTreasureAction {
             return false;
         }
 
-        // 检查瓷砖状态
+        // Check tile status
         IslandTile currentTile = player.getCurrentTile();
         if (currentTile.isFlooded() || currentTile.isSunk()) {
             return false;
         }
 
-        // 检查玩家是否有足够的卡牌
+        // Check if the player has enough cards
         return hasRequiredCards(player, treasureType);
     }
 
     private boolean hasRequiredCards(Adventurer player, TreasureType treasureType) {
-        // 基础需要4张相同类型的卡牌
-        // 特殊角色（如探险家）的逻辑将在子类或策略中实现
+        // Base requirement: 4 cards of the same type
+        // Special roles (e.g., Explorer) logic will be implemented in subclasses or strategies
         return false;
     }
 
     private void removeRequiredCards(Adventurer player, TreasureType treasureType) {
-        // 从玩家手中移除所需的卡牌
+        // Remove the required cards from the player's hand
     }
 
     private void markTreasureAsCaptured(TreasureType treasureType) {
-        // 在游戏控制器中标记宝物为已获取
+        // Mark the treasure as captured in the game controller
     }
-}    
+}

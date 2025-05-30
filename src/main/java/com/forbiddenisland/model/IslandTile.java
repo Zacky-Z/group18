@@ -1,10 +1,12 @@
 package com.forbiddenisland.model;
 
+
+import java.io.Serializable;
 /**
  * Represents an island tile in the game.
  * 代表游戏中的一个岛屿板块。
  */
-public class IslandTile {
+public class IslandTile  implements Serializable{
 
     private String name; // Name of the island tile (板块名称)
     private boolean flooded; // Whether the tile is flooded (板块是否被淹没)

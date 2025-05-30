@@ -20,7 +20,7 @@ public class GameController {
     private boolean gameWon;
 
     public GameController() {
-        // 初始化基本组件
+
         this.players = new ArrayList<>();
         this.islandTiles = new ArrayList<>();
         this.cardDeckManager = new CardDeckManager();
@@ -29,19 +29,19 @@ public class GameController {
         this.gameOver = false;
         this.gameWon = false;
         
-        // 初始化岛屿
+
         initializeIsland();
     }
 
     private void initializeIsland() {
-        // 创建岛屿瓦片
+
         islandTiles.add(new IslandTile(TileName.CRYSTAL_CAVE, 0, 0));
         islandTiles.add(new IslandTile(TileName.CORAL_PALACE, 1, 0));
         islandTiles.add(new IslandTile(TileName.TEMPLE_OF_THE_SUN, 2, 0));
         islandTiles.add(new IslandTile(TileName.TEMPLE_OF_THE_MOON, 0, 1));
         islandTiles.add(new IslandTile(TileName.IRON_ANVIL_ROCK, 1, 1));
         islandTiles.add(new IslandTile(TileName.CLIFF_OF_AGES, 2, 1));
-        // ... 添加更多瓦片
+
     }
 
     public void startGame(List<Adventurer> players, DifficultyLevel difficulty) {
@@ -54,32 +54,26 @@ public class GameController {
     }
 
     private void initializeGame() {
-        // 设置初始水位
         this.waterMeter = new WaterMeter(difficulty);
-        
-        // 初始化玩家位置
+
         for (Adventurer player : players) {
             player.setCurrentTile(findFoolsLanding());
         }
-        
-        // 初始化回合管理器
+
         this.turnManager = new TurnManager(players);
-        
-        // 重新创建卡牌管理器以确保初始化
+
         this.cardDeckManager = new CardDeckManager();
-        
-        // 重置游戏状态
+
         gameOver = false;
         gameWon = false;
     }
 
-    // 游戏控制方法
     public void nextTurn() {
-        // 处理下一回合逻辑
+
     }
 
     public void performAction(String actionType, Object... params) {
-        // 执行玩家动作
+
     }
 
     public void drawTreasureCards() {
@@ -384,7 +378,6 @@ public class GameController {
         return adjacentTiles;
     }
 
-    // 添加获取当前回合阶段的方法
     public com.forbiddenisland.enums.TurnPhase getCurrentPhase() {
         if (turnManager != null) {
             return turnManager.getCurrentPhase();

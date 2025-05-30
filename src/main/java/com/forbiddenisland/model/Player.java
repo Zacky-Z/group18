@@ -6,13 +6,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
+import java.io.Serializable;
 
 /**
  * Represents a player in the game.
  * Core class for player management and movement mechanics implementation (Week 11).
  * 代表游戏中的一个玩家。
  */
-public class Player {
+public class Player implements Serializable{
     // Core player attributes
     private String name; // Name of the player (玩家姓名)
     private AdventurerRole role; // The adventurer role of the player (玩家的探险家角色)

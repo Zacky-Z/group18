@@ -1,5 +1,5 @@
 package com.forbiddenisland.model;
-
+import java.io.Serializable;
 /**
  * Represents a "Helicopter Lift" card in the game.
  * 代表游戏中的一张"直升机升空"牌。

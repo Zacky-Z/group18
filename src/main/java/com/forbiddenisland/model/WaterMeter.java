@@ -1,10 +1,10 @@
 package com.forbiddenisland.model;
-
+import java.io.Serializable;
 /**
  * Represents the Water Level Meter in the game.
  * 代表游戏中的水位计。
  */
-public class WaterMeter {
+public class WaterMeter implements Serializable{
     // Water levels could be: Novice, Normal, Elite, Legendary, Skull & Crossbones (game over)
     // 水位可以是：新手，普通，精英，传奇，骷髅头与交叉骨（游戏结束）
     // For simplicity, we can represent these as integer values 1-5, where 5 is game over.
