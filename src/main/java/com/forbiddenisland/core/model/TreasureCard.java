@@ -6,7 +6,7 @@ public class TreasureCard extends Card {
     private final TreasureType treasureType;
 
     public TreasureCard(TreasureType treasureType) {
-        super(treasureType != null ? treasureType.getDisplayName() + "卡" : "特殊卡");
+        super(treasureType != null ? treasureType.getDisplayName() + " Card" : "Special Card");
         this.treasureType = treasureType;
     }
 
@@ -16,6 +16,6 @@ public class TreasureCard extends Card {
 
     @Override
     public String getDescription() {
-        return treasureType != null ? "获取" + treasureType.getDisplayName() + "的必要卡牌" : "特殊卡牌";
+        return treasureType != null ? "A necessary card to collect the " + treasureType.getDisplayName() : "Special card";
     }
-}    
+}
